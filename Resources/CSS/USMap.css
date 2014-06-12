@@ -1,0 +1,98 @@
+path.county {
+    stroke: white;
+    stroke-width: 1px;
+}
+
+path.state {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+body {
+    font-family: Arial, sans-serif;
+}
+
+.city {
+    font: 10px sans-serif;
+    font-weight: bold;
+}
+
+rect.countyDataLabel {
+    fill: #FFFFE0;
+    padding: 2px;
+    border: 1px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+text.countyDataLabel {
+    text-align: center;
+    font-size: 12px;
+    fill: #000000;
+}
+
+#countyDataLabelName {
+    font-weight: bold;
+}
+
+#legend {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 100px;
+    margin-right: 20px;
+    width: 150px;
+    height: 700px;
+    font-size: 12px;
+}
+
+#main {
+    position: absolute;
+    top: 0;
+    left: 140px;
+    width: 1000px;
+    height: 700px;
+}
+
+#chartWithSlider {
+    width: 100%;
+    height: 80%;
+}
+
+#chart {
+    margin:0 auto;
+}
+
+#slider {
+    width: 80%;
+    margin: 10px auto; /* center */
+}
+
+#resetBtn {
+    font-size: 12px;
+}
+
+#chartTitle {
+    width: 70%;
+    float: left;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#dateLabel {
+    margin-top: 1em;
+    text-align: left;
+    vertical-align: baseline;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+#chartDescription {
+    width: 70%;
+    text-align: left;
+    font-size: 15px;
+    font-weight: normal;
+}
