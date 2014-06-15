@@ -5,7 +5,6 @@ var extent;
 
 var scaleFactor = 1100;
 
-//var nanColor = 'rgb(200,250,200)';
 var colors = [
     "#10069f",
     "#183085",
@@ -56,28 +55,49 @@ var countyFeature = null;
 
 var dbDefs;
 
-//Reading map file and data
-queue()
-    .defer(getDataDeferred, dataCategory)
-    .defer(d3.json, dataDir + "/" + "county.json")
-    .defer(d3.json, dataDir + "/" + "state.json")
-    .await(ready);
+var winSize = {
+    width: 600,
+    height: 400
+};
+
+
+padding = {
+    left: 60,
+    right: 60,
+    top: 60,
+    bottom: 60
+};
+
+inner = {
+    w: winSize.width - this.padding.left - this.padding.right,
+    h: winSize.height - this.padding.top - this.padding.bottom,
+    r: winSize.width - this.padding.right,
+    b: winSize.height - this.padding.bottom
+};
+
+sliderParams = {
+    min: 0.01,
+    max:0.1,
+    step: 0.001,
+    value: 0,//this.params.rate,
+    slide: function(e,ui){
+        //self.params.rate = ui.value;
+        $(ui.handle).text((ui.value*100).toFixed(2));
+        self.redraw();
+    }
+}
 
 //Start of Choropleth drawing
 
-function ready(error, countyDataSpec, mapCounties, mapStates) {
+var USMap = function(sel, countyDataDefs, data) {
 
-    if (error) {
-        console.log(error);
-        document.write("Error:", error);
-        return;
-    }
+    this.div = d3.select(sel);
+    this.svg = this.div.append("svg").attr("width", winSize.width).attr("height", winSize.height)
 
-    countyData = countyDataSpec.data;
-    var countyDataDef = countyDataSpec.dataDef;
+    countyData = data.data;
 
     // get feature names and Ids
-    countyData.map.features.forEach(function (feature, i) {
+    data.maps.county.features.forEach(function (feature, i) {
         featureIds.push(feature.id);
         countyNameById[feature.id] = feature.properties.name;
     });
@@ -85,14 +105,14 @@ function ready(error, countyDataSpec, mapCounties, mapStates) {
     // get values for timeslot
     getTimeslotValues();
 
-    d3.select("#chartTitle").text(countyDataDef.chart_name);
-    d3.select("#chartDescription").text(countyDataDef.chart_text);
+    d3.select("#chartTitle").text(countyDataDefs.chart_name);
+    d3.select("#chartDescription").text(countyDataDefs.chart_text);
 
     //Drawing Choropleth
-    initializeChart(mapCounties, mapStates); // draw map
+    initializeChart(data.maps.county, data.maps.state); // draw map
 
     drawControls();
-}// <-- End of ready
+}// <-- End of USMap
 
 function drawControls() {
     drawSlider();
@@ -149,10 +169,9 @@ function getFormattedDate(dateString) {
 }
 
 function getTimeslotValues() {
-    // get feature values for the timeSlot
-    var featuresData = countyData.data[0];
-    for (var i = 0; i < featuresData.length; i++) {
-        var timeSeries = featuresData[i];
+    // get feature values for each timeSlot
+    for (var i = 0; i < countyData.length; i++) {
+        var timeSeries = countyData[i];
         if (timeSeries.date == timeSlotDate) {
             for (var j = 0; j < featureIds.length; j++) {
                 countyValuesById[featureIds[j]] = parseFloat(timeSeries.values[j + 1]);
@@ -165,7 +184,7 @@ function getTimeslotValues() {
 // get data range from the data
 function getDateRange() {
     var dateRange = [];
-    var dataSets = countyData.data[0];
+    var dataSets = countyData[0];
     $.each(dataSets, function (index) {
         dateRange.push(dataSets[index].date);
     });
@@ -455,10 +474,9 @@ function reset() {
         .attr("transform", "translate(0,0) scale(1)");
 }
 
-function getColorScale(data) {
+function getColorScale(featuresData) {
     // get extent of data for all timeseries
     var domainExtent = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
-    var featuresData = data.data[0];
     var dataArray = [];
     var dataArrayIndex = 0;
     var total = 0;

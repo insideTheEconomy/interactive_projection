@@ -1,15 +1,15 @@
 {
-  "main": "USMap.html",
+  "main": "interactiveProjections.html",
   "name": "TestMapData",
-  "description": "Test Map Data",
+  "description": "FRED Data Display",
   "version": "0.1.0",
   "keywords": [ "monadnock", "node-webkit" ],
   "window": {
-    "title": "Map and Data Test",
+    "title": "Interactive Projection",
     "toolbar": true,
     "frame": true,
     "width": 1024,
-    "height": 768
+    "height": 900
   },
   "webkit": {
     "plugin": true,
