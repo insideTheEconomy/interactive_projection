@@ -33,10 +33,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="USMap.js" pinned="false" current="true" current-in-tab="true">
+      <file leaf-file-name="USMap.js" pinned="false" current="false" current-in-tab="false">
         <entry file="file://$PROJECT_DIR$/CHART/USMap.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.17336152" vertical-offset="4208" max-vertical-offset="8745">
+            <state vertical-scroll-proportion="-133.53847" vertical-offset="818" max-vertical-offset="8745">
               <caret line="286" column="0" selection-start-line="286" selection-start-column="0" selection-end-line="286" selection-end-column="0" />
               <folding />
             </state>
@@ -53,10 +53,10 @@
           </provider>
         </entry>
       </file>
-      <file leaf-file-name="charts.js" pinned="false" current="false" current-in-tab="false">
+      <file leaf-file-name="charts.js" pinned="false" current="true" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/CHART/charts.js">
           <provider selected="true" editor-type-id="text-editor">
-            <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
+            <state vertical-scroll-proportion="0.18036072" vertical-offset="0" max-vertical-offset="499">
               <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
               <folding>
                 <element signature="e#0#39#0" expanded="false" />
@@ -396,16 +396,6 @@
         </state>
       </provider>
     </entry>
-    <entry file="file://$PROJECT_DIR$/CHART/charts.js">
-      <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.0" vertical-offset="0" max-vertical-offset="405">
-          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
-          <folding>
-            <element signature="e#0#39#0" expanded="false" />
-          </folding>
-        </state>
-      </provider>
-    </entry>
     <entry file="file://$PROJECT_DIR$/package.json">
       <provider selected="true" editor-type-id="text-editor">
         <state vertical-scroll-proportion="-6.875" vertical-offset="0" max-vertical-offset="345">
@@ -432,9 +422,19 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/CHART/USMap.js">
       <provider selected="true" editor-type-id="text-editor">
-        <state vertical-scroll-proportion="0.17336152" vertical-offset="4208" max-vertical-offset="8745">
+        <state vertical-scroll-proportion="-133.53847" vertical-offset="818" max-vertical-offset="8745">
           <caret line="286" column="0" selection-start-line="286" selection-start-column="0" selection-end-line="286" selection-end-column="0" />
           <folding />
+        </state>
+      </provider>
+    </entry>
+    <entry file="file://$PROJECT_DIR$/CHART/charts.js">
+      <provider selected="true" editor-type-id="text-editor">
+        <state vertical-scroll-proportion="0.18036072" vertical-offset="0" max-vertical-offset="499">
+          <caret line="8" column="17" selection-start-line="8" selection-start-column="17" selection-end-line="8" selection-end-column="17" />
+          <folding>
+            <element signature="e#0#39#0" expanded="false" />
+          </folding>
         </state>
       </provider>
     </entry>
