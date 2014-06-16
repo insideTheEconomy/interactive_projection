@@ -15,7 +15,7 @@ ds.setup().then(
             function(d){
                 data = d;
                 console.log("done");
-               //setupCharts(def, data);
+               setupCharts(def, data);
             })
     }
 
