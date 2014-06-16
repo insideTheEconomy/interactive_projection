@@ -7,6 +7,7 @@ var Datasource = function( data_path ){
 
 
 	this.db = new sqlite3.Database(data_path, sqlite3.OPEN_READONLY);
+	this.db.on('trace', function(t){console.log(t)});
 	var defs = "chart_definitions.csv"
 	
 	this.def;
@@ -47,7 +48,7 @@ var Datasource = function( data_path ){
 		console.log("type ", type);
 		this.getAll(def).then(function( d ){
 				//dfd.resolve(self.format(d, type));	
-				console.log("ALL GOT ", d);
+				console.log("GOT ALL ");
 		 		if(type == 'usmap'){
 					dfd.resolve({"usmap":{maps:{state:d[0][0], county:d[0][1] }, data:d[1][0]  }});
 				}else if(type == 'worldmap'){
@@ -106,6 +107,7 @@ var Datasource = function( data_path ){
 		self.db.get("SELECT geometry from geo WHERE region_type = ?", [geo_type], 
 			function(e,r){
 				var rj = JSON.parse(r.geometry);
+				r=null;
 				dfd.resolve(rj);
 			}
 		)
@@ -115,16 +117,47 @@ var Datasource = function( data_path ){
 	this.getObservation = function( ser_hash ){
 		var dfd = when.defer();
 		var ret = [];
-		self.db.each("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
-			function(e,r){
-				var rj = JSON.parse(r.observation);
-				ret.push(rj);  
-			},
-			function(e,r){
-				console.log(r+" rows transmitted ");
-				dfd.resolve(ret);
-			}
-		)
+		self.db.all("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
+		
+		function(e,r){
+			console.log("error: ",e);
+			dfd.resolve(r);
+			r=null;
+		});
+		return dfd.promise;
+	}
+	
+	
+
+	
+	
+	
+	this.getObservationOld = function( ser_hash ){
+		var dfd = when.defer();
+		var ret = [];
+		self.db.serialize(function(){
+				self.db.each("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
+					function(e,r){
+						if(e){dfd.reject(e)
+							}else{
+								console.log("row");
+								var rj = JSON.parse(r.observation);
+								ret.push(rj);
+							}
+					
+					},
+					function(e,r){
+						if(e){dfd.reject(e)
+							}else{
+									console.log(r+" rows transmitted ");
+									dfd.resolve(ret);
+							}
+					
+					}
+				)
+			
+		})
+	
 		return dfd.promise;
 	}
 }
