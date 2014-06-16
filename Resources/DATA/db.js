@@ -44,8 +44,10 @@ var Datasource = function( data_path ){
 	this.get = function( def ){ 
 		var dfd = when.defer();
 		var type = def.chart_type;  //one of 'usmap','worldmap','line','scatter'
+		console.log("type ", type);
 		this.getAll(def).then(function( d ){
 				//dfd.resolve(self.format(d, type));	
+				console.log("ALL GOT ", d);
 		 		if(type == 'usmap'){
 					dfd.resolve({"usmap":{maps:{state:d[0][0], county:d[0][1] }, data:d[1][0]  }});
 				}else if(type == 'worldmap'){
@@ -65,6 +67,7 @@ var Datasource = function( data_path ){
 		var dfds = [];
 		
 		var type = def.chart_type;  //one of 'usmap','worldmap','line','scatter'
+		console.log("type ", type);
 		var res = [];
 		
 		switch (type){
@@ -112,9 +115,9 @@ var Datasource = function( data_path ){
 	this.getObservation = function( ser_hash ){
 		var dfd = when.defer();
 		var ret = [];
-		self.db.each("SELECT metadata from observations WHERE series_hash = ?", [ser_hash], 
+		self.db.each("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
 			function(e,r){
-				var rj = JSON.parse(r.metadata);
+				var rj = JSON.parse(r.observation);
 				ret.push(rj);  
 			},
 			function(e,r){
