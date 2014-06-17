@@ -188,8 +188,13 @@ function initializeChart(mapCounties, mapStates) {
     // TBD: check scaleFactor rationale
     var projection = d3.geo.albersUsa() // projection for drawing GIS shapes
         .scale(scaleFactor)
+<<<<<<< HEAD
 //        .translate( divRect.width/2, divRect.height/2); // center the map in the div
     pathMap = d3.geo.path().projection(projection); //A path function for drawing shapes using the above projection
+=======
+      //.translate( divRect.width/2, divRect.height/2); // center the map in the div
+    pathMap = new d3.geo.path().projection(projection); //A path function for drawing shapes using the above projection
+>>>>>>> FETCH_HEAD
 
     mapCountyFeatures = mapCounties.features;
     mapStateFeatures = mapStates.features;
@@ -201,7 +206,7 @@ function initializeChart(mapCounties, mapStates) {
     drawLegend();
 
     //then draw the shapes
-    drawChart();
+   drawChart();
 }
 
 function drawLegend() {

@@ -1,7 +1,9 @@
 /**
  * Created by scott on 6/12/14.
  */
-var ds = new Datasource("/Users/scott/Projects/projection.db");
+//path = "/Users/scott/Projects/projection.db"
+path = "/Volumes/Pylos/Projects/FED/projection.db";
+var ds = new Datasource(path);
 var defs;
 var datasource;
 ds.setup().then(
@@ -13,7 +15,7 @@ ds.setup().then(
             function(d){
                 data = d;
                 console.log("done");
-                setupCharts(def, data);
+               setupCharts(def, data);
             })
     }
 
