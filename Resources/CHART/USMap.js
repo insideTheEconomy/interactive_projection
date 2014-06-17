@@ -26,6 +26,7 @@ var unselectedCountyOpacity = 0.9;
 var stateFillOpacity = 0.3;
 var stateFillColor = "white"
 
+var chartDiv;
 var chartSvg;
 var stateOutlines;
 var mapRegions;
@@ -57,7 +58,7 @@ var dbDefs;
 
 var winSize = {
     width: 600,
-    height: 400
+    height: 300
 };
 
 
@@ -75,24 +76,12 @@ inner = {
     b: winSize.height - this.padding.bottom
 };
 
-sliderParams = {
-    min: 0.01,
-    max:0.1,
-    step: 0.001,
-    value: 0,//this.params.rate,
-    slide: function(e,ui){
-        //self.params.rate = ui.value;
-        $(ui.handle).text((ui.value*100).toFixed(2));
-        self.redraw();
-    }
-}
-
 //Start of Choropleth drawing
 
 var USMap = function(sel, countyDataDefs, data) {
 
-    this.div = d3.select(sel);
-    this.svg = this.div.append("svg").attr("width", winSize.width).attr("height", winSize.height)
+    chartDiv = d3.select(sel).attr("class","chart");
+    chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height)
 
     countyData = data.data;
 
@@ -122,7 +111,8 @@ function drawControls() {
 
 function drawSlider() {
     var dateRange = getDateRange();
-    $("#slider").slider({
+    chartDiv.append("div").attr("class","slider");
+    $(".slider").slider({
         min: 0,
         max: dateRange.length - 1,
         value: dateRange.indexOf(timeSlotDate), // start in center
@@ -184,7 +174,7 @@ function getTimeslotValues() {
 // get data range from the data
 function getDateRange() {
     var dateRange = [];
-    var dataSets = countyData[0];
+    var dataSets = countyData;
     $.each(dataSets, function (index) {
         dateRange.push(dataSets[index].date);
     });
@@ -193,12 +183,12 @@ function getDateRange() {
 
 function initializeChart(mapCounties, mapStates) {
     // get transformed, as-drawn coordinates of the div
-    var divRect = d3.select("#chart").node().getBoundingClientRect();
+    var divRect = chartDiv.node().getBoundingClientRect();
 
     // TBD: check scaleFactor rationale
     var projection = d3.geo.albersUsa() // projection for drawing GIS shapes
         .scale(scaleFactor)
-        .translate( divRect.width/2, divRect.height/2); // center the map in the div
+//        .translate( divRect.width/2, divRect.height/2); // center the map in the div
     pathMap = d3.geo.path().projection(projection); //A path function for drawing shapes using the above projection
 
     mapCountyFeatures = mapCounties.features;
@@ -206,9 +196,6 @@ function initializeChart(mapCounties, mapStates) {
 
     // get colorScale scale
     colorScale = getColorScale(countyData);
-
-    //select the chart container and append an svg that resizes to fit its container
-    chartSvg = d3.select("#chart").append("svg");
 
     //Adding legend for our Choropleth
     drawLegend();
@@ -433,8 +420,8 @@ function onClickState(feature) {
     $("#resetBtn").button("option", "disabled", false);
 
     // zoom to the state
-    var chartWidth = $("#chart").width();
-    var chartHeight = $("#chart").height();
+    var chartWidth = $(".chart").width();
+    var chartHeight = $(".chart").height();
     var bounds = pathMap.bounds(feature),
         dx = bounds[1][0] - bounds[0][0],
         dy = bounds[1][1] - bounds[0][1],
