@@ -49,8 +49,6 @@ var timeSlotDate = "2000-04-01";
 
 var path = d3.geo.path()
 
-var dataCategory = "Unemployment Rate";
-
 var countyClicked = null;
 var countyFeature = null;
 
@@ -78,7 +76,7 @@ inner = {
 
 //Start of Choropleth drawing
 
-var USMap = function(sel, countyDataDefs, data) {
+var USMap = function(sel, dataDefs, data) {
 
     chartDiv = d3.select(sel).attr("class","chart");
     chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height)
@@ -94,8 +92,8 @@ var USMap = function(sel, countyDataDefs, data) {
     // get values for timeslot
     getTimeslotValues();
 
-    d3.select("#chartTitle").text(countyDataDefs.chart_name);
-    d3.select("#chartDescription").text(countyDataDefs.chart_text);
+    d3.select("#chartTitle").text(dataDefs.chart_name);
+    d3.select("#chartDescription").text(dataDefs.chart_text);
 
     //Drawing Choropleth
     initializeChart(data.maps.county, data.maps.state); // draw map
