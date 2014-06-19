@@ -3,3 +3,7 @@ interactive_projection.nResources/.idea
 Resources/.idea/workspace.xml
 
 *.nw
+
+*.csv#
+
+*.nw
