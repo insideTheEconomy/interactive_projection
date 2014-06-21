@@ -76,15 +76,15 @@ inner = {
 
 //Start of Choropleth drawing
 
-var USMap = function(sel, dataDefs, data) {
+var USMap = function(sel, dataDefs, dataUSMap) {
 
     chartDiv = d3.select(sel).attr("class","chart");
     chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height)
 
-    countyData = data.data;
+    countyData = dataUSMap.data;
 
     // get feature names and Ids
-    data.maps.county.features.forEach(function (feature, i) {
+    dataUSMap.maps.county.features.forEach(function (feature, i) {
         featureIds.push(feature.id);
         countyNameById[feature.id] = feature.properties.name;
     });
@@ -96,7 +96,7 @@ var USMap = function(sel, dataDefs, data) {
     d3.select("#chartDescription").text(dataDefs.chart_text);
 
     //Drawing Choropleth
-    initializeChart(data.maps.county, data.maps.state); // draw map
+    initializeChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
 
     drawControls();
 }// <-- End of USMap

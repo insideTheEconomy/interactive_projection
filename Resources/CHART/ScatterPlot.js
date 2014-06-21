@@ -3,7 +3,7 @@
  */
 var dataDir = "DATA";
 
-var defaultSize = 10;
+var defaultSize = "10";
 
 var h, halfh, halfw, margin, totalh, totalw, w;
 
@@ -39,21 +39,25 @@ totalw = halfw * 2;
 //    });
 //});
 
-
-
+var chartClassName = "chart"
 var chartDiv;
 var chartSvg;
+var chart;
 
-var timeSlotDate = "2000-04-01";
+var timeSlotDate;
 
-var featureIds = [];
-var stateData;
-var stateXValuesById = {};
-var stateYValuesById = {};
-var stateZValuesById = {};
-var stateNameById = {};
+var stateIds = [];
+var statesData = {};
+var statesGeoData = {};
+var stateNamesById = {};
+var statesGeoFeatures; // state map data
+var dateRange;
 
-var dbDefs;
+var statesDataDefs;
+
+var xDataIndex = 0;
+var yDataIndex = 1;
+var sizeDataIndex = 2;
 
 var winSize = {
     width: 600,
@@ -77,39 +81,41 @@ inner = {
 
 //Start of Choropleth drawing
 
-var ScatterPlot = function(sel, dataDefs, data) {
-    dbDefs = dataDefs;
+var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg ) {
+    statesDataDefs = dataDefsArg;
+    statesData = statesDataArg;
+    statesGeoData = statesGeoDataArg;
 
-    chartDiv = d3.select(sel).attr("class","chart");
-    chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height)
-
-    stateData = data;
-
+    statesGeoFeatures = statesGeoData.features;
     // get feature names and Ids
-    data.x.forEach(function (feature, i) {
-        featureIds.push(feature.id);
-        stateNameById[feature.id] = feature.properties.name;
+    statesGeoFeatures.forEach(function (feature, i) {
+        stateIds.push(feature.id);
+        stateNamesById[feature.id] = feature.properties.name;
     });
 
-    // get values for timeslot
-    getTimeslotValues();
+    chartDiv = d3.select(sel).attr("class",chartClassName);
+    //chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height);
 
-    d3.select("#chartTitle").text(dbDefs.chart_name);
-    d3.select("#chartDescription").text(dbDefs.chart_text);
+    dateRange = getDateRange();
+    timeSlotDate = dateRange[0];
+
+    // get plot data for this time slot
+    scatterPlotData = getPlotData();
+
+    d3.select("#chartTitle").text(statesDataDefs.chart_name);
+    d3.select("#chartDescription").text(statesDataDefs.chart_text);
 
     initializeChart(); // draw map
 
     drawControls();
-}// <-- End of USMap
+}// <-- End of ScatterPlot
 
 function drawControls() {
     drawSlider();
-    //drawResetButton();
 }
 
 function drawSlider() {
-    var dateRange = getDateRange();
-    chartDiv.append("div").attr("class","slider");
+    chartDiv.append("div").attr("class", "slider");
     $(".slider").slider({
         min: 0,
         max: dateRange.length - 1,
@@ -124,14 +130,9 @@ function drawSlider() {
 //            setTimeout(delay, 5);
         },
         stop: function (event, ui) {
-            getTimeslotValues();
-//            colorScale = getColorScale(stateData);
+            scatterPlotData = getPlotData();
+//            colorScale = getColorScale(statesData);
             updateChart();
-
-            // if county is clicked, then update tooltip
-            if (countyClicked) {
-                updateCountyDataLabel();
-            }
         }
     });
 
@@ -153,34 +154,23 @@ function getFormattedDate(dateString) {
     var date = new Date(dateString);
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[date.getMonth()] + " " + date.getFullYear();
-    ;
 }
 
-function getTimeslotValues() {
-    // get feature values for each timeSlot
-    for (var i = 0; i < stateData.length; i++) {
-        var xTimeSeries = stateData[i].x.values;
-        var yTimeSeries = stateData[i].y.values;
-        var zTimeSeries = stateData[i].size.values;
-        if (timeSeries.date == timeSlotDate) {
-            for (var j = 0; j < featureIds.length; j++) {
-                stateXValuesById[featureIds[j]] = parseFloat(xTimeSeries.values[j + 1]);
-                stateYValuesById[featureIds[j]] = parseFloat(yTimeSeries.values[j + 1]);
-                stateZValuesById[featureIds[j]] = parseFloat(zTimeSeries.values[j + 1]);
-            }
-            break;
-        }
-    }
-}
 
-// get data range from the data
+// get data union of all the dates from the data
 function getDateRange() {
     var dateRange = [];
-    var dataSets = countyData;
+    var dataSets = [statesData.x, statesData.y, statesData.size];
     $.each(dataSets, function (index) {
-        dateRange.push(dataSets[index].date);
+        if (typeof dataSets[index] !== "undefined") {
+            $.each(dataSets[index], function (slot) {
+                var date = dataSets[index][slot].date;
+                if ($.inArray(date, dateRange) == -1) // date not in dateRange already?
+                    dateRange.push(date);
+            });
+        }
     });
-    return dateRange.reverse();
+    return dateRange.sort().reverse();
 }
 
 function initializeChart() {
@@ -188,7 +178,7 @@ function initializeChart() {
     var divRect = chartDiv.node().getBoundingClientRect();
 
     // get colorScale scale
-    colorScale = getColorScale(stateData);
+    colorScale = getColorScale(statesData);
 
     //Adding legend for our Choropleth
     drawLegend();
@@ -198,7 +188,7 @@ function initializeChart() {
 }
 
 function drawLegend() {
-    if( !colorScale )
+    if (!colorScale)
         return; // no legend
 
     // get the threshold value for each of the colors in the color scale
@@ -256,95 +246,36 @@ function drawLegend() {
             return legendLabels[i];
         });
 
-};
-
-function drawChart() {
-    var chart = nv.models.scatterChart()
-        .showDistX(true)    //showDist, when true, will display those little distribution lines on the axis.
-        .showDistY(true)
-        .transitionDuration(350)
-        .color(d3.scale.category10().range());
-
-    //Configure how the tooltip looks.
-    chart.tooltipContent(function (key) {
-        return '<h3>' + key + '</h3>';
-    });
-
-    //Axis settings
-    chart.xAxis.tickFormat(d3.format('.02f'));
-    chart.yAxis.tickFormat(d3.format('.02f'));
-
-//    //We want to show shapes other than circles.
-//    chart.scatter.onlyCircles(false);
-
-    d3.select(chartSvg)
-        .datum(stateData)
-        .call(chart);
-
-    nv.utils.windowResize(chart.update);
-
-//    mychart = scatterplot().xvar(0).yvar(1).xlab(dbDefs).ylab(dbDefs).height(h).width(w).margin(margin);
-//    chartSvg.datum({
-//        data: data
-//    }).call(mychart);
-//
-//    // size the chart to fit the container
-//    chartSvg.attr("width", "100%")
-//        .attr("height", "100%");
-//
-//    // get actual height and width and resize to fit container
-//    var width = chartSvg.style("width").replace("px", "");
-//    var height = chartSvg.style("height").replace("px", "");
-//    chartSvg.attr("viewBox", "0 0 " + width + " " + height)
-//        .attr("preserveAspectRatio", "xMaxYMax")
-//        .attr("margin", "0 auto");
 }
 
-//function updateChart() {
-//    var mychart;
-//    mychart = scatterplot().xvar(0).yvar(1).xlab("X1").ylab("X2").height(h).width(w).margin(margin);
-//    d3.select("div#plot").datum({
-//        data: stateData
-//    }).call(mychart);
-//    return mychart.pointsSelect().on("mouseover", function(d) {
-//        return d3.select(this).attr("r", mychart.pointsize() * 3);
-//    }).on("mouseout", function(d) {
-//        return d3.select(this).attr("r", mychart.pointsize());
-//    });
-//
-////    // filled in mapRegions
-////    mapRegions.data(mapCountyFeatures).selectAll("path.county")
-////        .style({
-////            "fill": function (d) {
-////                //apply fill from colorScale, or nanColor if NAN
-////                var val = countyValuesById[d.id];
-////                if (!isNaN(val)) {
-////                    return colorScale(val)
-////                } else {
-////                    return(nanColor);
-////                }
-////            },
-////            "opacity": function (d) {
-////                if (d === countyClicked) {
-////                    return selectedCountyOpacity;
-////                }
-////                else {
-////                    return unselectedCountyOpacity
-////                }
-////            }
-////        });
-////
-////    // state outlines on top
-////    mapRegions.data(mapStateFeatures).selectAll("path.state")
-////        .attr("d", pathMap);
-//}
-//
-//function onClickCounty(d) {
+function drawChart() {
+    var xLab = statesData.x[0].title;
+    var yLab = statesData.y[0].title;
+    chart = scatterplot().xvar(xDataIndex).yvar(yDataIndex).pointsize(3).xlab(xLab).ylab(yLab).height(h).width(w).margin(margin);
+
+    d3.select("."+chartClassName)
+        .datum(scatterPlotData)
+        .call(chart);
+
+    chart.pointsSelect().on("mouseover", function(d) {
+        return d3.select(this).attr("r", chart.pointsize() * 3);
+    }).on("mouseout", function(d) {
+        return d3.select(this).attr("r", chart.pointsize());
+    });
+}
+
+function updateChart() {
+    d3.select("."+chartClassName)
+        .datum(scatterPlotData)
+        .call(chart);
+}
+
+//function onClickBubble(d) {
 //    countyClicked = d;
 //    countyFeature = this;
 //    updateCountyDataLabel();
 //}
-//
+
 //function updateCountyDataLabel() {
 //    // add a label group if there isn't one yet
 //    if (!countyDataLabel) {
@@ -412,63 +343,63 @@ function displayValue() {
         return +val;
 }
 
-function onClickState(feature) {
-    if (activeState) {
-        reset();
-        if (this == null)
-            return;
-    }
-    activeState = d3.select(this).classed("active", true)
-        .style("fill", "none"); // make counties clickable
-
-    // enable the reset button
-    $("#resetBtn").button("option", "disabled", false);
-
-    // zoom to the state
-    var chartWidth = $(".chart").width();
-    var chartHeight = $(".chart").height();
-    var bounds = pathMap.bounds(feature),
-        dx = bounds[1][0] - bounds[0][0],
-        dy = bounds[1][1] - bounds[0][1],
-        x = (bounds[0][0] + bounds[1][0]) / 2,
-        y = (bounds[0][1] + bounds[1][1]) / 2;
-    scale = .9 / Math.max(dx / chartWidth, dy / chartHeight);
-    translate = [chartWidth / 2 - scale * x, chartHeight / 2 - scale * y];
-
-    mapRegions.transition()
-        .duration(500)
-        .style("stroke-width", 1.5 / scale + "px")
-        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-}
-
-function reset() {
-    // unclick county (if there was one)
-    countyClicked = null;
-    countyFeature = null;
-
-    // hide the tooltip
-    d3.select("#countyDataLabelName").attr("visibility", "hidden");
-    d3.select("#countyDataLabelValue").attr("visibility", "hidden");
-    d3.select("rect.countyDataLabel").attr("visibility", "hidden");
-
-    //
-    activeState.classed("active", false)
-        .style("fill", stateFillColor);
-    activeState = null;
-
-    // disable the reset btn
-    $("#resetBtn").button("option", "disabled", true)
-
-    // unzoom/unpan
-    mapRegions.transition()
-        .duration(500)
-        .style("stroke-width", "1.5px")
-        .attr("transform", "translate(0,0) scale(1)");
-}
+//function onClickState(feature) {
+//    if (activeState) {
+//        reset();
+//        if (this == null)
+//            return;
+//    }
+//    activeState = d3.select(this).classed("active", true)
+//        .style("fill", "none"); // make counties clickable
+//
+//    // enable the reset button
+//    $("#resetBtn").button("option", "disabled", false);
+//
+//    // zoom to the state
+//    var chartWidth = $(".chart").width();
+//    var chartHeight = $(".chart").height();
+//    var bounds = pathMap.bounds(feature),
+//        dx = bounds[1][0] - bounds[0][0],
+//        dy = bounds[1][1] - bounds[0][1],
+//        x = (bounds[0][0] + bounds[1][0]) / 2,
+//        y = (bounds[0][1] + bounds[1][1]) / 2;
+//    scale = .9 / Math.max(dx / chartWidth, dy / chartHeight);
+//    translate = [chartWidth / 2 - scale * x, chartHeight / 2 - scale * y];
+//
+//    mapRegions.transition()
+//        .duration(500)
+//        .style("stroke-width", 1.5 / scale + "px")
+//        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
+//}
+//
+//function reset() {
+//    // unclick county (if there was one)
+//    countyClicked = null;
+//    countyFeature = null;
+//
+//    // hide the tooltip
+//    d3.select("#countyDataLabelName").attr("visibility", "hidden");
+//    d3.select("#countyDataLabelValue").attr("visibility", "hidden");
+//    d3.select("rect.countyDataLabel").attr("visibility", "hidden");
+//
+//    //
+//    activeState.classed("active", false)
+//        .style("fill", stateFillColor);
+//    activeState = null;
+//
+//    // disable the reset btn
+//    $("#resetBtn").button("option", "disabled", true)
+//
+//    // unzoom/unpan
+//    mapRegions.transition()
+//        .duration(500)
+//        .style("stroke-width", "1.5px")
+//        .attr("transform", "translate(0,0) scale(1)");
+//}
 
 function getColorScale(featuresData) {
-    if( typeof featuresData.size === "undefined" )
-      return null; // no color scale if no size data
+    if (typeof featuresData.size === "undefined")
+        return null; // no color scale if no size data
 
     // get extent of size data
     var sizeData = featuresData.size;
@@ -517,25 +448,25 @@ function getColorDomainExtent(domainExtent) {
     return niceDomainExtent;
 }
 
-// Database operations
-function getDataDeferred(dataName, callback) {
-    //console.log("getDataDeferred", dataName, callback);
-    initDB(function () {
-        console.log(dataName, "inited.");
-        ds.getByName(dataName).then(function (d) {
-            var data = d;
-            var def;
-            for (var i = 1; dbDefs["Category_" + i]; i++) {
-                if (dbDefs["Category_" + i][0].chart_name == dataName) {
-                    def = dbDefs["Category_" + i][0];
-                    break;
-                }
-            }
-            //$("#json").text(JSON.stringify(Object.keys(d),null,2));
-            callback(null, {"dataDef": def, "data": data});
-        });
-    });
-}
+//// Database operations
+//function getDataDeferred(dataName, callback) {
+//    //console.log("getDataDeferred", dataName, callback);
+//    initDB(function () {
+//        console.log(dataName, "inited.");
+//        ds.getByName(dataName).then(function (d) {
+//            var data = d;
+//            var def;
+//            for (var i = 1; statesDataDefs["Category_" + i]; i++) {
+//                if (statesDataDefs["Category_" + i][0].chart_name == dataName) {
+//                    def = statesDataDefs["Category_" + i][0];
+//                    break;
+//                }
+//            }
+//            //$("#json").text(JSON.stringify(Object.keys(d),null,2));
+//            callback(null, {"dataDef": def, "data": data});
+//        });
+//    });
+//}
 
 //var isInited = false;
 //var ds;
@@ -549,7 +480,7 @@ function getDataDeferred(dataName, callback) {
 //        ds = new datasource(dataDir);	//create an instance of the datasource
 //        ds.setup().then(		//call setup() and wait for the defered
 //            function (d) {
-//                dbDefs = d;		//to get the definitions, which is an object whose keys are categories
+//                statesDataDefs = d;		//to get the definitions, which is an object whose keys are categories
 //                isInited = true;
 //                callback();
 //            }
@@ -557,24 +488,48 @@ function getDataDeferred(dataName, callback) {
 //    }
 //}
 
-function getScatterData(data) {
-    var scatterData = [];
+function getPlotData() {
+    var plotData = { "data": [] };
 
-    scatterData.push({
-        key: 'Group',
-        values: []
-    });
+    var xData;
+    var yData;
+    var zData;
+    for (d = 0; d < statesData.x.length; d++)
+        if (statesData.x[d].date === timeSlotDate) {
+            xData = statesData.x[d].values;
+            break;
+        }
 
-    for (i = 0; i < data.x.length; i++) {
-        if( typeof data.size === "undefined" )
-            scatterData.values.push({x: data.x[i], y: data.y[i], z: defaultSize});
-        else
-            scatterData.values.push({x: data.x[i], y: data.y[i], z: data.size[i]});
+    for (d = 0; !yData && d < statesData.y.length; d++)
+        if (statesData.y[d].date === timeSlotDate) {
+            yData = statesData.y[d].values;
+            break;
+        }
+
+    if (typeof statesData.size !== "undefined") // cannot depend on size being defined
+        for (d = 0; !zData && d < statesData.size.length; d++)
+            if (statesData.size[d].date === timeSlotDate) {
+                zData = statesData.size[d].values;
+                break;
+            }
+
+    for (i = 0; i < stateIds.length; i++) {
+        var value = [];
+        value[xDataIndex] = getDatum(xData, i, "NA");
+        value[yDataIndex] = getDatum(yData, i, "NA");
+        value[sizeDataIndex] = getDatum(zData, i, defaultSize);
+        plotData.data.push(value);
     }
 
-    return scatterData;
+    return plotData;
 }
 
+function getDatum(data, index, defaultVal) {
+    if (!data || (typeof data[index] === "undefined"))
+        return parseFloat(defaultVal);
+    else
+        return parseFloat(data[index]);
+}
 
 function log10(x) {
     return Math.log(x) * Math.LOG10E;
