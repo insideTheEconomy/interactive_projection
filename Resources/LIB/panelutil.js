@@ -2,7 +2,7 @@
 // http://kbroman.github.io/qtlcharts/
 // see https://github.com/kbroman/qtlcharts/blob/master/inst/panels/panelutil.js
 
-var chrscales, expand2vector, forceAsArray, formatAxis, getLeftRight, matrixExtent, matrixMax, matrixMaxAbs, matrixMin, maxdiff, median, missing2null, pullVarAsArray, reorgLodData, selectGroupColors, unique;
+var chrscales, expand2vector, forceAsArray, formatAxis, getLeftRight, matrixExtent, matrixMax, matrixMaxAbs, matrixMin, maxdiff, median, missing2null, missing2default, pullVarAsArray, reorgLodData, selectGroupColors, unique;
 
 formatAxis = function(d) {
     var ndig;
@@ -328,6 +328,19 @@ missing2null = function(vec, missingvalues) {
     return vec.map(function(value) {
         if (missingvalues.indexOf(value) > -1) {
             return null;
+        } else {
+            return value;
+        }
+    });
+};
+
+missing2default = function(vec, missingvalues, missingDefault) {
+    if (missingvalues == null) {
+        missingvalues = ['NA', ''];
+    }
+    return vec.map(function(value) {
+        if (missingvalues.indexOf(value) > -1) {
+            return missinfDefault;
         } else {
             return value;
         }

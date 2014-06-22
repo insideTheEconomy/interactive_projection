@@ -57,7 +57,10 @@ var statesDataDefs;
 
 var xDataIndex = 0;
 var yDataIndex = 1;
-var sizeDataIndex = 2;
+var sizeDataIndex = 2;  //TBD!!!
+
+var minPointsize = 3;
+var maxPointsize = 15;
 
 var winSize = {
     width: 600,
@@ -81,7 +84,7 @@ inner = {
 
 //Start of Choropleth drawing
 
-var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg ) {
+var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     statesDataDefs = dataDefsArg;
     statesData = statesDataArg;
     statesGeoData = statesGeoDataArg;
@@ -93,7 +96,7 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg ) 
         stateNamesById[feature.id] = feature.properties.name;
     });
 
-    chartDiv = d3.select(sel).attr("class",chartClassName);
+    chartDiv = d3.select(sel).attr("class", chartClassName);
     //chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height);
 
     dateRange = getDateRange();
@@ -251,21 +254,22 @@ function drawLegend() {
 function drawChart() {
     var xLab = statesData.x[0].title;
     var yLab = statesData.y[0].title;
-    chart = scatterplot().xvar(xDataIndex).yvar(yDataIndex).pointsize(3).xlab(xLab).ylab(yLab).height(h).width(w).margin(margin);
+    var sizeLab = "TBD";
+    chart = scatterplot().xvar(xDataIndex).yvar(yDataIndex).sizevar(sizeDataIndex).xlab(xLab).ylab(yLab).sizelab(sizeLab).sizelim([minPointsize, maxPointsize]).height(h).width(w).margin(margin);
 
-    d3.select("."+chartClassName)
+    d3.select("." + chartClassName)
         .datum(scatterPlotData)
         .call(chart);
 
-    chart.pointsSelect().on("mouseover", function(d) {
+    chart.pointsSelect().on("mouseover", function (d) {
         return d3.select(this).attr("r", chart.pointsize() * 3);
-    }).on("mouseout", function(d) {
+    }).on("mouseout", function (d) {
         return d3.select(this).attr("r", chart.pointsize());
     });
 }
 
 function updateChart() {
-    d3.select("."+chartClassName)
+    d3.select("." + chartClassName)
         .datum(scatterPlotData)
         .call(chart);
 }
@@ -506,14 +510,18 @@ function getPlotData() {
             break;
         }
 
-    if (typeof statesData.size !== "undefined") // cannot depend on size being defined
+    if (typeof statesData.size !== "undefined") { // cannot depend on size being defined
         for (d = 0; !zData && d < statesData.size.length; d++)
             if (statesData.size[d].date === timeSlotDate) {
                 zData = statesData.size[d].values;
                 break;
             }
+    } else {
+        for (d = 0; !zData && d < statesData.x.length; d++)
+            zData = minPointsize * (d%4);  // TBD!!!
+    }
 
-    for (i = 0; i < stateIds.length; i++) {
+    for (i = 1; i <= stateIds.length; i++) {
         var value = [];
         value[xDataIndex] = getDatum(xData, i, "NA");
         value[yDataIndex] = getDatum(yData, i, "NA");
