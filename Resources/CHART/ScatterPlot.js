@@ -3,12 +3,12 @@
  */
 var dataDir = "DATA";
 
-var defaultSize = "10";
+var defaultSize = 4;
 
 var h, halfh, halfw, margin, totalh, totalw, w;
 
-h = 300;
-w = 400;
+h = 600;
+w = 800;
 
 margin = {
     left: 60,
@@ -103,7 +103,7 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     timeSlotDate = dateRange[0];
 
     // get plot data for this time slot
-    scatterPlotData = getPlotData();
+    scatterPlotData = initScatterPlotData();
 
     d3.select("#chartTitle").text(statesDataDefs.chart_name);
     d3.select("#chartDescription").text(statesDataDefs.chart_text);
@@ -133,7 +133,6 @@ function drawSlider() {
 //            setTimeout(delay, 5);
         },
         stop: function (event, ui) {
-            scatterPlotData = getPlotData();
 //            colorScale = getColorScale(statesData);
             updateChart();
         }
@@ -173,7 +172,7 @@ function getDateRange() {
             });
         }
     });
-    return dateRange.sort().reverse();
+    return dateRange.sort();
 }
 
 function initializeChart() {
@@ -188,6 +187,13 @@ function initializeChart() {
 
     //then draw the shapes
     drawChart();
+
+    // set up rollovers
+    chart.pointsSelect().on("mouseover", function (d) {
+        return d3.select(this).attr("r", chart.pointsize() * 3);
+    }).on("mouseout", function (d) {
+        return d3.select(this).attr("r", chart.pointsize());
+    });
 }
 
 function drawLegend() {
@@ -254,24 +260,33 @@ function drawLegend() {
 function drawChart() {
     var xLab = statesData.x[0].title;
     var yLab = statesData.y[0].title;
+    var xLim = getLim( statesData.x );
+    var yLim = getLim( statesData.y );
+    var NA = getNA();
     var sizeLab = "TBD";
-    chart = scatterplot().xvar(xDataIndex).yvar(yDataIndex).sizevar(sizeDataIndex).xlab(xLab).ylab(yLab).sizelab(sizeLab).sizelim([minPointsize, maxPointsize]).height(h).width(w).margin(margin);
+
+    initScatterPlotData();
+
+    chart = scatterplot()
+        .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[0])
+        .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[1]).rotate_ylab(true)
+        .sizevar(sizeDataIndex).sizelab(sizeLab).sizelim([minPointsize, maxPointsize])
+        .height(h).width(w).margin(margin);
 
     d3.select("." + chartClassName)
         .datum(scatterPlotData)
         .call(chart);
 
-    chart.pointsSelect().on("mouseover", function (d) {
-        return d3.select(this).attr("r", chart.pointsize() * 3);
-    }).on("mouseout", function (d) {
-        return d3.select(this).attr("r", chart.pointsize());
-    });
+    d3.select("." + chartClassName)
+        //.datum(scatterPlotData)
+        .call(chart.updatePoints);
 }
 
 function updateChart() {
+    updateScatterPlotData();
     d3.select("." + chartClassName)
-        .datum(scatterPlotData)
-        .call(chart);
+        //.datum(scatterPlotData)
+        .call(chart.updatePoints);
 }
 
 //function onClickBubble(d) {
@@ -492,51 +507,122 @@ function getColorDomainExtent(domainExtent) {
 //    }
 //}
 
-function getPlotData() {
-    var plotData = { "data": [] };
+function initScatterPlotData() {
+    scatterPlotData = { "data": [] };
+    updateScatterPlotData();
+}
 
-    var xData;
-    var yData;
-    var zData;
-    for (d = 0; d < statesData.x.length; d++)
-        if (statesData.x[d].date === timeSlotDate) {
-            xData = statesData.x[d].values;
-            break;
-        }
-
-    for (d = 0; !yData && d < statesData.y.length; d++)
-        if (statesData.y[d].date === timeSlotDate) {
-            yData = statesData.y[d].values;
-            break;
-        }
-
-    if (typeof statesData.size !== "undefined") { // cannot depend on size being defined
-        for (d = 0; !zData && d < statesData.size.length; d++)
-            if (statesData.size[d].date === timeSlotDate) {
-                zData = statesData.size[d].values;
-                break;
-            }
-    } else {
-        for (d = 0; !zData && d < statesData.x.length; d++)
-            zData = minPointsize * (d%4);  // TBD!!!
-    }
-
-    for (i = 1; i <= stateIds.length; i++) {
+function updateScatterPlotData(){
+    var xData = loadData(statesData.x );
+    var yData = loadData(statesData.y );
+    var zData = loadData(statesData.size );
+    var data = [];
+    for ( i in stateIds ) {
         var value = [];
-        value[xDataIndex] = getDatum(xData, i, "NA");
-        value[yDataIndex] = getDatum(yData, i, "NA");
-        value[sizeDataIndex] = getDatum(zData, i, defaultSize);
-        plotData.data.push(value);
+        var idx = stateIds[i];
+        value[xDataIndex] = getDatum(xData, idx, "NA");
+        value[yDataIndex] = getDatum(yData, idx, "NA");
+        value[sizeDataIndex] = getDatum(zData, idx, defaultSize);
+        data.push(value);
     }
+    scatterPlotData.data = data;
+}
 
-    return plotData;
+function loadData( dataSet ){
+    if (typeof dataSet !== "undefined")
+        for ( i in dataSet ) {
+            if (dataSet[i].date === timeSlotDate) {
+                return dataSet[i].values;
+            }
+        }
+    else
+        return null;
 }
 
 function getDatum(data, index, defaultVal) {
     if (!data || (typeof data[index] === "undefined"))
-        return parseFloat(defaultVal);
-    else
-        return parseFloat(data[index]);
+        return defaultVal;
+    else {
+        var value = parseFloat(data[index]);
+        return value;
+    }
+}
+
+function getLim( dataSet ){
+    var lim = [Number.MAX_VALUE, Number.MIN_VALUE];
+    for( i in dataSet ) {
+        var data = dataSet[i].values;
+        // look for min and max
+        for (j in data) {
+            var value = parseFloat(data[j]);
+            if (value < lim[0]) {
+                lim[0] = value;
+            }
+            if (value > lim[1]) {
+                lim[1] = value;
+            }
+        }
+    }
+    return lim;
+}
+
+function getNA() {
+    var xIdx = 0;
+    var yIdx = 1;
+    var dataSets = [statesData.x, statesData.y];
+    var NA = [
+        {
+            handle: false,
+            force: false,
+            width: 15,
+            gap: 10
+        },
+        {
+            handle: false,
+            force: false,
+            width: 15,
+            gap: 10
+        }
+    ];
+    // check if any x dates are missing from y
+    NA[yIdx].handle = isMissingDates(dataSets[xIdx], dataSets[yIdx]);
+    // check if any y dates are missing from x
+    NA[xIdx].handle = isMissingDates(dataSets[yIdx], dataSets[xIdx]);
+
+    // check if any values missing for particular dates
+    for (idx in [0, 1]) {
+        if (!NA[idx].handle) {
+            var dataset = dataSets[idx];
+            for (i in dataset) {
+                for (j in dataset.values) {
+                    if (dataset.values[j] === "NA") {
+                        NA[idx].handle = true;
+                        break;
+                    }
+                }
+                if (NA[idx].handle)
+                    break;
+            }
+        }
+    }
+    return NA;
+}
+
+function isMissingDates( standard, test ){
+    for( i in standard ){
+        var date = standard[i].date;
+        var missing = true;
+        for( j in test ) {
+            if (test[j].date === date) {
+                missing = false;
+                break;
+            }
+        }
+        if( missing ) {
+            return true;
+        }
+    }
+    return false;
 }
 
 function log10(x) {
