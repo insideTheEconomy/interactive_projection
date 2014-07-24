@@ -7,7 +7,15 @@
 var scatterplot;
 
 scatterplot = function () {
-    var axispos, chart, dataByInd, height, margin, nxticks, nyticks, pointcolor, pointsSelect, pointstroke, rectcolor, rotate_ylab, title, titlepos, width, xNA, xlab, xlim, xscale, xticks, xvar, yNA, ylab, ylim, yscale, yticks, yvar, sizeNA, sizelab, sizelim, sizescale, sizevar;
+    var axispos, chart,
+        dataByInd, group, height, indID, indtip, margin, minPointsize,
+        na_value, ngroup, nxticks, nyticks,
+        pointcolor, pointsSelect, pointstroke, rectcolor,
+        rotate_ylab, title, titlepos, width,
+        x, xNA, xlab, xlim, xscale, xticks, xvar,
+        y, yNA, ylab, ylim, yscale, yticks, yvar,
+        data, size, sizelab, sizelim, sizevar,
+        svg;
     width = 800;
     height = 500;
     margin = {
@@ -53,71 +61,17 @@ scatterplot = function () {
     rotate_ylab = null;
     xscale = d3.scale.linear();
     yscale = d3.scale.linear();
-    sizescale = d3.scale.linear();
     xvar = 0;
     yvar = 1;
+    sizevar = 2;
     pointsSelect = null;
     dataByInd = true;
     chart = function (selection) {
-        return selection.each(function (data) {
-            var g, gEnter, group, i, indID, indtip, na_value, ngroup, panelheight, paneloffset, panelwidth, points, svg, titlegrp, x, xaxis, xrange, xs, y, yaxis, yrange, ys, size, sizerange, _i, _ref, _ref1, _ref2, _results;
-            if (dataByInd) {
-                x = data.data.map(function (d) {
-                    return d[xvar];
-                });
-                y = data.data.map(function (d) {
-                    return d[yvar];
-                });
-                size = data.data.map(function (d) {
-                    return d[sizevar];
-                });
-            } else {
-                x = data.data[xvar];
-                y = data.data[yvar];
-                size = data.data[sizevar];
-            }
-            x = missing2null(x, ["NA", ""]);
-            y = missing2null(y, ["NA", ""]);
-            size = missing2default(size, ["NA", ""], minPointsize);
-            indID = (_ref = data != null ? data.indID : void 0) != null ? _ref : null;
-            indID = indID != null ? indID : (function () {
-                _results = [];
-                for (var _i = 1, _ref1 = x.length; 1 <= _ref1 ? _i <= _ref1 : _i >= _ref1; 1 <= _ref1 ? _i++ : _i--) {
-                    _results.push(_i);
-                }
-                return _results;
-            }).apply(this);
-            group = (_ref2 = data != null ? data.group : void 0) != null ? _ref2 : (function () {
-                var _j, _len, _results1;
-                _results1 = [];
-                for (_j = 0, _len = x.length; _j < _len; _j++) {
-                    i = x[_j];
-                    _results1.push(1);
-                }
-                return _results1;
-            })();
-            ngroup = d3.max(group);
-            group = (function () {
-                var _j, _len, _results1;
-                _results1 = [];
-                for (_j = 0, _len = group.length; _j < _len; _j++) {
-                    g = group[_j];
-                    _results1.push(g - 1);
-                }
-                return _results1;
-            })();
-            pointcolor = pointcolor != null ? pointcolor : selectGroupColors(ngroup, "dark");
+        return selection.each(function (chartdata) {
+            var g, gEnter, panelheight, paneloffset, panelwidth, titlegrp, xaxis, xrange, xs, yaxis, yrange, ys, sizerange;
+            data = chartdata;
+            apointcolor = pointcolor != null ? pointcolor : selectGroupColors(ngroup, "dark");
             pointcolor = expand2vector(pointcolor, ngroup);
-            if (x.every(function (v) {
-                return (v != null) && !xNA.force;
-            })) {
-                xNA.handle = false;
-            }
-            if (y.every(function (v) {
-                return (v != null) && !yNA.force;
-            })) {
-                yNA.handle = false;
-            }
             if (xNA.handle) {
                 paneloffset = xNA.width + xNA.gap;
                 panelwidth = width - paneloffset;
@@ -130,18 +84,16 @@ scatterplot = function () {
             } else {
                 panelheight = height;
             }
-            xlim = xlim != null ? xlim : d3.extent(x);
-            ylim = ylim != null ? ylim : d3.extent(y);
-            sizelim = sizelim != null ? sizelim : d3.extent(size);
-            na_value = d3.min(x.concat(y)) - 100;
             svg = d3.select(this).selectAll("svg").data([data]);
             gEnter = svg.enter().append("svg").append("g");
-            svg.attr("width", width + margin.left + margin.right).attr("height", height + margin.top + margin.bottom);
+            svg.attr("width", width + margin.left + margin.right).attr("height",
+                    height + margin.top + margin.bottom);
             g = svg.select("g");
             g.append("rect").attr("x", paneloffset + margin.left).attr("y", margin.top).attr("height",
                 panelheight).attr("width", panelwidth).attr("fill", rectcolor).attr("stroke", "none");
             if (xNA.handle) {
-                g.append("rect").attr("x", margin.left).attr("y", margin.top).attr("height", panelheight).attr("width",
+                g.append("rect").attr("x", margin.left).attr("y", margin.top).attr("height",
+                    panelheight).attr("width",
                     xNA.width).attr("fill", rectcolor).attr("stroke", "none");
             }
             if (xNA.handle && yNA.handle) {
@@ -155,36 +107,23 @@ scatterplot = function () {
             }
             xrange = [margin.left + paneloffset + margin.inner, margin.left + paneloffset + panelwidth - margin.inner];
             yrange = [margin.top + panelheight - margin.inner, margin.top + margin.inner];
-            sizerange = [minPointsize, maxPointsize];
             xscale.domain(xlim).range(xrange);
             yscale.domain(ylim).range(yrange);
-            sizescale.domain(sizelim).range(sizerange);
-            xs = d3.scale.linear().domain(xlim).range(xrange);
-            ys = d3.scale.linear().domain(ylim).range(yrange);
-            sizes = d3.scale.linear().domain(sizelim).range(sizerange);
+            na_value = ( xlim[0] < ylim[0] ? xlim[0] : ylim[0]) - 100; // min x and y minus 100 will put the NA points 100 units outside main chart areaif (xNA.handle) {
+            // add na_value to scales if necessary
             if (xNA.handle) {
                 xscale.domain([na_value].concat(xlim)).range([margin.left + xNA.width / 2].concat(xrange));
-                x = x.map(function (e) {
-                    if (e != null) {
-                        return e;
-                    } else {
-                        return na_value;
-                    }
-                });
             }
             if (yNA.handle) {
                 yscale.domain([na_value].concat(ylim)).range([height + margin.top - yNA.width / 2].concat(yrange));
-                y = y.map(function (e) {
-                    if (e != null) {
-                        return e;
-                    } else {
-                        return na_value;
-                    }
-                });
             }
+
+            xs = d3.scale.linear().domain(xlim).range(xrange);
+            ys = d3.scale.linear().domain(ylim).range(yrange);
             yticks = yticks != null ? yticks : ys.ticks(nyticks);
             xticks = xticks != null ? xticks : xs.ticks(nxticks);
-            titlegrp = g.append("g").attr("class", "title").append("text").attr("x", margin.left + width / 2).attr("y",
+            titlegrp = g.append("g").attr("class", "title").append("text").attr("x",
+                    margin.left + width / 2).attr("y",
                     margin.top - titlepos).text(title);
             xaxis = g.append("g").attr("class", "x axis");
             xaxis.selectAll("empty").data(xticks).enter().append("line").attr("x1", function (d) {
@@ -228,22 +167,7 @@ scatterplot = function () {
                 return indID[i];
             }).direction('e').offset([0, 10]);
             svg.call(indtip);
-            points = g.append("g").attr("id", "points");
-            pointsSelect = points.selectAll("empty").data(d3.range(x.length)).enter().append("circle").attr("cx",
-                function (d, i) {
-                    return xscale(x[i]);
-                }).attr("cy", function (d, i) {
-                return yscale(y[i]);
-            }).attr("class", function (d, i) {
-                return "pt" + i;
-            }).attr("r", size[i]).attr("fill", function (d, i) {
-                return pointcolor[group[i]];
-            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
-                if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
-                    return 1;
-                }
-                return 0;
-            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
+
             g.append("rect").attr("x", margin.left + paneloffset).attr("y", margin.top).attr("height",
                 panelheight).attr("width", panelwidth).attr("fill", "none").attr("stroke", "black").attr("stroke-width",
                 "none");
@@ -261,6 +185,22 @@ scatterplot = function () {
                         margin.top + height - yNA.width).attr("height", yNA.width).attr("width",
                     panelwidth).attr("fill", "none").attr("stroke", "black").attr("stroke-width", "none");
             }
+
+//            pointsSelect = points.selectAll("empty").data(d3.range(x.length)).enter().append("circle").attr("cx",
+//                function (d, i) {
+//                    return xscale(x[i]);
+//                }).attr("cy", function (d, i) {
+//                    return yscale(y[i]);
+//                }).attr("class", function (d, i) {
+//                    return "pt" + i;
+//                }).attr("r", size[i]).attr("fill", function (d, i) {
+//                    return pointcolor[group[i]];
+//                }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+//                    if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
+//                        return 1;
+//                    }
+//                    return 0;
+//                }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
         });
     };
     chart.width = function (value) {
@@ -451,11 +391,96 @@ scatterplot = function () {
     chart.xscale = function () {
         return xscale;
     };
-    chart.sizescale = function () {
-        return sizescale;
-    };
     chart.pointsSelect = function () {
         return pointsSelect;
+    };
+    chart.svg = function() {
+        return svg;
+    }
+    chart.updatePoints = function () {
+        if (dataByInd) {
+            x = data.data.map(function (d) {
+                return d[xvar];
+            });
+            y = data.data.map(function (d) {
+                return d[yvar];
+            });
+            size = data.data.map(function (d) {
+                return d[sizevar];
+            });
+        } else {
+            x = data.data[xvar];
+            y = data.data[yvar];
+            size = data.data[sizevar];
+        }
+        x = missing2null(x, ["NA", ""]);
+        y = missing2null(y, ["NA", ""]);
+        size = missing2default(size, ["NA", ""], minPointsize);
+        if (xNA.handle) {
+            x = x.map(function (e) {
+                if (e != null) {
+                    return e;
+                } else {
+                    return na_value;
+                }
+            });
+        }
+        if (yNA.handle) {
+            y = y.map(function (e) {
+                if (e != null) {
+                    return e;
+                } else {
+                    return na_value;
+                }
+            });
+        }
+        indID = (data != null ? data.indID : void 0) != null ? data : null;
+        indID = indID != null ? indID : (function () {
+            var results = [];
+            for (var i = 1; 1 <= x.length ? i <= x.length : i >= x.length; 1 <= x.length ? i++ : i--) {
+                results.push(i);
+            }
+            return results;
+        }).apply(this);
+
+//        group = (data != null ? data.group : void 0) != null ? data : (function () {
+//            var results;
+//            results = [];
+//            for (var j = 0; j < x.length; j++) {
+//                var i = x[j];
+//                results.push(1);
+//            }
+//            return results;
+//        })();
+//        ngroup = d3.max(group);
+//        group = (function () {
+//            var results = [];
+//            for (var j = 0; j < group.length; j++) {
+//                var g = group[j];
+//                results.push(g - 1);
+//            }
+//            return results;
+//        })();
+
+        var points = svg.select("g").append("g").attr("id", "points");
+        pointsSelect = points.selectAll("empty").data(d3.range(x.length)).enter().append("circle").attr("cx",
+            function (d, i) {
+                return xscale(x[i]);
+            }).attr("cy", function (d, i) {
+          //console.log("i:"+i+" y[i]:"+y[i]+" yscale(y[i]):" + yscale(y[i]) + " ylim[0]:" + ylim[0] + " yscale(ylim[0] - na_value):" + yscale(ylim[0] - na_value));
+                return yscale(y[i]); //y[i] >= na_value ? yscale(y[i]) : yscale(ylim[0]);
+            }).attr("class", function (d, i) {
+                return "pt" + i;
+            }).attr("r", function (d, i) {
+                return size[i];
+            }).attr("fill", function (d, i) {
+                return pointcolor[0];//group[i]];
+            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+                if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
+                    return 1;
+                }
+                return 0;
+            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
     };
     return chart;
 };
