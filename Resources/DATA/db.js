@@ -8,9 +8,10 @@ var Datasource = function( data_path ){
 
 	this.db = new sqlite3.Database(data_path, sqlite3.OPEN_READONLY);
 	this.db.on('trace', function(t){console.log(t)});
-	var defs = "chart_definitions.csv"
-	
+	var defs = "chart_definitions.csv";
+	var ann_def = "line_annotations.csv";
 	this.def;
+	this.annotations = [];
 	self = this;
 	
 	this.setup = function(){
@@ -20,9 +21,13 @@ var Datasource = function( data_path ){
 		this.res = {};
 		self = this;
 		
-		
 		csv.fromPath(defs, {headers: true}).on("record",this.pushResponse).on("end", this.resolveResponse);
-	
+		csv.fromPath(ann_def, {headers: true}).on("record",function(d){
+			var date = d.date;
+			d.date = new Date(date);
+			self.annotations.push(d);
+			console.log(d);
+		});
 		
 		return this.dfd.promise;
 	}
@@ -56,7 +61,7 @@ var Datasource = function( data_path ){
 				}else if(type == "scatter"){
 					dfd.resolve({scatter:{x: d[0][0], y:d[0][1], size:d[0][2]}});
 				}else if(type == "line"){
-					dfd.resolve({line:{data:d}});
+					dfd.resolve({line:{data:d, annotations:self.annotations}});
 				}
 
 		})
@@ -128,7 +133,7 @@ var Datasource = function( data_path ){
 	}
 	
 	
-
+ 
 	
 	
 	
@@ -136,28 +141,24 @@ var Datasource = function( data_path ){
 		var dfd = when.defer();
 		var ret = [];
 
-				self.db.each("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
-					function(e,r){
-						if(e){dfd.reject(e)
-							}else{
-								console.log("row");
-								var rj = JSON.parse(r.observation);
-								ret.push(rj);
-							}
-					
-					},
-					function(e,r){
-						if(e){dfd.reject(e)
-							}else{
-									console.log(r+" rows transmitted ");
-									dfd.resolve(ret);
-							}
-					
+		self.db.each("SELECT observation from observations WHERE series_hash = ?", [ser_hash], 
+			function(e,r){
+				if(e){dfd.reject(e)
+					}else{
+						console.log("row");
+						var rj = JSON.parse(r.observation);
+						ret.push(rj);
 					}
-				)
 			
-		
-	
+			},
+			function(e,r){
+				if(e){dfd.reject(e)
+					}else{
+							console.log(r+" rows transmitted ");
+							dfd.resolve(ret);
+					}
+			
+			})
 		return dfd.promise;
 	}
 }
