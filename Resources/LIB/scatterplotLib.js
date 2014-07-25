@@ -396,8 +396,105 @@ scatterplot = function () {
     };
     chart.svg = function() {
         return svg;
-    }
+    };
+    chart.initPoints = function () {
+        chart.getData();
+        indID = data != null ? data.indID : (function () {
+            // if no ID text provided, use index of element
+            var results = [];
+            for (var i = 0; i< x.length; i++) {
+                results.push(i);
+            }
+            return results;
+        }).apply(this);
+
+//        group = (data != null ? data.group : void 0) != null ? data : (function () {
+//            var results;
+//            results = [];
+//            for (var j = 0; j < x.length; j++) {
+//                var i = x[j];
+//                results.push(1);
+//            }
+//            return results;
+//        })();
+//        ngroup = d3.max(group);
+//        group = (function () {
+//            var results = [];
+//            for (var j = 0; j < group.length; j++) {
+//                var g = group[j];
+//                results.push(g - 1);
+//            }
+//            return results;
+//        })();
+
+        var points = svg.select("g").append("g").attr("id", "points");
+        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class", "pt")
+            .attr("id", function (d, i) {
+                return i;
+            }).attr("cx",
+            function (d, i) {
+                return xscale(x[i]);
+            }).attr("cy", function (d, i) {
+                return yscale(y[i]);
+            }).attr("r", function (d, i) {
+                return size[i];
+            }).attr("fill", function (d, i) {
+                return pointcolor[0];//group[i]];
+            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+                if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
+                    return 1;
+                }
+                return 0;
+            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
+    };
     chart.updatePoints = function () {
+        chart.getData();
+        indID = data != null ? data.indID : (function () {
+            // if no ID text provided, use index of element
+            var results = [];
+            for (var i = 0; i< x.length; i++) {
+                results.push(i);
+            }
+            return results;
+        }).apply(this);
+
+//        group = (data != null ? data.group : void 0) != null ? data : (function () {
+//            var results;
+//            results = [];
+//            for (var j = 0; j < x.length; j++) {
+//                var i = x[j];
+//                results.push(1);
+//            }
+//            return results;
+//        })();
+//        ngroup = d3.max(group);
+//        group = (function () {
+//            var results = [];
+//            for (var j = 0; j < group.length; j++) {
+//                var g = group[j];
+//                results.push(g - 1);
+//            }
+//            return results;
+//        })();
+
+        var points = svg.select("#points");
+        pointsSelect = points.selectAll(".pt")
+            .attr("cx", function (d, i) {
+                return xscale(x[i]);
+            }).attr("cy", function (d, i) {
+                return yscale(y[i]);
+            }).attr("r", function (d, i) {
+                return size[i];
+            }).attr("fill", function (d, i) {
+                return pointcolor[0];//group[i]];
+            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+                if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
+                    return 1;
+                }
+                return 0;
+            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
+    };
+    chart.getData = function() {
         if (dataByInd) {
             x = data.data.map(function (d) {
                 return d[xvar];
@@ -434,53 +531,7 @@ scatterplot = function () {
                 }
             });
         }
-        indID = (data != null ? data.indID : void 0) != null ? data : null;
-        indID = indID != null ? indID : (function () {
-            var results = [];
-            for (var i = 1; 1 <= x.length ? i <= x.length : i >= x.length; 1 <= x.length ? i++ : i--) {
-                results.push(i);
-            }
-            return results;
-        }).apply(this);
-
-//        group = (data != null ? data.group : void 0) != null ? data : (function () {
-//            var results;
-//            results = [];
-//            for (var j = 0; j < x.length; j++) {
-//                var i = x[j];
-//                results.push(1);
-//            }
-//            return results;
-//        })();
-//        ngroup = d3.max(group);
-//        group = (function () {
-//            var results = [];
-//            for (var j = 0; j < group.length; j++) {
-//                var g = group[j];
-//                results.push(g - 1);
-//            }
-//            return results;
-//        })();
-
-        var points = svg.select("g").append("g").attr("id", "points");
-        pointsSelect = points.selectAll("empty").data(d3.range(x.length)).enter().append("circle").attr("cx",
-            function (d, i) {
-                return xscale(x[i]);
-            }).attr("cy", function (d, i) {
-          //console.log("i:"+i+" y[i]:"+y[i]+" yscale(y[i]):" + yscale(y[i]) + " ylim[0]:" + ylim[0] + " yscale(ylim[0] - na_value):" + yscale(ylim[0] - na_value));
-                return yscale(y[i]); //y[i] >= na_value ? yscale(y[i]) : yscale(ylim[0]);
-            }).attr("class", function (d, i) {
-                return "pt" + i;
-            }).attr("r", function (d, i) {
-                return size[i];
-            }).attr("fill", function (d, i) {
-                return pointcolor[0];//group[i]];
-            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
-                if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
-                    return 1;
-                }
-                return 0;
-            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
     };
+
     return chart;
 };

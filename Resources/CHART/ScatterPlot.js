@@ -50,6 +50,7 @@ var stateIds = [];
 var statesData = {};
 var statesGeoData = {};
 var stateNamesById = {};
+var stateNames = [];
 var statesGeoFeatures; // state map data
 var dateRange;
 
@@ -95,6 +96,10 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
         stateIds.push(feature.id);
         stateNamesById[feature.id] = feature.properties.name;
     });
+    // convert names by ID to names by index
+    for( var i = 0; i<stateIds.length; i++){
+        stateNames.push(stateNamesById[stateIds[i]]);
+    }
 
     chartDiv = d3.select(sel).attr("class", chartClassName);
     //chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height);
@@ -190,10 +195,16 @@ function initializeChart() {
 
     // set up rollovers
     chart.pointsSelect().on("mouseover", function (d) {
-        return d3.select(this).attr("r", chart.pointsize() * 3);
+        return d3.select(this).attr("r", 2 *  getSize( this ));
     }).on("mouseout", function (d) {
-        return d3.select(this).attr("r", chart.pointsize());
+        return d3.select(this).attr("r", getSize( this ));
     });
+}
+
+function getSize( marker ){
+    var datumIdx = parseInt(marker.id);
+    var size = scatterPlotData.data[datumIdx][sizeDataIndex];
+    return size;
 }
 
 function drawLegend() {
@@ -279,7 +290,7 @@ function drawChart() {
 
     d3.select("." + chartClassName)
         //.datum(scatterPlotData)
-        .call(chart.updatePoints);
+        .call(chart.initPoints);
 }
 
 function updateChart() {
@@ -508,7 +519,9 @@ function getColorDomainExtent(domainExtent) {
 //}
 
 function initScatterPlotData() {
-    scatterPlotData = { "data": [] };
+    scatterPlotData = {
+        "data": [],
+        "indID": stateNames };
     updateScatterPlotData();
 }
 
