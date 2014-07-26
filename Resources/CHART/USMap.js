@@ -90,25 +90,25 @@ var USMap = function(sel, dataDefs, dataUSMap) {
     });
 
     // get values for timeslot
-    getTimeslotValues();
+    getMapTimeslotValues();
 
     d3.select("#chartTitle").text(dataDefs.chart_name);
     d3.select("#chartDescription").text(dataDefs.chart_text);
 
     //Drawing Choropleth
-    initializeChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
+    initializeMapChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
 
-    drawControls();
+    drawMapControls();
 }// <-- End of USMap
 
-function drawControls() {
-    drawSlider();
-    drawResetButton();
+function drawMapControls() {
+    drawMapSlider();
+    drawMapResetButton();
     var x = 0;
 }
 
-function drawSlider() {
-    var dateRange = getDateRange();
+function drawMapSlider() {
+    var dateRange = getMapDateRange();
     chartDiv.append("div").attr("class","slider");
     $(".slider").slider({
         min: 0,
@@ -119,14 +119,14 @@ function drawSlider() {
             //console.log(ui.value, dateRange[ui.value]);
 //            var delay = function () {
             timeSlotDate = dateRange[ui.value];
-            $("#dateLabel").html(getFormattedDate(timeSlotDate));
+            $("#dateLabel").html(getMapFormattedDate(timeSlotDate));
 //            // wait for the ui.handle to set its position
 //            setTimeout(delay, 5);
         },
         stop: function (event, ui) {
-            getTimeslotValues();
-//            colorScale = getColorScale(countyData);
-            updateChart();
+            getMapTimeslotValues();
+//            colorScale = getMapColorScale(countyData);
+            updateMapChart();
 
             // if county is clicked, then update tooltip
             if (countyClicked) {
@@ -135,10 +135,10 @@ function drawSlider() {
         }
     });
 
-    $("#dateLabel").html(getFormattedDate(timeSlotDate));
+    $("#dateLabel").html(getMapFormattedDate(timeSlotDate));
 }
 
-function drawResetButton() {
+function drawMapResetButton() {
     $("#resetBtn").button(
         {
             disabled: true,
@@ -146,17 +146,17 @@ function drawResetButton() {
             id: "resetBtn",
             //click: reset
         }
-    ).on("click", reset);
+    ).on("click", resetMap);
 }
 
-function getFormattedDate(dateString) {
+function getMapFormattedDate(dateString) {
     var date = new Date(dateString);
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[date.getMonth()] + " " + date.getFullYear();
     ;
 }
 
-function getTimeslotValues() {
+function getMapTimeslotValues() {
     // get feature values for each timeSlot
     for (var i = 0; i < countyData.length; i++) {
         var timeSeries = countyData[i];
@@ -170,7 +170,7 @@ function getTimeslotValues() {
 }
 
 // get data range from the data
-function getDateRange() {
+function getMapDateRange() {
     var dateRange = [];
     var dataSets = countyData;
     $.each(dataSets, function (index) {
@@ -179,7 +179,7 @@ function getDateRange() {
     return dateRange.reverse();
 }
 
-function initializeChart(mapCounties, mapStates) {
+function initializeMapChart(mapCounties, mapStates) {
     // get transformed, as-drawn coordinates of the div
     var divRect = chartDiv.node().getBoundingClientRect();
 
@@ -193,16 +193,16 @@ function initializeChart(mapCounties, mapStates) {
     mapStateFeatures = mapStates.features;
 
     // get colorScale scale
-    colorScale = getColorScale(countyData);
+    colorScale = getMapColorScale(countyData);
 
     //Adding legend for our Choropleth
-    drawLegend();
+    drawMapLegend();
 
     //then draw the shapes
-   drawChart();
+    drawMapChart();
 }
 
-function drawLegend() {
+function drawMapLegend() {
     // get the threshold value for each of the colors in the color scale
     var domainElems = [];
     $.each(colors, function (index) {
@@ -260,7 +260,7 @@ function drawLegend() {
 
 };
 
-function drawChart() {
+function drawMapChart() {
     // filled in counties
     mapRegions = chartSvg.append("g");
     mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
@@ -303,8 +303,7 @@ function drawChart() {
         .attr("margin", "0 auto");
 }
 
-function updateChart() {
-
+function updateMapChart() {
     // filled in mapRegions
     mapRegions.data(mapCountyFeatures).selectAll("path.county")
         .style({
@@ -369,7 +368,7 @@ function updateCountyDataLabel() {
     var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
     var textHeightName = d3.select("#countyDataLabelName").node().getBBox().height;
 
-    d3.select("#countyDataLabelValue").text(displayValue());
+    d3.select("#countyDataLabelValue").text(displayMapValue());
     var textWidthValue = d3.select("#countyDataLabelValue").node().getBBox().width;
     var textHeightValue = d3.select("#countyDataLabelValue").node().getBBox().height;
     var rectWidth = Math.max(textWidthName, textWidthValue) + margin;
@@ -397,7 +396,7 @@ function updateCountyDataLabel() {
     countyDataLabel.attr("d", pathMap);
 }
 
-function displayValue() {
+function displayMapValue() {
     var val = countyValuesById[countyClicked.id];
     if (isNaN(val))
         return "undefined";
@@ -407,7 +406,7 @@ function displayValue() {
 
 function onClickState(feature) {
     if (activeState) {
-        reset();
+        resetMap();
         if (this == null)
             return;
     }
@@ -434,7 +433,7 @@ function onClickState(feature) {
         .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 }
 
-function reset() {
+function resetMap() {
     // unclick county (if there was one)
     countyClicked = null;
     countyFeature = null;
@@ -459,7 +458,7 @@ function reset() {
         .attr("transform", "translate(0,0) scale(1)");
 }
 
-function getColorScale(featuresData) {
+function getMapColorScale(featuresData) {
     // get extent of data for all timeseries
     var domainExtent = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
     var dataArray = [];
