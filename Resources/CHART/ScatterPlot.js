@@ -104,7 +104,7 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     chartDiv = d3.select(sel).attr("class", chartClassName);
     //chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height);
 
-    dateRange = getDateRange();
+    dateRange = getScatterDateRange();
     timeSlotDate = dateRange[0];
 
     // get plot data for this time slot
@@ -113,51 +113,47 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     d3.select("#chartTitle").text(statesDataDefs.chart_name);
     d3.select("#chartDescription").text(statesDataDefs.chart_text);
 
-    initializeChart(); // draw map
+    initializeScatterChart(); // draw plot
 
-    drawControls();
+    drawScatterControls();
 }// <-- End of ScatterPlot
 
-function drawControls() {
-    drawSlider();
+function drawScatterControls() {
+    drawScatterSlider();
 }
-
-function drawSlider() {
+function drawScatterSlider() {
+    var uiValue = null;
     chartDiv.append("div").attr("class", "slider");
-    $(".slider").slider({
+    $(".slider").labeledslider({
         min: 0,
         max: dateRange.length - 1,
         value: dateRange.indexOf(timeSlotDate), // start in center
         animate: "fast", // animate sliding
+        tickLabels: getScatterLabels(),
         slide: function (event, ui) {
-            //console.log(ui.value, dateRange[ui.value]);
-//            var delay = function () {
-            timeSlotDate = dateRange[ui.value];
-            $("#dateLabel").html(getFormattedDate(timeSlotDate));
-//            // wait for the ui.handle to set its position
-//            setTimeout(delay, 5);
-        },
-        stop: function (event, ui) {
-//            colorScale = getColorScale(statesData);
-            updateChart();
+            var value = Math.round(ui.value);
+            if (value != uiValue) {
+                timeSlotDate = dateRange[value];
+                $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
+                updateScatterChart();
+                uiValue = value;
+            }
         }
     });
 
-    $("#dateLabel").html(getFormattedDate(timeSlotDate));
+    $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
 }
-//
-//function drawResetButton() {
-//    $("#resetBtn").button(
-//        {
-//            disabled: true,
-//            label: "Reset Zoom",
-//            id: "resetBtn",
-//            //click: reset
-//        }
-//    ).on("click", reset);
-//}
 
-function getFormattedDate(dateString) {
+function getScatterLabels() {
+    var labels = [];
+    for( var i=0; i<dateRange.length; i++){
+        var date = new Date(dateRange[i]);
+        labels.push( date.getFullYear() )
+    }
+    return labels;
+}
+
+function getScatterFormattedDate(dateString) {
     var date = new Date(dateString);
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[date.getMonth()] + " " + date.getFullYear();
@@ -165,7 +161,7 @@ function getFormattedDate(dateString) {
 
 
 // get data union of all the dates from the data
-function getDateRange() {
+function getScatterDateRange() {
     var dateRange = [];
     var dataSets = [statesData.x, statesData.y, statesData.size];
     $.each(dataSets, function (index) {
@@ -180,34 +176,34 @@ function getDateRange() {
     return dateRange.sort();
 }
 
-function initializeChart() {
+function initializeScatterChart() {
     // get transformed, as-drawn coordinates of the div
     var divRect = chartDiv.node().getBoundingClientRect();
 
     // get colorScale scale
-    colorScale = getColorScale(statesData);
+    colorScale = getScatterColorScale(statesData);
 
     //Adding legend for our Choropleth
-    drawLegend();
+    drawScatterLegend();
 
     //then draw the shapes
-    drawChart();
+    drawScatterChart();
 
     // set up rollovers
     chart.pointsSelect().on("mouseover", function (d) {
-        return d3.select(this).attr("r", 2 *  getSize( this ));
+        return d3.select(this).attr("r", 2 *  getScatterSize( this ));
     }).on("mouseout", function (d) {
-        return d3.select(this).attr("r", getSize( this ));
+        return d3.select(this).attr("r", getScatterSize( this ));
     });
 }
 
-function getSize( marker ){
+function getScatterSize( marker ){
     var datumIdx = parseInt(marker.id);
     var size = scatterPlotData.data[datumIdx][sizeDataIndex];
     return size;
 }
 
-function drawLegend() {
+function drawScatterLegend() {
     if (!colorScale)
         return; // no legend
 
@@ -251,7 +247,6 @@ function drawLegend() {
         .attr("width", lsW)
         .attr("height", lsH)
         .style("fill", function (d, i) {
-            //console.log("d,i",d,i,colorScale(d));
             return colorScale(d);
         })
         .style("opacity", unselectedCountyOpacity);
@@ -268,12 +263,12 @@ function drawLegend() {
 
 }
 
-function drawChart() {
+function drawScatterChart() {
     var xLab = statesData.x[0].title;
     var yLab = statesData.y[0].title;
-    var xLim = getLim( statesData.x );
-    var yLim = getLim( statesData.y );
-    var NA = getNA();
+    var xLim = getScatterLim( statesData.x );
+    var yLim = getScatterLim( statesData.y );
+    var NA = getScatterNA();
     var sizeLab = "TBD";
 
     initScatterPlotData();
@@ -289,83 +284,16 @@ function drawChart() {
         .call(chart);
 
     d3.select("." + chartClassName)
-        //.datum(scatterPlotData)
         .call(chart.initPoints);
 }
 
-function updateChart() {
+function updateScatterChart() {
     updateScatterPlotData();
     d3.select("." + chartClassName)
-        //.datum(scatterPlotData)
         .call(chart.updatePoints);
 }
 
-//function onClickBubble(d) {
-//    countyClicked = d;
-//    countyFeature = this;
-//    updateCountyDataLabel();
-//}
-
-//function updateCountyDataLabel() {
-//    // add a label group if there isn't one yet
-//    if (!countyDataLabel) {
-//        countyDataLabel = chartSvg.append("g");
-//
-//        countyDataLabel.append("rect")
-//            .attr("class", "countyDataLabel")
-//            .attr("rx", "5")
-//            .attr("ry", "5");
-//
-//        countyDataLabel.append("text")
-//            .attr("class", "countyDataLabel")
-//            .attr("id", "countyDataLabelName");
-//
-//        countyDataLabel.append("text")
-//            .attr("class", "countyDataLabel")
-//            .attr("id", "countyDataLabelValue");
-//    }
-//
-//    var margin = 10;
-//
-//    // get transformed, as-drawn coordinates of the county
-//    var brect = d3.select(countyFeature).node().getBoundingClientRect();
-//
-//    // get offset of the chart div
-//    var offset = $("#chart").offset();
-//
-//    d3.select("#countyDataLabelName").text(countyNameById[countyClicked.id]);
-//    var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
-//    var textHeightName = d3.select("#countyDataLabelName").node().getBBox().height;
-//
-//    d3.select("#countyDataLabelValue").text(displayValue());
-//    var textWidthValue = d3.select("#countyDataLabelValue").node().getBBox().width;
-//    var textHeightValue = d3.select("#countyDataLabelValue").node().getBBox().height;
-//    var rectWidth = Math.max(textWidthName, textWidthValue) + margin;
-//
-//    // position the popup elements
-//    d3.select("#countyDataLabelName")
-//        .attr("x", +((brect.left + (brect.width - textWidthName) / 2 - offset.left))) // center on the county
-//        .attr("y", +(brect.top + brect.height / 2 - offset.top) + margin);
-//
-//    d3.select("#countyDataLabelValue")
-//        .attr("x", +((brect.left + (brect.width - textWidthValue) / 2 - offset.left))) // center on the county
-//        .attr("y", +(textHeightName + brect.top + brect.height / 2 - offset.top) + margin);
-//
-//    // Update the width and height of the rectangle to match the text, with a little padding
-//    var rectHeight = textHeightName + textHeightValue + margin;
-//    d3.select("rect.countyDataLabel")
-//        .attr("width", rectWidth + 5)
-//        .attr("height", rectHeight + 5)
-//        .attr("x", +(brect.left + (brect.width - rectWidth) / 2 - offset.left)) // center on the county
-//        .attr("y", +(brect.top + brect.height / 2 - offset.top - margin));
-//
-//    d3.select("#countyDataLabelName").attr("visibility", "visible");
-//    d3.select("#countyDataLabelValue").attr("visibility", "visible");
-//    d3.select("rect.countyDataLabel").attr("visibility", "visible");
-//    countyDataLabel.attr("d", pathMap);
-//}
-
-function displayValue() {
+function displayScatterValue() {
     var val = countyValuesById[countyClicked.id];
     if (isNaN(val))
         return "undefined";
@@ -373,61 +301,7 @@ function displayValue() {
         return +val;
 }
 
-//function onClickState(feature) {
-//    if (activeState) {
-//        reset();
-//        if (this == null)
-//            return;
-//    }
-//    activeState = d3.select(this).classed("active", true)
-//        .style("fill", "none"); // make counties clickable
-//
-//    // enable the reset button
-//    $("#resetBtn").button("option", "disabled", false);
-//
-//    // zoom to the state
-//    var chartWidth = $(".chart").width();
-//    var chartHeight = $(".chart").height();
-//    var bounds = pathMap.bounds(feature),
-//        dx = bounds[1][0] - bounds[0][0],
-//        dy = bounds[1][1] - bounds[0][1],
-//        x = (bounds[0][0] + bounds[1][0]) / 2,
-//        y = (bounds[0][1] + bounds[1][1]) / 2;
-//    scale = .9 / Math.max(dx / chartWidth, dy / chartHeight);
-//    translate = [chartWidth / 2 - scale * x, chartHeight / 2 - scale * y];
-//
-//    mapRegions.transition()
-//        .duration(500)
-//        .style("stroke-width", 1.5 / scale + "px")
-//        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-//}
-//
-//function reset() {
-//    // unclick county (if there was one)
-//    countyClicked = null;
-//    countyFeature = null;
-//
-//    // hide the tooltip
-//    d3.select("#countyDataLabelName").attr("visibility", "hidden");
-//    d3.select("#countyDataLabelValue").attr("visibility", "hidden");
-//    d3.select("rect.countyDataLabel").attr("visibility", "hidden");
-//
-//    //
-//    activeState.classed("active", false)
-//        .style("fill", stateFillColor);
-//    activeState = null;
-//
-//    // disable the reset btn
-//    $("#resetBtn").button("option", "disabled", true)
-//
-//    // unzoom/unpan
-//    mapRegions.transition()
-//        .duration(500)
-//        .style("stroke-width", "1.5px")
-//        .attr("transform", "translate(0,0) scale(1)");
-//}
-
-function getColorScale(featuresData) {
+function getScatterColorScale(featuresData) {
     if (typeof featuresData.size === "undefined")
         return null; // no color scale if no size data
 
@@ -462,7 +336,7 @@ function getColorScale(featuresData) {
     return colorScale;
 }
 
-function getColorDomainExtent(domainExtent) {
+function getScatterColorDomainExtent(domainExtent) {
     var niceDomainExtent = [];
     // make the domain extent round numbers
     var dx = domainExtent[1] - domainExtent[0];
@@ -478,46 +352,6 @@ function getColorDomainExtent(domainExtent) {
     return niceDomainExtent;
 }
 
-//// Database operations
-//function getDataDeferred(dataName, callback) {
-//    //console.log("getDataDeferred", dataName, callback);
-//    initDB(function () {
-//        console.log(dataName, "inited.");
-//        ds.getByName(dataName).then(function (d) {
-//            var data = d;
-//            var def;
-//            for (var i = 1; statesDataDefs["Category_" + i]; i++) {
-//                if (statesDataDefs["Category_" + i][0].chart_name == dataName) {
-//                    def = statesDataDefs["Category_" + i][0];
-//                    break;
-//                }
-//            }
-//            //$("#json").text(JSON.stringify(Object.keys(d),null,2));
-//            callback(null, {"dataDef": def, "data": data});
-//        });
-//    });
-//}
-
-//var isInited = false;
-//var ds;
-//
-//function initDB(callback) {
-//    if (isInited) {
-//        callback();
-//    } else {
-//        console.log("init");
-//
-//        ds = new datasource(dataDir);	//create an instance of the datasource
-//        ds.setup().then(		//call setup() and wait for the defered
-//            function (d) {
-//                statesDataDefs = d;		//to get the definitions, which is an object whose keys are categories
-//                isInited = true;
-//                callback();
-//            }
-//        );
-//    }
-//}
-
 function initScatterPlotData() {
     scatterPlotData = {
         "data": [],
@@ -526,22 +360,22 @@ function initScatterPlotData() {
 }
 
 function updateScatterPlotData(){
-    var xData = loadData(statesData.x );
-    var yData = loadData(statesData.y );
-    var zData = loadData(statesData.size );
+    var xData = loadScatterData(statesData.x );
+    var yData = loadScatterData(statesData.y );
+    var zData = loadScatterData(statesData.size );
     var data = [];
     for ( i in stateIds ) {
         var value = [];
         var idx = stateIds[i];
-        value[xDataIndex] = getDatum(xData, idx, "NA");
-        value[yDataIndex] = getDatum(yData, idx, "NA");
-        value[sizeDataIndex] = getDatum(zData, idx, defaultSize);
+        value[xDataIndex] = getScatterDatum(xData, idx, "NA");
+        value[yDataIndex] = getScatterDatum(yData, idx, "NA");
+        value[sizeDataIndex] = getScatterDatum(zData, idx, defaultSize);
         data.push(value);
     }
     scatterPlotData.data = data;
 }
 
-function loadData( dataSet ){
+function loadScatterData( dataSet ){
     if (typeof dataSet !== "undefined")
         for ( i in dataSet ) {
             if (dataSet[i].date === timeSlotDate) {
@@ -552,7 +386,7 @@ function loadData( dataSet ){
         return null;
 }
 
-function getDatum(data, index, defaultVal) {
+function getScatterDatum(data, index, defaultVal) {
     if (!data || (typeof data[index] === "undefined"))
         return defaultVal;
     else {
@@ -561,7 +395,7 @@ function getDatum(data, index, defaultVal) {
     }
 }
 
-function getLim( dataSet ){
+function getScatterLim( dataSet ){
     var lim = [Number.MAX_VALUE, Number.MIN_VALUE];
     for( i in dataSet ) {
         var data = dataSet[i].values;
@@ -579,7 +413,7 @@ function getLim( dataSet ){
     return lim;
 }
 
-function getNA() {
+function getScatterNA() {
     var xIdx = 0;
     var yIdx = 1;
     var dataSets = [statesData.x, statesData.y];
@@ -598,9 +432,9 @@ function getNA() {
         }
     ];
     // check if any x dates are missing from y
-    NA[yIdx].handle = isMissingDates(dataSets[xIdx], dataSets[yIdx]);
+    NA[yIdx].handle = isScatterMissingDates(dataSets[xIdx], dataSets[yIdx]);
     // check if any y dates are missing from x
-    NA[xIdx].handle = isMissingDates(dataSets[yIdx], dataSets[xIdx]);
+    NA[xIdx].handle = isScatterMissingDates(dataSets[yIdx], dataSets[xIdx]);
 
     // check if any values missing for particular dates
     for (idx in [0, 1]) {
@@ -621,7 +455,7 @@ function getNA() {
     return NA;
 }
 
-function isMissingDates( standard, test ){
+function isScatterMissingDates( standard, test ){
     for( i in standard ){
         var date = standard[i].date;
         var missing = true;

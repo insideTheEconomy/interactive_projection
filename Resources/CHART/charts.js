@@ -9,6 +9,13 @@ ds.setup().then(
     function (defs) {
         var defUSMap = defs.Category_1[0]; // usmap
         switch (chartType) {
+            case "timeline": // TBD: no data def yet
+                var defTimeline = defs.Category_3[0]; // scatter
+                ds.get(defTimeline).then(
+                    function(dataTimeline) {
+                        new Timeline("#chart", defTimeline, dataTimeline );
+                    });
+                break;
             case "scatter":
                 ds.get(defUSMap).then(
                     function (dataUSMap) {
