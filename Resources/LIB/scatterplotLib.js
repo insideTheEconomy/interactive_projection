@@ -478,7 +478,7 @@ scatterplot = function () {
 //        })();
 
         var points = svg.select("#points");
-        pointsSelect = points.selectAll(".pt")
+        pointsSelect = points.selectAll(".pt").transition()
             .attr("cx", function (d, i) {
                 return xscale(x[i]);
             }).attr("cy", function (d, i) {
@@ -492,7 +492,7 @@ scatterplot = function () {
                     return 1;
                 }
                 return 0;
-            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
+            });
     };
     chart.getData = function() {
         if (dataByInd) {
