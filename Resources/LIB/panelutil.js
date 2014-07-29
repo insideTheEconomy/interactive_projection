@@ -2,7 +2,7 @@
 // http://kbroman.github.io/qtlcharts/
 // see https://github.com/kbroman/qtlcharts/blob/master/inst/panels/panelutil.js
 
-var chrscales, expand2vector, forceAsArray, formatAxis, getLeftRight, matrixExtent, matrixMax, matrixMaxAbs, matrixMin, maxdiff, median, missing2null, missing2default, pullVarAsArray, reorgLodData, selectGroupColors, unique;
+var centerRectOnText, chrscales, expand2vector, forceAsArray, formatAxis, getLeftRight, matrixExtent, matrixMax, matrixMaxAbs, matrixMin, maxdiff, median, missing2null, missing2default, pullVarAsArray, reorgLodData, selectGroupColors, unique;
 
 formatAxis = function(d) {
     var ndig;
@@ -345,4 +345,10 @@ missing2default = function(vec, missingvalues, missingDefault) {
             return value;
         }
     });
+};
+
+centerRectOnText = function(rect, text, rectPadding ) {
+    var bbox = text.node().getBBox();
+    rect.attr("width", +(bbox.width + 2 * rectPadding)).attr("height", +(bbox.height + 2 * rectPadding))
+        .attr("x", +(bbox.x-rectPadding)).attr("y", +(bbox.y - rectPadding));
 };
