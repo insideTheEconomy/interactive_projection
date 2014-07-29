@@ -143,7 +143,7 @@ function drawMapResetButton() {
         {
             disabled: true,
             label: "Reset Zoom",
-            id: "resetBtn",
+            id: "resetBtn"
             //click: reset
         }
     ).on("click", resetMap);
@@ -153,7 +153,6 @@ function getMapFormattedDate(dateString) {
     var date = new Date(dateString);
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[date.getMonth()] + " " + date.getFullYear();
-    ;
 }
 
 function getMapTimeslotValues() {
@@ -180,13 +179,9 @@ function getMapDateRange() {
 }
 
 function initializeMapChart(mapCounties, mapStates) {
-    // get transformed, as-drawn coordinates of the div
-    var divRect = chartDiv.node().getBoundingClientRect();
-
     // TBD: check scaleFactor rationale
     var projection = d3.geo.albersUsa() // projection for drawing GIS shapes
-        .scale(scaleFactor)
-//        .translate( divRect.width/2, divRect.height/2); // center the map in the div
+        .scale(scaleFactor);
     pathMap = d3.geo.path().projection(projection); //A path function for drawing shapes using the above projection
 
     mapCountyFeatures = mapCounties.features;
@@ -258,7 +253,7 @@ function drawMapLegend() {
             return legendLabels[i];
         });
 
-};
+}
 
 function drawMapChart() {
     // filled in counties
@@ -515,47 +510,6 @@ function getColorDomainExtent(domainExtent) {
 
     return niceDomainExtent;
 }
-
-// Database operations
-function getDataDeferred(dataName, callback) {
-    //console.log("getDataDeferred", dataName, callback);
-    initDB(function () {
-        console.log(dataName, "inited.");
-        ds.getByName(dataName).then(function (d) {
-            var data = d;
-            var def;
-            for (var i = 1; dbDefs["Category_" + i]; i++) {
-                if (dbDefs["Category_" + i][0].chart_name == dataName) {
-                    def = dbDefs["Category_" + i][0];
-                    break;
-                }
-            }
-            //$("#json").text(JSON.stringify(Object.keys(d),null,2));
-            callback(null, {"dataDef": def, "data": data});
-        });
-    });
-}
-
-var isInited = false;
-var ds;
-
-function initDB(callback) {
-    if (isInited) {
-        callback();
-    } else {
-        console.log("init");
-
-        ds = new datasource(dataDir);	//create an instance of the datasource
-        ds.setup().then(		//call setup() and wait for the defered
-            function (d) {
-                dbDefs = d;		//to get the definitions, which is an object whose keys are categories
-                isInited = true;
-                callback();
-            }
-        );
-    }
-}
-
 
 function log10(x) {
     return Math.log(x) * Math.LOG10E;
