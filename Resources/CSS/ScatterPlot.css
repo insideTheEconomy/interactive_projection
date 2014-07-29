@@ -1,8 +1,8 @@
 .popupRect {
-    fill: lightgreen;
+    fill: lightcyan;
     stroke: lightgrey;
     stroke-width: 1;
-    opacity: .5;
+    opacity: .7;
 }
 
 .popupText {
@@ -12,8 +12,8 @@
 }
 
 .popupTick {
-    stroke: blue;
-    stroke-width: 1;
+    stroke: darkred;
+    stroke-width: 2;
 }
 
 .popupTickLabel text {
@@ -23,15 +23,45 @@
 }
 
 .popupTickLabel rect {
-    fill: lightgreen;
+    fill: lightcyan;
     stroke: lightgrey;
-    opacity: .5;
+    opacity: .7;
 }
 
 .pt {
-    fill: darkblue;
+    fill: blue;
+    stroke: blue;
+    opacity: 1;
 }
 
 .selected {
     fill: darkred;
+    stroke: darkred;
+    opacity: 1;
+}
+
+.scattertip {
+    line-height: 1;
+    font-weight: normal;
+    padding: 2px;
+    background: lightcyan;
+    color: black;
+    border-radius: 2px;
+    pointer-events: none;
+}
+
+/* Creates a small triangle extender for the tooltip */
+.scattertip:after {
+    box-sizing: border-box;
+    display: inline;
+    font-size: 10px;
+    width: 100%;
+    line-height: 1;
+    color: lightcyan;
+    position: absolute;
+    pointer-events: none;
+    content: "\25C0";
+    margin: -4px 0 0 0;
+    top: 50%;
+    left: -8px;
 }
