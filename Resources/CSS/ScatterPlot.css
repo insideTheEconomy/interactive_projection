@@ -1,0 +1,37 @@
+.popupRect {
+    fill: lightgreen;
+    stroke: lightgrey;
+    stroke-width: 1;
+    opacity: .5;
+}
+
+.popupText {
+    fill: black;
+    font-size: 12pt;
+    opacity: 1;
+}
+
+.popupTick {
+    stroke: blue;
+    stroke-width: 1;
+}
+
+.popupTickLabel text {
+    fill: black;
+    font-size: 10pt;
+    opacity: 1;
+}
+
+.popupTickLabel rect {
+    fill: lightgreen;
+    stroke: lightgrey;
+    opacity: .5;
+}
+
+.pt {
+    fill: darkblue;
+}
+
+.selected {
+    fill: darkred;
+}
