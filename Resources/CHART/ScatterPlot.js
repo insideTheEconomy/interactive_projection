@@ -8,15 +8,34 @@ var defaultSize = 4;
 var h, halfh, halfw, margin, totalh, totalw, w;
 
 h = 600;
-w = 800;
+w = 700;
 
+var minPointRadius = 3;
+var maxPointRadius = 20;
+
+szlegend = {
+    width: Math.max( 2 * maxPointRadius + 50, 150),
+    height: .5 * h,
+    padding: 5,
+    offset: 10,
+    fill: "grey"
+};
 margin = {
-    left: 60,
+    left: 100,
     top: 40,
-    right: 40,
+    right: 10 + szlegend.width,
     bottom: 40,
     inner: 5
 };
+axispos = {
+    xtitle: 25,
+    ytitle: 80,
+    sztitle: 25,
+    xlabel: 5,
+    ylabel: 5,
+    szlabel: 5
+};
+titlepos = 20;
 
 halfh = h + margin.top + margin.bottom;
 
@@ -26,22 +45,8 @@ halfw = w + margin.left + margin.right;
 
 totalw = halfw * 2;
 
-//d3.json(dataDir + "/" + "data.json", function(data) {
-//    var mychart;
-//    mychart = scatterplot().xvar(0).yvar(1).xlab("X1").ylab("X2").height(h).width(w).margin(margin);
-//    d3.select("div#plot").datum({
-//        data: data
-//    }).call(mychart);
-//    return mychart.pointsSelect().on("mouseover", function(d) {
-//        return d3.select(this).attr("r", mychart.pointsize() * 3);
-//    }).on("mouseout", function(d) {
-//        return d3.select(this).attr("r", mychart.pointsize());
-//    });
-//});
-
 var chartClassName = "chart"
 var chartDiv;
-var chartSvg;
 var chart;
 
 var timeSlotDate;
@@ -58,30 +63,29 @@ var statesDataDefs;
 
 var xDataIndex = 0;
 var yDataIndex = 1;
-var sizeDataIndex = 2;  //TBD!!!
+var szDataIndex = 2;
 
-var minPointsize = 3;
-var maxPointsize = 15;
+var nszticks = 11;
 
-var winSize = {
-    width: 600,
-    height: 300
-};
+//var winSize = {
+//    width: 600,
+//    height: 300
+//};
 
 
-padding = {
-    left: 60,
-    right: 60,
-    top: 60,
-    bottom: 60
-};
+//padding = {
+//    left: 60,
+//    right: 60,
+//    top: 60,
+//    bottom: 80
+//};
 
-inner = {
-    w: winSize.width - this.padding.left - this.padding.right,
-    h: winSize.height - this.padding.top - this.padding.bottom,
-    r: winSize.width - this.padding.right,
-    b: winSize.height - this.padding.bottom
-};
+//inner = {
+//    w: winSize.width - this.padding.left - this.padding.right,
+//    h: winSize.height - this.padding.top - this.padding.bottom,
+//    r: winSize.width - this.padding.right,
+//    b: winSize.height - this.padding.bottom
+//};
 
 //Start of Choropleth drawing
 
@@ -102,7 +106,6 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     }
 
     chartDiv = d3.select(sel).attr("class", chartClassName);
-    //chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height);
 
     dateRange = getScatterDateRange();
     timeSlotDate = dateRange[0];
@@ -123,18 +126,27 @@ function drawScatterControls() {
 }
 function drawScatterSlider() {
     var uiValue = null;
+    var min = 0;
+    var max = dateRange.length - 1;
+    var fullRange = max - min;
+    var numTicks = 4;
+    var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
     chartDiv.append("div").attr("class", "slider");
-    $(".slider").labeledslider({
-        min: 0,
-        max: dateRange.length - 1,
+    var dateLabelDiv = chartDiv.append("div").attr("id", "dateLabelSlider");
+    var slideDiv = $(".slider");
+    var slider = slideDiv.labeledslider({
+        min: min,
+        max: max,
         value: dateRange.indexOf(timeSlotDate), // start in center
         animate: "fast", // animate sliding
+        tickInterval: tickInterval,
         tickLabels: getScatterLabels(),
         slide: function (event, ui) {
             var value = Math.round(ui.value);
             if (value != uiValue) {
                 timeSlotDate = dateRange[value];
                 $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
+                $("#dateLabelSlider").html(getScatterFormattedDate(timeSlotDate));
                 updateScatterChart();
                 uiValue = value;
             }
@@ -142,6 +154,7 @@ function drawScatterSlider() {
     });
 
     $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
+    $("#dateLabelSlider").html(getScatterFormattedDate(timeSlotDate));
 }
 
 function getScatterLabels() {
@@ -183,8 +196,8 @@ function initializeScatterChart() {
     // get colorScale scale
     colorScale = getScatterColorScale(statesData);
 
-    //Adding legend for our Choropleth
-    drawScatterLegend();
+//    //Adding legend for our Choropleth
+//    drawScatterLegend();
 
     //then draw the shapes
     drawScatterChart();
@@ -195,12 +208,13 @@ function initializeScatterChart() {
     }).on("mouseout", function (d) {
         return d3.select(this).attr("r", getScatterSize( this ));
     });
+    szscale = chart.szscale();
 }
 
 function getScatterSize( marker ){
     var datumIdx = parseInt(marker.id);
-    var size = scatterPlotData.data[datumIdx][sizeDataIndex];
-    return size;
+    var size = scatterPlotData.data[datumIdx][szDataIndex];
+    return szscale(size);
 }
 
 function drawScatterLegend() {
@@ -266,18 +280,21 @@ function drawScatterLegend() {
 function drawScatterChart() {
     var xLab = statesData.x[0].title;
     var yLab = statesData.y[0].title;
+    var szLab = statesData.size[0].title;
     var xLim = getScatterLim( statesData.x );
     var yLim = getScatterLim( statesData.y );
+    var szLim = getScatterLim( statesData.size );
     var NA = getScatterNA();
-    var sizeLab = "TBD";
 
     initScatterPlotData();
 
     chart = scatterplot()
-        .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[0])
-        .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[1]).rotate_ylab(true)
-        .sizevar(sizeDataIndex).sizelab(sizeLab).sizelim([minPointsize, maxPointsize])
-        .height(h).width(w).margin(margin);
+        .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[xDataIndex])
+        .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[yDataIndex]).rotate_ylab(true)
+        .szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
+        .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
+        .height(h).width(w).margin(margin)
+        .axispos(axispos).titlepos(titlepos);
 
     d3.select("." + chartClassName)
         .datum(scatterPlotData)
@@ -362,14 +379,14 @@ function initScatterPlotData() {
 function updateScatterPlotData(){
     var xData = loadScatterData(statesData.x );
     var yData = loadScatterData(statesData.y );
-    var zData = loadScatterData(statesData.size );
+    var szData = loadScatterData(statesData.size );
     var data = [];
     for ( i in stateIds ) {
         var value = [];
         var idx = stateIds[i];
         value[xDataIndex] = getScatterDatum(xData, idx, "NA");
         value[yDataIndex] = getScatterDatum(yData, idx, "NA");
-        value[sizeDataIndex] = getScatterDatum(zData, idx, defaultSize);
+        value[szDataIndex] = getScatterDatum(szData, idx, defaultSize);
         data.push(value);
     }
     scatterPlotData.data = data;
@@ -414,9 +431,7 @@ function getScatterLim( dataSet ){
 }
 
 function getScatterNA() {
-    var xIdx = 0;
-    var yIdx = 1;
-    var dataSets = [statesData.x, statesData.y];
+    var dataSets = [statesData.x, statesData.y, statesData.size];
     var NA = [
         {
             handle: false,
@@ -429,20 +444,19 @@ function getScatterNA() {
             force: false,
             width: 15,
             gap: 10
+        },
+        {
+            handle: false
         }
     ];
-    // check if any x dates are missing from y
-    NA[yIdx].handle = isScatterMissingDates(dataSets[xIdx], dataSets[yIdx]);
-    // check if any y dates are missing from x
-    NA[xIdx].handle = isScatterMissingDates(dataSets[yIdx], dataSets[xIdx]);
 
     // check if any values missing for particular dates
-    for (idx in [0, 1]) {
+    for (idx in [0, 1, 2]) {
         if (!NA[idx].handle) {
             var dataset = dataSets[idx];
             for (i in dataset) {
-                for (j in dataset.values) {
-                    if (dataset.values[j] === "NA") {
+                for (j in dataset[i].values) {
+                    if (dataset[i].values[j] === "NA") {
                         NA[idx].handle = true;
                         break;
                     }
@@ -452,11 +466,20 @@ function getScatterNA() {
             }
         }
     }
+
+    // check if any dates each dataset are missing from the others
+    for( i in [0, 1, 2] ) {
+        for( j in [0, 1, 2] ) {
+            if( i != j && !NA[j].handle )
+                NA[j].handle = isScatterMissingDates(dataSets[i], dataSets[j]);
+        }
+    }
+
     return NA;
 }
 
 function isScatterMissingDates( standard, test ){
-    for( i in standard ){
+    for(i in standard ){
         var date = standard[i].date;
         var missing = true;
         for( j in test ) {
