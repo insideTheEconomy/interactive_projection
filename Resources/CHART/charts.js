@@ -1,16 +1,34 @@
 /**
  * Created by scott on 6/12/14.
  */
-//path = "/Users/scott/Projects/projection.db"
-path = "/Volumes/Pylos/Projects/FED/projection.db";
+path = "/Users/scott/Projects/projection.db"
+//path = "/Volumes/Pylos/Projects/FED/projection.db";
 var chartType = "scatter";
+//var chartType = "usmap";
+//var chartType = "timeline";
+
+var usmapParams = {
+    category: "US Economic Stories",
+    index: "0"
+};
+
+var scatterParams = {
+    category: "US Economic Stories",
+    index: "1"
+};
+
+var lineParams = {
+    category: "US Economic Stories",
+    index: "2"
+};
+
 var ds = new Datasource(path);
 ds.setup().then(
     function (defs) {
-        var defUSMap = defs.Category_1[0]; // usmap
+        var defUSMap = defs[usmapParams.category][+usmapParams.index]; // usmap
         switch (chartType) {
             case "timeline": // TBD: no data def yet
-                var defTimeline = defs.Category_3[0]; // scatter
+                var defTimeline = defs[lineParams.category][+lineParams.index]; // scatter
                 ds.get(defTimeline).then(
                     function(dataTimeline) {
                         new Timeline("#chart", defTimeline, dataTimeline );
@@ -19,7 +37,7 @@ ds.setup().then(
             case "scatter":
                 ds.get(defUSMap).then(
                     function (dataUSMap) {
-                        var defScatter = defs.Category_3[0]; // scatter
+                        var defScatter = defs[scatterParams.category][+scatterParams.index]; // scatter
                         ds.get(defScatter).then(
                             function(dataScatter) {
                                 new ScatterPlot("#chart", defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state );
