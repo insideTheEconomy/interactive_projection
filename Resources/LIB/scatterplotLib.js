@@ -7,33 +7,43 @@
 var scatterplot;
 
 scatterplot = function () {
-    var axispos, chart,
+    var axispos, chart, data,
         dataByInd, group, height, indID, indtip,
-        isPopupShowing, margin, minPointRadius,
-        na_value, ngroup, nxticks, nyticks,
+        isPopupShowing, margin, minPointRadius, maxPointRadius,
+        na_value, ngroup, nxticks, nyticks, nszticks,
         pointcolor, pointsSelect, pointstroke,
         popup, popupRect, popupText,
         popupTickH, popupTickLen, popupTickV,
         popupLblH, popupLblV, popupLblRectH, popupLblRectV,
-        rectcolor, rotate_ylab, title, titlepos, width,
+        rectcolor, rotate_ylab,
+        selectedElem,
+        sz, szlab, szlegend, szlim, szNA, szscale, szticks, szvar, svg,
+        title, titlepos, width,
         x, xNA, xlab, xlim, xscale, xticks, xvar,
-        y, yNA, ylab, ylim, yscale, yticks, yvar,
-        data, selectedElem, size, sizelab, sizelim, sizevar,
-        svg;
-    width = 800;
+        y, yNA, ylab, ylim, yscale, yticks, yvar;
+    width = 900;
     height = 500;
+    szlegend = {
+        width: 120,
+        height: .5 * height,
+        padding: 20,
+        offset: 10,
+        fill: "blue"
+    };
     margin = {
-        left: 60,
+        left: 40,
         top: 40,
-        right: 40,
+        right: szlegend.width + szlegend.offset,
         bottom: 40,
         inner: 5
     };
     axispos = {
         xtitle: 25,
         ytitle: 30,
+        sztitle: 25,
         xlabel: 5,
-        ylabel: 5
+        ylabel: 5,
+        szlabel: 5
     };
     titlepos = 20;
     xNA = {
@@ -48,13 +58,18 @@ scatterplot = function () {
         width: 15,
         gap: 10
     };
+    szNA = {
+        handle: true
+    }
     xlim = null;
     ylim = null;
-    sizelim = null;
+    szlim = null;
     nxticks = 5;
     xticks = null;
     nyticks = 5;
     yticks = null;
+    nszticks = 6;
+    szticks = null;
     rectcolor = d3.rgb(230, 230, 230);
     pointcolor = null;
     pointstroke = "black";
@@ -62,13 +77,14 @@ scatterplot = function () {
     title = "";
     xlab = "X";
     ylab = "Y";
-    sizelab = "Size";
+    szlab = "Size";
     rotate_ylab = null;
     xscale = d3.scale.linear();
     yscale = d3.scale.linear();
+    szscale = d3.scale.linear();
     xvar = 0;
     yvar = 1;
-    sizevar = 2;
+    szvar = 2;
     pointsSelect = null;
     dataByInd = true;
 
@@ -78,7 +94,10 @@ scatterplot = function () {
 
     chart = function (selection) {
         return selection.each(function (chartdata) {
-            var g, gEnter, panelheight, paneloffset, panelwidth, titlegrp, xaxis, xrange, xs, yaxis, yrange, ys, sizerange;
+            var g, gEnter, panelheight, paneloffset, panelwidth, titlegrp,
+                xaxis, xrange, xscl,
+                yaxis, yrange, yscl,
+                szaxis, szrange, szscl;
             data = chartdata;
             //apointcolor = pointcolor != null ? pointcolor : selectGroupColors(ngroup, "dark");
             pointcolor = expand2vector(pointcolor, ngroup);
@@ -115,10 +134,13 @@ scatterplot = function () {
                         margin.top + height - yNA.width).attr("height", yNA.width).attr("width",
                     panelwidth).attr("fill", rectcolor).attr("stroke", "none");
             }
+
             xrange = [margin.left + paneloffset + margin.inner, margin.left + paneloffset + panelwidth - margin.inner];
             yrange = [margin.top + panelheight - margin.inner, margin.top + margin.inner];
+            szrange = [minPointRadius, maxPointRadius];
             xscale.domain(xlim).range(xrange);
             yscale.domain(ylim).range(yrange);
+            szscale.domain(szlim).range(szrange);
             na_value = ( xlim[0] < ylim[0] ? xlim[0] : ylim[0]) - 100; // min x and y minus 100 will put the NA points 100 units outside main chart areaif (xNA.handle) {
             // add na_value to scales if necessary
             if (xNA.handle) {
@@ -127,14 +149,20 @@ scatterplot = function () {
             if (yNA.handle) {
                 yscale.domain([na_value].concat(ylim)).range([height + margin.top - yNA.width / 2].concat(yrange));
             }
+            if (szNA.handle) {
+                szscale.domain([na_value].concat(szlim)).range([height + margin.top - yNA.width / 2].concat(szrange));
+            }
 
-            xs = d3.scale.linear().domain(xlim).range(xrange);
-            ys = d3.scale.linear().domain(ylim).range(yrange);
-            yticks = yticks != null ? yticks : ys.ticks(nyticks);
-            xticks = xticks != null ? xticks : xs.ticks(nxticks);
+            xscl = d3.scale.linear().domain(xlim).range(xrange);
+            yscl = d3.scale.linear().domain(ylim).range(yrange);
+            szscl = d3.scale.linear().domain(szlim).range(szrange);
+            xticks = xticks != null ? xticks : xscl.ticks(nxticks);
+            yticks = yticks != null ? yticks : yscl.ticks(nyticks);
+            szticks = szticks != null ? szticks : szscl.ticks(nszticks);
             titlegrp = g.append("g").attr("class", "title").append("text").attr("x",
                     margin.left + width / 2).attr("y",
                     margin.top - titlepos).text(title);
+
             xaxis = g.append("g").attr("class", "x axis");
             xaxis.selectAll("empty").data(xticks).enter().append("line").attr("x1", function (d) {
                 return xscale(d);
@@ -153,6 +181,7 @@ scatterplot = function () {
                 xaxis.append("text").attr("x", margin.left + xNA.width / 2).attr("y",
                         margin.top + height + axispos.xlabel).text("N/A");
             }
+
             rotate_ylab = rotate_ylab != null ? rotate_ylab : ylab.length > 1;
             yaxis = g.append("g").attr("class", "y axis");
             yaxis.selectAll("empty").data(yticks).enter().append("line").attr("y1", function (d) {
@@ -166,13 +195,64 @@ scatterplot = function () {
             }).attr("x", margin.left - axispos.ylabel).text(function (d) {
                 return formatAxis(yticks)(d);
             });
-            yaxis.append("text").attr("class", "title").attr("y", margin.top + height / 2).attr("x",
-                    margin.left - axispos.ytitle).text(ylab).attr("transform",
+            yaxis.append("text").attr("class", "title").attr("y", margin.top + height / 2)
+                .attr("x", margin.left - axispos.ytitle).text(ylab).attr("transform",
                 rotate_ylab ? "rotate(270," + (margin.left - axispos.ytitle) + "," + (margin.top + height / 2) + ")" : "");
             if (yNA.handle) {
                 yaxis.append("text").attr("x", margin.left - axispos.ylabel).attr("y",
                         margin.top + height - yNA.width / 2).text("N/A");
             }
+
+            var maxSz = szscale(szticks[0]);
+            for(var i=1; i<szticks.length; i++) {
+                var sz = szscale(szticks[i]);
+                if( maxSz < sz )
+                    maxSz = sz;
+            }
+            szaxis = g.append("g").attr("class", "sz axis");
+            var szlbl = szaxis.append("text").attr("class", "title").text(szlab)
+                .attr("y", margin.top)
+                .attr("x", +(width + margin.left + szlegend.offset))
+                .attr("text-anchor", "start");
+            var szlblHt = szlbl.node().getBBox().height;
+            szaxis.selectAll("empty").data(szticks).enter().append("text")
+                .attr("y", function (d, i) {
+                    var y = margin.top + szlblHt + szlegend.padding;
+                    for (var j = 1; j <= i; j++) {
+                        y += szlegend.padding + szscale(szticks[j - 1]) + szscale(szticks[j]);
+                    }
+                    return y;
+                })
+                .attr("x", function (d, i) {
+                    return width + margin.left + szlegend.offset + 2 * maxSz + szlegend.padding;
+                })
+                .attr("dy", "-0.2em") // vertically center the text
+                .text(function (d) {
+                    return formatAxis(szticks)(d);
+                });
+            szaxis.selectAll("empty").data(szticks).enter().append("circle")
+                .attr("cy", function (d, i) {
+                    var y = margin.top + szlblHt + szlegend.padding + szscale(0);
+                    for (var j = 1; j <= i; j++) {
+                        y += szlegend.padding + szscale(szticks[j - 1]) + szscale(szticks[j]);
+                    }
+                    return y;
+                })
+                .attr("cx", function (d, i) {
+                    return width + margin.left + szlegend.offset + maxSz;
+                })
+                .attr("r", function (d) {
+                    return szscale(d);
+                })
+                .attr("fill", function (d, i) {
+                    return szlegend.fill;//group[i]];
+                });
+            szaxis.append("text").attr("class", "title")
+                .attr("x", width - margin.right)
+                .attr("y", margin.top + szlegend.height / 2)
+                .text(szlab)
+                .attr("transform","rotate(270," + (margin.left - axispos.sztitle) + "," + (margin.top + szlegend.height) + ")");
+
             indtip = d3.tip().attr("class", "scattertip").html(function (d, i) {
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
@@ -180,16 +260,8 @@ scatterplot = function () {
             popup = svg.append("g").attr("class", "popup");
             popupRect = popup.append("svg:rect").attr("class", "popupRect");
             popupText = popup.append("svg:text").attr("class", "popupText");
-            popupTickH = popup.append("svg:line").attr("class", "popupTick")
-                .attr("x1", +(-popupTickLen))
-                .attr("y1", "0")
-                .attr("x2", "0")
-                .attr("y2", "0");
-            popupTickV = popup.append("svg:line").attr("class", "popupTick")
-                .attr("x1", "0")
-                .attr("y1", "0")
-                .attr("x2", "0")
-                .attr("y2", +popupTickLen);
+            popupTickH = popup.append("svg:line").attr("class", "popupTick");
+            popupTickV = popup.append("svg:line").attr("class", "popupTick");
             var tickGroupH = popup.append("g").attr("class", "popupTickLabel");
             var tickGroupV = popup.append("g").attr("class", "popupTickLabel");
             popupLblRectH = tickGroupH.append("svg:rect");
@@ -233,6 +305,13 @@ scatterplot = function () {
             return height;
         }
         height = value;
+        return chart;
+    };
+    chart.szlegend = function (value) {
+        if (!arguments.length) {
+            return szlegend;
+        }
+        szlegend = value;
         return chart;
     };
     chart.margin = function (value) {
@@ -298,11 +377,39 @@ scatterplot = function () {
         yticks = value;
         return chart;
     };
-    chart.sizelim = function (value) {
+    chart.minPointRadius = function (value) {
         if (!arguments.length) {
-            return sizelim;
+            return minPointRadius;
         }
-        sizelim = value;
+        minPointRadius = value;
+        return chart;
+    };
+    chart.maxPointRadius = function (value) {
+        if (!arguments.length) {
+            return maxPointRadius;
+        }
+        maxPointRadius = value;
+        return chart;
+    };
+    chart.szlim = function (value) {
+        if (!arguments.length) {
+            return szlim;
+        }
+        szlim = value;
+        return chart;
+    };
+    chart.nszticks = function (value) {
+        if (!arguments.length) {
+            return nszticks;
+        }
+        nszticks = value;
+        return chart;
+    };
+    chart.szticks = function (value) {
+        if (!arguments.length) {
+            return szticks;
+        }
+        szticks = value;
         return chart;
     };
     chart.rectcolor = function (value) {
@@ -354,11 +461,11 @@ scatterplot = function () {
         ylab = value;
         return chart;
     };
-    chart.sizelab = function (value) {
+    chart.szlab = function (value) {
         if (!arguments.length) {
-            return sizelab;
+            return szlab;
         }
-        sizelab = value;
+        szlab = value;
         return chart;
     };
     chart.rotate_ylab = function (value) {
@@ -382,11 +489,11 @@ scatterplot = function () {
         yvar = value;
         return chart;
     };
-    chart.sizevar = function (value) {
+    chart.szvar = function (value) {
         if (!arguments.length) {
-            return sizevar;
+            return szvar;
         }
-        sizevar = value;
+        szvar = value;
         return chart;
     };
     chart.xNA = function (value) {
@@ -403,11 +510,21 @@ scatterplot = function () {
         yNA = value;
         return chart;
     };
+    chart.szNA = function (value) {
+        if (!arguments.length) {
+            return szNA;
+        }
+        szNA = value;
+        return chart;
+    };
     chart.yscale = function () {
         return yscale;
     };
     chart.xscale = function () {
         return xscale;
+    };
+    chart.szscale = function () {
+        return szscale;
     };
     chart.pointsSelect = function () {
         return pointsSelect;
@@ -454,7 +571,7 @@ scatterplot = function () {
             }).attr("cy", function (d, i) {
                 return yscale(y[i]);
             }).attr("r", function (d, i) {
-                return size[i];
+                return szscale(sz[i]);
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
             }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
@@ -504,9 +621,10 @@ scatterplot = function () {
     chart.showPopup = function( d, i ) {
         // var idx = parseInt(d3.select(selectedElem).attr("id"));
         var idx = selectedElem.getAttribute("id");
-        var x = data.data[idx][xvar];
-        var y = data.data[idx][yvar];
-        var r = data.data[idx][sizevar];
+        var xVal = data.data[idx][xvar];
+        var yVal = data.data[idx][yvar];
+        var szVal = data.data[idx][szvar];
+        var r = szscale(szVal);
         var padding = 2;
 
         var cx = selectedElem.getAttribute("cx");
@@ -529,10 +647,12 @@ scatterplot = function () {
         centerRectOnText( popupRect, popupText, padding );
 
         // add ticks with value labels to element
+        popupTickH.attr("x1", +(-r-popupTickLen));
         popupTickH.attr("x2", +(-r));
         popupTickV.attr("y1", +r);
-        popupLblH.text(+x);
-        popupLblV.text(+y);
+        popupTickV.attr("y2", +(popupTickLen+r));
+        popupLblH.text(+yVal);
+        popupLblV.text(+xVal);
 
         // get text centered at end of ticks
         var lblHBox = popupLblH.node().getBBox();
@@ -582,7 +702,7 @@ scatterplot = function () {
             }).attr("cy", function (d, i) {
                 return yscale(y[i]);
             }).attr("r", function (d, i) {
-                return size[i];
+                return szscale(sz[i]);
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
             }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
@@ -603,17 +723,17 @@ scatterplot = function () {
             y = data.data.map(function (d) {
                 return d[yvar];
             });
-            size = data.data.map(function (d) {
-                return d[sizevar];
+            sz = data.data.map(function (d) {
+                return d[szvar];
             });
         } else {
             x = data.data[xvar];
             y = data.data[yvar];
-            size = data.data[sizevar];
+            sz = data.data[szvar];
         }
         x = missing2null(x, ["NA", ""]);
         y = missing2null(y, ["NA", ""]);
-        size = missing2default(size, ["NA", ""], minPointRadius);
+        sz = missing2default(sz, ["NA", ""], minPointRadius);
         if (xNA.handle) {
             x = x.map(function (e) {
                 if (e != null) {
