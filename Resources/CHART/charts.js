@@ -1,8 +1,8 @@
 /**
  * Created by scott on 6/12/14.
  */
-path = "/Users/scott/Projects/projection.db"
-//path = "/Volumes/Pylos/Projects/FED/projection.db";
+//path = "/Users/scott/Projects/projection.db"
+path = "/Volumes/Pylos/Projects/FED/projection.db";
 var chartType = "scatter";
 //var chartType = "usmap";
 //var chartType = "timeline";
