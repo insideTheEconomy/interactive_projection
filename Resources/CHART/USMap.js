@@ -26,12 +26,11 @@ var unselectedCountyOpacity = 0.9;
 var stateFillOpacity = 0.3;
 var stateFillColor = "white";
 
-var chartAreaId = "chartArea";
 var usmapClass = "usmap"; // class for plot elements in CSS
 var allocatedElement;
 var chartAreaDiv;
-var dateLabelDiv;
 var chartSvg;
+var dateLabelDiv;
 //var stateOutlines;
 var mapRegions;
 var countyDataLabel;
@@ -49,7 +48,9 @@ var translate;
 var featureIds = [];
 var countyValuesById = {};
 var countyNameById = {};
-var timeSlotDate = "2000-04-01";
+
+var dateRange;
+var timeSlotDate;
 
 var path = d3.geo.path()
 
@@ -83,16 +84,19 @@ var chartArea = {
 
 var USMap = function(sel, dataDefs, dataUSMap) {
 
-    allocatedElement = d3.select(sel).append("div").attr("id", "chartMain").attr("class", usmapClass);
-    allocatedElement.append("div").attr("id", "chartTitle").attr("class", usmapClass);
-    allocatedElement.append("div").attr("id", "chartDescription").attr("class", usmapClass);
-    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel").attr("class", usmapClass);
+    allocatedElement = d3.select(sel).append("div").attr("id", chartMainId).attr("class", usmapClass);
+    allocatedElement.append("div").attr("id", chartTitleId).attr("class", usmapClass);
+    allocatedElement.append("div").attr("id", chartDescriptionId).attr("class", usmapClass);
+    dateLabelDiv = allocatedElement.append("div").attr("id", dateLabelId).attr("class", usmapClass);
     chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId).attr("class", usmapClass);
 
-    chartSvg = chartAreaDiv.append("svg").attr("id", "chartSvg").attr("class", worldmapClass)
-        .attr("width", chartArea.width).attr("height", chartArea.height)
+    chartSvg = chartAreaDiv.append("svg").attr("id", chartSvgId).attr("class", usmapClass);
+        //.attr("width", chartArea.width).attr("height", chartArea.height)
 
     countyData = dataUSMap.data;
+
+    dateRange = getUSMapDateRange();
+    timeSlotDate = dateRange[0];
 
     // get feature names and Ids
     dataUSMap.maps.county.features.forEach(function (feature, i) {
@@ -103,8 +107,8 @@ var USMap = function(sel, dataDefs, dataUSMap) {
     // get values for timeslot
     getUSMapTimeslotValues();
 
-    d3.select("#chartTitle").html(dataDefs.chart_name);
-    d3.select("#chartDescription").html(dataDefs.chart_text);
+    d3.select("#" + chartTitleId).html(dataDefs.chart_name);
+    d3.select("#" + chartDescriptionId).html(dataDefs.chart_text);
 
     //Drawing Choropleth
     initializeUSMapChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
@@ -119,19 +123,25 @@ var drawUSMapControls = function() {
 }
 
 var drawUSMapSlider = function() {
-    var dateRange = getUSMapDateRange();
-    chartAreaDiv.append("div").attr("id","dateSlider");
-    $("#dateSlider").slider({
-        min: 0,
-        max: dateRange.length - 1,
-        value: dateRange.indexOf(timeSlotDate), // start in center
+    var uiValue = null;
+    var min = 0;
+    var max = dateRange.length - 1;
+    var fullRange = max - min;
+    var numTicks = 4;
+    var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
+    chartAreaDiv.append("div").attr("id", dateSliderId).attr("class", usmapClass);
+    $("#" + dateSliderId).labeledslider({
+        min: min,
+        max: max,
+        value: dateRange.indexOf(timeSlotDate), // start at current date
         animate: "fast", // animate sliding
+        tickLabels: getUSMapLabels(tickInterval),
         slide: function (event, ui) {
             //console.log(ui.value, dateRange[ui.value]);
 //            var delay = function () {
             timeSlotDate = dateRange[ui.value];
             dateLabelDiv.html(getFormattedDate(timeSlotDate));
-            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+            dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 //            // wait for the ui.handle to set its position
 //            setTimeout(delay, 5);
         },
@@ -146,11 +156,58 @@ var drawUSMapSlider = function() {
             }
         }
     });
-    var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel").attr("class", usmapClass);
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", usmapClass);
 
     dateLabelDiv.html(getFormattedDate(timeSlotDate));
-    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+    dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
+
+var getUSMapLabels = function(tickInterval) {
+    var labels = [];
+    for( var i=0; i<dateRange.length; i++){
+        if( i%tickInterval == 0 ) {
+            var date = new Date(dateRange[i]);
+            labels.push(date.getFullYear())
+        } else {
+            labels.push(" ");
+        }
+    }
+    return labels;
+}
+
+//var drawUSMapSlider = function() {
+//    var dateRange = getUSMapDateRange();
+//    chartAreaDiv.append("div").attr("id",dateSliderId).attr("class", usmapClass);
+//    $("#dateSlider").slider({
+//        min: 0,
+//        max: dateRange.length - 1,
+//        value: dateRange.indexOf(timeSlotDate), // start in center
+//        animate: "fast", // animate sliding
+//        slide: function (event, ui) {
+//            //console.log(ui.value, dateRange[ui.value]);
+////            var delay = function () {
+//            timeSlotDate = dateRange[ui.value];
+//            dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+////            // wait for the ui.handle to set its position
+////            setTimeout(delay, 5);
+//        },
+//        stop: function (event, ui) {
+//            getUSMapTimeslotValues();
+////            colorScale = getUSMapColorScale(countyData);
+//            updateUSMapChart();
+//
+//            // if county is clicked, then update tooltip
+//            if (countyClicked) {
+//                updateCountyDataLabel();
+//            }
+//        }
+//    });
+//    var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", usmapClass);
+//
+//    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+//}
 
 var drawUSMapResetButton = function() {
     $("#resetBtn").button(

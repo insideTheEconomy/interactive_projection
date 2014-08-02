@@ -28,6 +28,8 @@
  *  jquery.ui.widget.js
  *  jquery.ui.mouse.js
  *  jquery.ui.slider.js
+ *
+ *  Modified by Scott Reed
  */
 
 (function( $, undefined ) {

@@ -43,13 +43,13 @@ var titlepos = 20;
 //
 //var totalw = halfw * 2;
 
-var chartAreaId = "chartArea"
-var elemClass = "scatter"; // class for plot elements in CSS
+var scatterClass = "scatter"; // class for plot elements in CSS
 var allocatedElement;
 var chartAreaDiv;
 var dateLabelDiv;
 var chart;
 
+var dateRange;
 var timeSlotDate;
 
 var stateIds = [];
@@ -58,7 +58,6 @@ var statesGeoData = {};
 var stateNamesById = {};
 var stateNames = [];
 var statesGeoFeatures; // state map data
-var dateRange;
 
 var scatterPlotData;
 
@@ -108,11 +107,11 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
         stateNames.push(stateNamesById[stateIds[i]]);
     }
 
-    allocatedElement = d3.select(sel).append("div").attr("id", "chartMain");
-    allocatedElement.append("div").attr("id", "chartTitle");
-    allocatedElement.append("div").attr("id", "chartDescription");
-    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel");
-    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId);
+    allocatedElement = d3.select(sel).append("div").attr("id", chartMainId).attr("class", scatterClass);
+    allocatedElement.append("div").attr("id", chartTitleId).attr("class", scatterClass);
+    allocatedElement.append("div").attr("id", chartDescriptionId).attr("class", scatterClass);
+    dateLabelDiv = allocatedElement.append("div").attr("id", dateLabelId).attr("class", scatterClass);
+    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId).attr("class", scatterClass);
 
     dateRange = getScatterDateRange();
     timeSlotDate = dateRange[0];
@@ -120,8 +119,8 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     // get plot data for this time slot
     scatterPlotData = initScatterPlotData();
 
-    d3.select("#chartTitle").text(statesDataDefs.chart_name);
-    d3.select("#chartDescription").text(statesDataDefs.chart_text);
+    d3.select("#" + chartTitleId).text(statesDataDefs.chart_name);
+    d3.select("#" + chartDescriptionId).text(statesDataDefs.chart_text);
 
     initializeScatterChart(); // draw plot
 
@@ -138,14 +137,13 @@ var drawScatterSlider = function() {
     var fullRange = max - min;
     var numTicks = 4;
     var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
-    chartAreaDiv.append("div").attr("id", "dateSlider");
-   $("#dateSlider").labeledslider({
+    chartAreaDiv.append("div").attr("id", dateSliderId).attr("class", scatterClass);
+   $("#" + dateSliderId).labeledslider({
         min: min,
         max: max,
-        value: dateRange.indexOf(timeSlotDate), // start in center
+        value: dateRange.indexOf(timeSlotDate), // start at current date
         animate: "fast", // animate sliding
-        tickInterval: tickInterval,
-        tickLabels: getScatterLabels(),
+        tickLabels: getScatterLabels(tickInterval),
         slide: function (event, ui) {
             var value = Math.round(ui.value);
             if (value != uiValue) {
@@ -157,17 +155,21 @@ var drawScatterSlider = function() {
             }
         }
     });
-    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel");
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", worldmapClass);
 
     dateLabelDiv.html(getFormattedDate(timeSlotDate));
     dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
 
-var getScatterLabels = function() {
+var getScatterLabels = function(tickInterval) {
     var labels = [];
     for( var i=0; i<dateRange.length; i++){
-        var date = new Date(dateRange[i]);
-        labels.push( date.getFullYear() )
+        if( i%tickInterval == 0 ) {
+            var date = new Date(dateRange[i]);
+            labels.push(date.getFullYear())
+        } else {
+            labels.push(" ");
+        }
     }
     return labels;
 }
@@ -294,7 +296,7 @@ var drawScatterChart = function() {
         .szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
         .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
         .height(chartHeight).width(chartWidth).margin(chartMargin)
-        .axispos(axispos).titlepos(titlepos).elemClass(elemClass);
+        .axispos(axispos).titlepos(titlepos).elemClass(scatterClass);
 
     d3.select("#" + chartAreaId)
         .datum(scatterPlotData)

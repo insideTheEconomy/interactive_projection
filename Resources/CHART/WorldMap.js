@@ -26,11 +26,10 @@ var unselectedCountryOpacity = 0.9;
 //var stateFillOpacity = 0.3;
 //var stateFillColor = "white"
 
-var chartSvg;
-var chartAreaDiv;
-var chartAreaId = "chartArea";
 var worldmapClass = "worldmap"; // class for plot elements in CSS
 var allocatedElement;
+var chartAreaDiv;
+var chartSvg;
 var dateLabelDiv;
 var mapRegions;
 var countryDataLabel;
@@ -48,7 +47,9 @@ var translate;
 var featureIds = [];
 var countryValuesById = {};
 var countryNameById = {};
-var timeSlotDate = "2000-04-01";
+
+var dateRange;
+var timeSlotDate;
 
 var path = d3.geo.path()
 
@@ -59,7 +60,8 @@ var dbDefs;
 
 var winSize = {
     width: 800,
-    height: 600
+    height: 600,
+    offset: 150
 };
 
 
@@ -67,17 +69,20 @@ var winSize = {
 
 var WorldMap = function(sel, dataDefs, dataWorldMap) {
 
-    allocatedElement = d3.select(sel).append("div").attr("id", "chartMain").attr("class", worldmapClass);
-    allocatedElement.append("div").attr("id", "chartTitle").attr("class", worldmapClass);
-    allocatedElement.append("div").attr("id", "chartDescription").attr("class", worldmapClass);
-    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel").attr("class", worldmapClass);
+    allocatedElement = d3.select(sel).append("div").attr("id", chartMainId).attr("class", worldmapClass);
+    allocatedElement.append("div").attr("id", chartTitleId).attr("class", worldmapClass);
+    allocatedElement.append("div").attr("id", chartDescriptionId).attr("class", worldmapClass);
+    dateLabelDiv = allocatedElement.append("div").attr("id", dateLabelId).attr("class", worldmapClass);
     chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId ).attr("class", worldmapClass);
 
 //    chartAreaDiv = d3.select(sel).attr("class","chart");
-    chartSvg = chartAreaDiv.append("svg").attr("id", "chartSvg").attr("class", worldmapClass)
-        .attr("width", winSize.width).attr("height", winSize.height);
+    chartSvg = chartAreaDiv.append("svg").attr("id", chartSvgId).attr("class", worldmapClass);
+//        .attr("width", winSize.width).attr("height", winSize.height);
 
     countryData = dataWorldMap.data;
+
+    dateRange = getWorldMapDateRange();
+    timeSlotDate = dateRange[0];
 
     // get feature names and Ids
     dataWorldMap.map[0].features.forEach(function (feature, i) {
@@ -88,8 +93,8 @@ var WorldMap = function(sel, dataDefs, dataWorldMap) {
     // get values for timeslot
     getWorldMapTimeslotValues();
 
-    d3.select("#chartTitle").text(dataDefs.chart_name);
-    d3.select("#chartDescription").text(dataDefs.chart_text);
+    d3.select("#" + chartTitleId).text(dataDefs.chart_name);
+    d3.select("#" + chartDescriptionId).text(dataDefs.chart_text);
 
     //Drawing Choropleth
     initializeWorldMapChart(dataWorldMap.map[0]); // draw map
@@ -102,19 +107,25 @@ var drawWorldMapControls = function() {
 }
 
 var drawWorldMapSlider = function() {
-    var dateRange = getWorldMapDateRange();
-    chartAreaDiv.append("div").attr("class","slider");
-    $(".slider").slider({
-        min: 0,
-        max: dateRange.length - 1,
-        value: dateRange.indexOf(timeSlotDate), // start in center
+    var uiValue = null;
+    var min = 0;
+    var max = dateRange.length - 1;
+    var fullRange = max - min;
+    var numTicks = 4;
+    var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
+    chartAreaDiv.append("div").attr("id", dateSliderId).attr("class", worldmapClass);
+    $("#" + dateSliderId).labeledslider({
+        min: min,
+        max: max,
+        value: dateRange.indexOf(timeSlotDate), // start at current date
         animate: "fast", // animate sliding
+        tickLabels: getWorldMapLabels(tickInterval),
         slide: function (event, ui) {
             //console.log(ui.value, dateRange[ui.value]);
 //            var delay = function () {
             timeSlotDate = dateRange[ui.value];
             dateLabelDiv.html(getFormattedDate(timeSlotDate));
-            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+            dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 //            // wait for the ui.handle to set its position
 //            setTimeout(delay, 5);
             getWorldMapTimeslotValues();
@@ -127,11 +138,57 @@ var drawWorldMapSlider = function() {
             }
         }
     });
-    var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel").attr("class", worldmapClass);
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", worldmapClass);
 
     dateLabelDiv.html(getFormattedDate(timeSlotDate));
-    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+    dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
+
+getWorldMapLabels = function(tickInterval) {
+    var labels = [];
+    for( var i=0; i<dateRange.length; i++){
+        if( i%tickInterval == 0 ) {
+            var date = new Date(dateRange[i]);
+            labels.push(date.getFullYear())
+        } else {
+            labels.push(" ");
+        }
+    }
+    return labels;
+}
+
+
+//var drawWorldMapSlider = function() {
+//    var dateRange = getWorldMapDateRange();
+//    chartAreaDiv.append("div").attr("id",dateSliderId);
+//    $("#" + dateSliderId).slider({
+//        min: 0,
+//        max: dateRange.length - 1,
+//        value: dateRange.indexOf(timeSlotDate), // start in center
+//        animate: "fast", // animate sliding
+//        slide: function (event, ui) {
+//            //console.log(ui.value, dateRange[ui.value]);
+////            var delay = function () {
+//            timeSlotDate = dateRange[ui.value];
+//            dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+////            // wait for the ui.handle to set its position
+////            setTimeout(delay, 5);
+//            getWorldMapTimeslotValues();
+////            colorScale = getWorldMapColorScale(countryData);
+//            updateWorldMapChart();
+//
+//            // if country is clicked, then update tooltip
+//            if (countryClicked) {
+//                updateCountryDataLabel();
+//            }
+//        }
+//    });
+//    var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", worldmapClass);
+//
+//    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+//}
 
 //function drawMapResetButton() {
 //    $("#resetBtn").button(
@@ -187,8 +244,9 @@ var initializeWorldMapChart = function(mapCountries) {
         b_e = b[1][0],
         b_height = Math.abs(b_n - b_s),
         b_width = Math.abs(b_e - b_w);
-    var s = .95 / Math.max(b_width / winSize.width, (b_height / winSize.height)),
-        t = [(winSize.width - s * (b[1][0] + b[0][0])) / 2, (winSize.height - s * (b[1][1] + b[0][1])) / 2];
+    var chartWidth = chartArea.width - chartArea.offset;
+    var s = .95 / Math.max(b_width / chartWidth, (b_height / chartArea.height)),
+        t = [chartArea.offset + (chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartArea.height - s * (b[1][1] + b[0][1])) / 2];
 
     // Update the projection to use computed scale & translate.
     projection
@@ -299,8 +357,8 @@ var drawWorldMapLegend = function() {
     legendLabels.reverse();
     domainElems.reverse();
 
-    // get the legend DOM element
-    var legendSvg = d3.select("#legend").append("svg");
+    // add the legend DOM element
+    var legendSvg = chartSvg.append("g");
 
     legend = legendSvg.selectAll("g.legend")
         .data(domainElems)

@@ -7,7 +7,6 @@ var usmapParams = {
     index: "0"
 };
 var isChart = false;
-var chartDivs = ["#chartTitle","#dateLabel","#chartDescription","#chart"];
 
 var ds = new Datasource(path);
 ds.setup().then(
@@ -41,9 +40,9 @@ ds.setup().then(
 
 var selectChart = function(defs, chartType, category, chartIndex) {
     if( isChart ) {
-        // clean up previous chart
-        for( var i in chartDivs)
-            d3.select(chartDivs[i]).selectAll("*").remove();
+        // clean up top level divs of previous chart
+        for( var i in chartTopLevelDivIds)
+            d3.select("#" + chartTopLevelDivIds[i]).remove(); //.selectAll("*").remove();
     }
 
     isChart = true;
