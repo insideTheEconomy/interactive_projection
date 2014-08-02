@@ -11,6 +11,8 @@ var monthNames = [ "January", "February", "March", "April", "May", "June",
 var maxDataPointsForDots = 50,
     transitionDuration = 1000;
 
+var chartClassNme = "line";
+
 var svg = null,
     yAxisGroup = null,
     xAxisGroup = null,
@@ -18,7 +20,7 @@ var svg = null,
     dataLinesGroup = null,
     tip = null;
 
-function draw() {
+var draw = function() {
     var data = generateData();
     var margin = 40;
     var max = d3.max(data, function(d) { return d.value });
@@ -193,7 +195,7 @@ function draw() {
         .remove();
 
 //    $('svg circle').tipsy({
-//        gravity: 'w',
+//        gravity: 'chartWidth',
 //        html: true,
 //        title: function() {
 //            var d = this.__data__;
@@ -208,7 +210,7 @@ function draw() {
     svg.call(indtip);
 }
 
-function generateData() {
+var generateData = function() {
     var data = [];
     var i = Math.max(Math.round(Math.random()*100), 3);
 
@@ -220,6 +222,3 @@ function generateData() {
     }
     return data;
 }
-
-d3.select('#button').on('click', draw);
-draw();
