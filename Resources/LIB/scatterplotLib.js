@@ -8,7 +8,7 @@ var scatterplot;
 
 scatterplot = function () {
     var axispos, chart, data,
-        dataByInd, group, height, indID, indtip,
+        dataByInd, scatterClass, group, height, indID, indtip,
         isPopupShowing, margin, minPointRadius, maxPointRadius,
         na_value, ngroup, nxticks, nyticks, nszticks,
         pointcolor, pointsSelect, pointstroke,
@@ -21,8 +21,10 @@ scatterplot = function () {
         title, titlepos, width,
         x, xNA, xlab, xlim, xscale, xticks, xvar,
         y, yNA, ylab, ylim, yscale, yticks, yvar;
-    width = 900;
-    height = 500;
+
+    // default values
+    width = 901;
+    height = 501;
     szlegend = {
         width: 120,
         height: .5 * height,
@@ -45,6 +47,7 @@ scatterplot = function () {
         ylabel: 5,
         szlabel: 5
     };
+    scatterClass = "scatterplot";
     titlepos = 20;
     xNA = {
         handle: true,
@@ -115,8 +118,8 @@ scatterplot = function () {
             }
             svg = d3.select(this).selectAll("svg").data([data]);
             gEnter = svg.enter().append("svg").append("g");
-            svg.attr("width", width + margin.left + margin.right).attr("height",
-                    height + margin.top + margin.bottom);
+//            svg.attr("width", width + margin.left + margin.right).attr("height",
+//                    height + margin.top + margin.bottom);
             g = svg.select("g");
             g.append("rect").attr("x", paneloffset + margin.left).attr("y", margin.top).attr("height",
                 panelheight).attr("width", panelwidth).attr("fill", rectcolor).attr("stroke", "none");
@@ -159,11 +162,11 @@ scatterplot = function () {
             xticks = xticks != null ? xticks : xscl.ticks(nxticks);
             yticks = yticks != null ? yticks : yscl.ticks(nyticks);
             szticks = szticks != null ? szticks : szscl.ticks(nszticks);
-            titlegrp = g.append("g").attr("class", "title").append("text").attr("x",
+            titlegrp = g.append("g").attr("class", "title " + scatterClass).append("text").attr("x",
                     margin.left + width / 2).attr("y",
                     margin.top - titlepos).text(title);
 
-            xaxis = g.append("g").attr("class", "x axis");
+            xaxis = g.append("g").attr("class", "x axis " + scatterClass);
             xaxis.selectAll("empty").data(xticks).enter().append("line").attr("x1", function (d) {
                 return xscale(d);
             }).attr("x2", function (d) {
@@ -175,7 +178,7 @@ scatterplot = function () {
             }).attr("y", margin.top + height + axispos.xlabel).text(function (d) {
                 return formatAxis(xticks)(d);
             });
-            xaxis.append("text").attr("class", "title").attr("x", margin.left + width / 2).attr("y",
+            xaxis.append("text").attr("class", "title " + scatterClass).attr("x", margin.left + width / 2).attr("y",
                     margin.top + height + axispos.xtitle).text(xlab);
             if (xNA.handle) {
                 xaxis.append("text").attr("x", margin.left + xNA.width / 2).attr("y",
@@ -183,7 +186,7 @@ scatterplot = function () {
             }
 
             rotate_ylab = rotate_ylab != null ? rotate_ylab : ylab.length > 1;
-            yaxis = g.append("g").attr("class", "y axis");
+            yaxis = g.append("g").attr("class", "y axis " + scatterClass);
             yaxis.selectAll("empty").data(yticks).enter().append("line").attr("y1", function (d) {
                 return yscale(d);
             }).attr("y2", function (d) {
@@ -195,7 +198,7 @@ scatterplot = function () {
             }).attr("x", margin.left - axispos.ylabel).text(function (d) {
                 return formatAxis(yticks)(d);
             });
-            yaxis.append("text").attr("class", "title").attr("y", margin.top + height / 2)
+            yaxis.append("text").attr("class", "title " + scatterClass).attr("y", margin.top + height / 2)
                 .attr("x", margin.left - axispos.ytitle).text(ylab).attr("transform",
                 rotate_ylab ? "rotate(270," + (margin.left - axispos.ytitle) + "," + (margin.top + height / 2) + ")" : "");
             if (yNA.handle) {
@@ -209,8 +212,8 @@ scatterplot = function () {
                 if( maxSz < sz )
                     maxSz = sz;
             }
-            szaxis = g.append("g").attr("class", "sz axis");
-            var szlbl = szaxis.append("text").attr("class", "title").text(szlab)
+            szaxis = g.append("g").attr("class", "sz axis " + scatterClass);
+            var szlbl = szaxis.append("text").attr("class", "title " + scatterClass).text(szlab)
                 .attr("y", margin.top)
                 .attr("x", +(width + margin.left + szlegend.offset))
                 .attr("text-anchor", "start");
@@ -247,23 +250,23 @@ scatterplot = function () {
                 .attr("fill", function (d, i) {
                     return szlegend.fill;//group[i]];
                 });
-            szaxis.append("text").attr("class", "title")
+            szaxis.append("text").attr("class", "title " + scatterClass)
                 .attr("x", width - margin.right)
                 .attr("y", margin.top + szlegend.height / 2)
                 .text(szlab)
                 .attr("transform","rotate(270," + (margin.left - axispos.sztitle) + "," + (margin.top + szlegend.height) + ")");
 
-            indtip = d3.tip().attr("class", "scattertip").html(function (d, i) {
+            indtip = d3.tip().attr("class", "d3-tip " + scatterClass).html(function (d, i) {
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
             svg.call(indtip);
-            popup = svg.append("g").attr("class", "popup");
-            popupRect = popup.append("svg:rect").attr("class", "popupRect");
-            popupText = popup.append("svg:text").attr("class", "popupText");
-            popupTickH = popup.append("svg:line").attr("class", "popupTick");
-            popupTickV = popup.append("svg:line").attr("class", "popupTick");
-            var tickGroupH = popup.append("g").attr("class", "popupTickLabel");
-            var tickGroupV = popup.append("g").attr("class", "popupTickLabel");
+            popup = svg.append("g").attr("class", "popup " + scatterClass);
+            popupRect = popup.append("svg:rect").attr("class", "popupRect " + scatterClass);
+            popupText = popup.append("svg:text").attr("class", "popupText " + scatterClass);
+            popupTickH = popup.append("svg:line").attr("class", "popupTick " + scatterClass);
+            popupTickV = popup.append("svg:line").attr("class", "popupTick " + scatterClass);
+            var tickGroupH = popup.append("g").attr("class", "popupTickLabel " + scatterClass);
+            var tickGroupV = popup.append("g").attr("class", "popupTickLabel " + scatterClass);
             popupLblRectH = tickGroupH.append("svg:rect");
             popupLblRectV = tickGroupV.append("svg:rect");
             popupLblH = tickGroupH.append("svg:text");
@@ -326,6 +329,13 @@ scatterplot = function () {
             return axispos;
         }
         axispos = value;
+        return chart;
+    };
+    chart.elemClass = function (value) {
+        if (!arguments.length) {
+            return scatterClass;
+        }
+        scatterClass = value;
         return chart;
     };
     chart.titlepos = function (value) {
@@ -563,7 +573,7 @@ scatterplot = function () {
 //        })();
 
         var points = svg.select("g").append("g").attr("id", "points");
-        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class", "pt")
+        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class", "pt " + scatterClass)
             .attr("id", function (d, i) {
                 return i;
             }).attr("cx", function (d, i) {
@@ -588,14 +598,14 @@ scatterplot = function () {
         indtip.hide();
         chart.unselectElem(); // unselect any previously select elem
         selectedElem = elem;
-        selectedElem.setAttribute("class", "selected");
+        selectedElem.setAttribute("class", "selected " + scatterClass);
         chart.showPopup( d, i );
         d3.event.stopPropagation();
     };
 
     chart.unselectElem = function() {
         if( selectedElem != null ) {
-            selectedElem.setAttribute("class", "pt");
+            selectedElem.setAttribute("class", "pt " + scatterClass);
             chart.hidePopup();
             selectedElem = null;
         }

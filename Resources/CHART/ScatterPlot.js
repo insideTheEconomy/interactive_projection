@@ -3,31 +3,29 @@
  */
 var dataDir = "DATA";
 
-var defaultSize = 4;
+var defaultSz = 4;
 
-var h, halfh, halfw, margin, totalh, totalw, w;
-
-h = 600;
-w = 700;
+var chartHeight = 600;
+var chartWidth = 600;
 
 var minPointRadius = 3;
 var maxPointRadius = 20;
 
-szlegend = {
+var szlegend = {
     width: Math.max( 2 * maxPointRadius + 50, 150),
-    height: .5 * h,
+    height: .5 * chartHeight,
     padding: 5,
     offset: 10,
     fill: "grey"
 };
-margin = {
+var chartMargin = {
     left: 100,
     top: 40,
     right: 10 + szlegend.width,
     bottom: 40,
     inner: 5
 };
-axispos = {
+var axispos = {
     xtitle: 25,
     ytitle: 80,
     sztitle: 25,
@@ -35,18 +33,21 @@ axispos = {
     ylabel: 5,
     szlabel: 5
 };
-titlepos = 20;
+var titlepos = 20;
 
-halfh = h + margin.top + margin.bottom;
+//var halfh = chartHeight + chartMargin.top + chartMargin.bottom;
+//
+//var totalh = halfh * 2;
+//
+//var halfw = chartWidth + chartMargin.left + chartMargin.right;
+//
+//var totalw = halfw * 2;
 
-totalh = halfh * 2;
-
-halfw = w + margin.left + margin.right;
-
-totalw = halfw * 2;
-
-var chartClassName = "chart"
-var chartDiv;
+var chartAreaId = "chartArea"
+var elemClass = "scatter"; // class for plot elements in CSS
+var allocatedElement;
+var chartAreaDiv;
+var dateLabelDiv;
 var chart;
 
 var timeSlotDate;
@@ -58,6 +59,8 @@ var stateNamesById = {};
 var stateNames = [];
 var statesGeoFeatures; // state map data
 var dateRange;
+
+var scatterPlotData;
 
 var statesDataDefs;
 
@@ -81,8 +84,8 @@ var nszticks = 11;
 //};
 
 //inner = {
-//    w: winSize.width - this.padding.left - this.padding.right,
-//    h: winSize.height - this.padding.top - this.padding.bottom,
+//    chartWidth: winSize.width - this.padding.left - this.padding.right,
+//    chartHeight: winSize.height - this.padding.top - this.padding.bottom,
 //    r: winSize.width - this.padding.right,
 //    b: winSize.height - this.padding.bottom
 //};
@@ -105,7 +108,11 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
         stateNames.push(stateNamesById[stateIds[i]]);
     }
 
-    chartDiv = d3.select(sel).attr("class", chartClassName);
+    allocatedElement = d3.select(sel).append("div").attr("id", "chartMain");
+    allocatedElement.append("div").attr("id", "chartTitle");
+    allocatedElement.append("div").attr("id", "chartDescription");
+    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel");
+    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId);
 
     dateRange = getScatterDateRange();
     timeSlotDate = dateRange[0];
@@ -121,20 +128,18 @@ var ScatterPlot = function (sel, dataDefsArg, statesDataArg, statesGeoDataArg) {
     drawScatterControls();
 }// <-- End of ScatterPlot
 
-function drawScatterControls() {
+var drawScatterControls = function () {
     drawScatterSlider();
 }
-function drawScatterSlider() {
+var drawScatterSlider = function() {
     var uiValue = null;
     var min = 0;
     var max = dateRange.length - 1;
     var fullRange = max - min;
     var numTicks = 4;
     var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
-    chartDiv.append("div").attr("class", "slider");
-    var dateLabelDiv = chartDiv.append("div").attr("id", "dateLabelSlider");
-    var slideDiv = $(".slider");
-    var slider = slideDiv.labeledslider({
+    chartAreaDiv.append("div").attr("id", "dateSlider");
+   $("#dateSlider").labeledslider({
         min: min,
         max: max,
         value: dateRange.indexOf(timeSlotDate), // start in center
@@ -145,19 +150,20 @@ function drawScatterSlider() {
             var value = Math.round(ui.value);
             if (value != uiValue) {
                 timeSlotDate = dateRange[value];
-                $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
-                $("#dateLabelSlider").html(getScatterFormattedDate(timeSlotDate));
+                dateLabelDiv.html(getScatterFormattedDate(timeSlotDate));
+                dateLabelSliderDiv.html(getScatterFormattedDate(timeSlotDate));
                 updateScatterChart();
                 uiValue = value;
             }
         }
     });
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel");
 
-    $("#dateLabel").html(getScatterFormattedDate(timeSlotDate));
-    $("#dateLabelSlider").html(getScatterFormattedDate(timeSlotDate));
+    dateLabelDiv.html(getScatterFormattedDate(timeSlotDate));
+    dateLabelSliderDiv.html(getScatterFormattedDate(timeSlotDate));
 }
 
-function getScatterLabels() {
+var getScatterLabels = function() {
     var labels = [];
     for( var i=0; i<dateRange.length; i++){
         var date = new Date(dateRange[i]);
@@ -166,7 +172,7 @@ function getScatterLabels() {
     return labels;
 }
 
-function getScatterFormattedDate(dateString) {
+var getScatterFormattedDate = function(dateString) {
     var date = new Date(dateString);
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     return months[date.getMonth()] + " " + date.getFullYear();
@@ -174,7 +180,7 @@ function getScatterFormattedDate(dateString) {
 
 
 // get data union of all the dates from the data
-function getScatterDateRange() {
+var getScatterDateRange = function() {
     var dateRange = [];
     var dataSets = [statesData.x, statesData.y, statesData.size];
     $.each(dataSets, function (index) {
@@ -189,9 +195,9 @@ function getScatterDateRange() {
     return dateRange.sort();
 }
 
-function initializeScatterChart() {
+var initializeScatterChart = function() {
     // get transformed, as-drawn coordinates of the div
-    var divRect = chartDiv.node().getBoundingClientRect();
+    var divRect = chartAreaDiv.node().getBoundingClientRect();
 
     // get colorScale scale
     colorScale = getScatterColorScale(statesData);
@@ -211,13 +217,13 @@ function initializeScatterChart() {
     szscale = chart.szscale();
 }
 
-function getScatterSize( marker ){
+var getScatterSize = function( marker ){
     var datumIdx = parseInt(marker.id);
     var size = scatterPlotData.data[datumIdx][szDataIndex];
     return szscale(size);
 }
 
-function drawScatterLegend() {
+var drawScatterLegend = function() {
     if (!colorScale)
         return; // no legend
 
@@ -277,7 +283,7 @@ function drawScatterLegend() {
 
 }
 
-function drawScatterChart() {
+var drawScatterChart = function() {
     var xLab = statesData.x[0].title;
     var yLab = statesData.y[0].title;
     var szLab = statesData.size[0].title;
@@ -293,24 +299,24 @@ function drawScatterChart() {
         .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[yDataIndex]).rotate_ylab(true)
         .szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
         .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
-        .height(h).width(w).margin(margin)
-        .axispos(axispos).titlepos(titlepos);
+        .height(chartHeight).width(chartWidth).margin(chartMargin)
+        .axispos(axispos).titlepos(titlepos).elemClass(elemClass);
 
-    d3.select("." + chartClassName)
+    d3.select("#" + chartAreaId)
         .datum(scatterPlotData)
         .call(chart);
 
-    d3.select("." + chartClassName)
+    d3.select("#" + chartAreaId)
         .call(chart.initPoints);
 }
 
-function updateScatterChart() {
+var updateScatterChart = function() {
     updateScatterPlotData();
-    d3.select("." + chartClassName)
+    d3.select("#" + chartAreaId)
         .call(chart.updatePoints);
 }
 
-function displayScatterValue() {
+var displayScatterValue = function() {
     var val = countyValuesById[countyClicked.id];
     if (isNaN(val))
         return "undefined";
@@ -318,7 +324,7 @@ function displayScatterValue() {
         return +val;
 }
 
-function getScatterColorScale(featuresData) {
+var getScatterColorScale = function(featuresData) {
     if (typeof featuresData.size === "undefined")
         return null; // no color scale if no size data
 
@@ -353,7 +359,7 @@ function getScatterColorScale(featuresData) {
     return colorScale;
 }
 
-function getScatterColorDomainExtent(domainExtent) {
+var getScatterColorDomainExtent = function(domainExtent) {
     var niceDomainExtent = [];
     // make the domain extent round numbers
     var dx = domainExtent[1] - domainExtent[0];
@@ -369,14 +375,14 @@ function getScatterColorDomainExtent(domainExtent) {
     return niceDomainExtent;
 }
 
-function initScatterPlotData() {
+var initScatterPlotData = function() {
     scatterPlotData = {
         "data": [],
         "indID": stateNames };
     updateScatterPlotData();
 }
 
-function updateScatterPlotData(){
+var updateScatterPlotData = function(){
     var xData = loadScatterData(statesData.x );
     var yData = loadScatterData(statesData.y );
     var szData = loadScatterData(statesData.size );
@@ -386,13 +392,13 @@ function updateScatterPlotData(){
         var idx = stateIds[i];
         value[xDataIndex] = getScatterDatum(xData, idx, "NA");
         value[yDataIndex] = getScatterDatum(yData, idx, "NA");
-        value[szDataIndex] = getScatterDatum(szData, idx, defaultSize);
+        value[szDataIndex] = getScatterDatum(szData, idx, defaultSz);
         data.push(value);
     }
     scatterPlotData.data = data;
 }
 
-function loadScatterData( dataSet ){
+var loadScatterData = function( dataSet ){
     if (typeof dataSet !== "undefined")
         for ( i in dataSet ) {
             if (dataSet[i].date === timeSlotDate) {
@@ -403,7 +409,7 @@ function loadScatterData( dataSet ){
         return null;
 }
 
-function getScatterDatum(data, index, defaultVal) {
+var getScatterDatum = function(data, index, defaultVal) {
     if (!data || (typeof data[index] === "undefined"))
         return defaultVal;
     else {
@@ -412,7 +418,7 @@ function getScatterDatum(data, index, defaultVal) {
     }
 }
 
-function getScatterLim( dataSet ){
+var getScatterLim = function( dataSet ){
     var lim = [Number.MAX_VALUE, Number.MIN_VALUE];
     for( i in dataSet ) {
         var data = dataSet[i].values;
@@ -430,7 +436,7 @@ function getScatterLim( dataSet ){
     return lim;
 }
 
-function getScatterNA() {
+var getScatterNA = function() {
     var dataSets = [statesData.x, statesData.y, statesData.size];
     var NA = [
         {
@@ -478,7 +484,7 @@ function getScatterNA() {
     return NA;
 }
 
-function isScatterMissingDates( standard, test ){
+var isScatterMissingDates = function( standard, test ){
     for(i in standard ){
         var date = standard[i].date;
         var missing = true;
@@ -495,6 +501,6 @@ function isScatterMissingDates( standard, test ){
     return false;
 }
 
-function log10(x) {
+var log10 = function(x) {
     return Math.log(x) * Math.LOG10E;
 }
