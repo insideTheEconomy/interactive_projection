@@ -150,8 +150,8 @@ var drawScatterSlider = function() {
             var value = Math.round(ui.value);
             if (value != uiValue) {
                 timeSlotDate = dateRange[value];
-                dateLabelDiv.html(getScatterFormattedDate(timeSlotDate));
-                dateLabelSliderDiv.html(getScatterFormattedDate(timeSlotDate));
+                dateLabelDiv.html(getFormattedDate(timeSlotDate));
+                dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
                 updateScatterChart();
                 uiValue = value;
             }
@@ -159,8 +159,8 @@ var drawScatterSlider = function() {
     });
     var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel");
 
-    dateLabelDiv.html(getScatterFormattedDate(timeSlotDate));
-    dateLabelSliderDiv.html(getScatterFormattedDate(timeSlotDate));
+    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+    dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
 
 var getScatterLabels = function() {
@@ -170,12 +170,6 @@ var getScatterLabels = function() {
         labels.push( date.getFullYear() )
     }
     return labels;
-}
-
-var getScatterFormattedDate = function(dateString) {
-    var date = new Date(dateString);
-    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[date.getMonth()] + " " + date.getFullYear();
 }
 
 

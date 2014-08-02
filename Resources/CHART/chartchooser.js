@@ -14,7 +14,7 @@ ds.setup().then(
     function (defs) {
         var indent = 10;
         var menu = d3.select("body").append("div")
-            .style({"width": "200px", "position": "fixed", "top": "450px", "left": "1000px"});
+            .style({"width": "200px", "position": "fixed", "top": "400px", "left": "1000px"});
         for (var category in defs) {
 //            console.log("Category: "+category);
             var def = defs[category];

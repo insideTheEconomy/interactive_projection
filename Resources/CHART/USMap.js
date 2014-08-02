@@ -31,7 +31,6 @@ var usmapClass = "usmap"; // class for plot elements in CSS
 var allocatedElement;
 var chartAreaDiv;
 var dateLabelDiv;
-var chart;
 var chartSvg;
 //var stateOutlines;
 var mapRegions;
@@ -85,12 +84,13 @@ var chartArea = {
 var USMap = function(sel, dataDefs, dataUSMap) {
 
     allocatedElement = d3.select(sel).append("div").attr("id", "chartMain").attr("class", usmapClass);
-    allocatedElement.append("div").attr("id", "chartTitle");
-    allocatedElement.append("div").attr("id", "chartDescription");
-    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel");
-    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId);
+    allocatedElement.append("div").attr("id", "chartTitle").attr("class", usmapClass);
+    allocatedElement.append("div").attr("id", "chartDescription").attr("class", usmapClass);
+    dateLabelDiv = allocatedElement.append("div").attr("id", "dateLabel").attr("class", usmapClass);
+    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId).attr("class", usmapClass);
 
-    chartSvg = chartAreaDiv.append("svg").attr("width", chartArea.width).attr("height", chartArea.height)
+    chartSvg = chartAreaDiv.append("svg").attr("id", "chartSvg").attr("class", worldmapClass)
+        .attr("width", chartArea.width).attr("height", chartArea.height)
 
     countyData = dataUSMap.data;
 
@@ -130,8 +130,8 @@ var drawUSMapSlider = function() {
             //console.log(ui.value, dateRange[ui.value]);
 //            var delay = function () {
             timeSlotDate = dateRange[ui.value];
-            dateLabelDiv.html(getUSMapFormattedDate(timeSlotDate));
-            dateSliderLabelDiv.html(getScatterFormattedDate(timeSlotDate));
+            dateLabelDiv.html(getFormattedDate(timeSlotDate));
+            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
 //            // wait for the ui.handle to set its position
 //            setTimeout(delay, 5);
         },
@@ -148,8 +148,8 @@ var drawUSMapSlider = function() {
     });
     var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", "dateSliderLabel").attr("class", usmapClass);
 
-    dateLabelDiv.html(getUSMapFormattedDate(timeSlotDate));
-    dateSliderLabelDiv.html(getScatterFormattedDate(timeSlotDate));
+    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
 }
 
 var drawUSMapResetButton = function() {
@@ -161,12 +161,6 @@ var drawUSMapResetButton = function() {
             //click: reset
         }
     ).on("click", resetUSMap);
-}
-
-var getUSMapFormattedDate = function(dateString) {
-    var date = new Date(dateString);
-    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[date.getMonth()] + " " + date.getFullYear();
 }
 
 var getUSMapTimeslotValues = function() {

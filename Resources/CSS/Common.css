@@ -13,6 +13,10 @@
     height: 600px;
 }
 
+#chartMain.worldmap {
+    height: 800px;
+}
+
 #chartArea {
     position: absolute;
     top: 60px;
@@ -67,7 +71,7 @@
     font-weight: bold;
 }
 
-#dateSliderLabel.usmap {
+#dateSliderLabel.usmap, #dateSliderLabel.worldmap {
     margin-top: 40px;
 }
 
