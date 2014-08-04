@@ -1,7 +1,6 @@
 /**
  * Created by sreed on 5/29/2014.
  */
-var dataDir = "DATA";
 
 var defaultSz = 4;
 

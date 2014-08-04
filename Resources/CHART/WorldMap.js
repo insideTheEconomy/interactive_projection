@@ -1,9 +1,5 @@
-var dataDir = "DATA";
-
 var domain;
 var extent;
-
-var scaleFactor = 1100;
 
 var colors = [
     "#10069f",

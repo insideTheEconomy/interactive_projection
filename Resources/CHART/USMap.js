@@ -1,5 +1,3 @@
-var dataDir = "DATA";
-
 var domain;
 var extent;
 
