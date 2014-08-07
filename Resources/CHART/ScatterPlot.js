@@ -42,14 +42,16 @@ var titlepos = 20;
 //
 //var totalw = halfw * 2;
 
-var scatterClass = "scatter"; // class for plot elements in CSS
-var allocatedElement;
-var chartAreaDiv;
-var dateLabelDiv;
-var chart;
+//var scatterClass = "scatter"; // class for plot elements in CSS
+//var allocatedElement;
+//var chartAreaDiv;
+//var dateLabelDiv;
+//var chart;
+//
+//var dateRange;
+//var timeSlotDate;
 
-var dateRange;
-var timeSlotDate;
+var scatterClass = "scatter";
 
 var stateIds = [];
 var statesData = {};
@@ -154,7 +156,7 @@ var drawScatterSlider = function() {
             }
         }
     });
-    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", worldmapClass);
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", scatterClass);
 
     dateLabelDiv.html(getFormattedDate(timeSlotDate));
     dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
@@ -240,7 +242,7 @@ var drawScatterLegend = function() {
     domainElems.reverse();
 
     // get the legend DOM element
-    var legendSvg = d3.select("#legend").append("svg");
+    var legendSvg = d3.select("#" + scatterPlotSizeLegendId).append("svg");
 
     legend = legendSvg.selectAll("g.legend")
         .data(domainElems)

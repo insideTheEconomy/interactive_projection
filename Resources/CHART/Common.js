@@ -10,7 +10,13 @@ var chartDescriptionId = "chartDescription";
 var dateLabelId = "dateLabel";
 var dateSliderId = "dateSlider";
 var dateSliderLabelId = "dateSliderLabel";
-var chartTopLevelDivIds = [chartMainId];//, chartAreaId, chartTitleId, chartDescriptionId, dateLabelId, dateSliderId];
+var mapColorLegendId = "mapColorLegend";
+var scatterPlotSizeLegendId = "scatterPlotSizeLegend";
+
+var scatterClass = "scatter";
+var usmapClass = "usmap";
+var worldmapClass = "worldmap";
+var timelineClass = "timeline";
 
 var getFormattedDate = function(dateString) {
     var date = new Date(dateString);

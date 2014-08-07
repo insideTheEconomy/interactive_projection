@@ -24,7 +24,6 @@ var unselectedCountyOpacity = 0.9;
 var stateFillOpacity = 0.3;
 var stateFillColor = "white";
 
-var usmapClass = "usmap"; // class for plot elements in CSS
 var allocatedElement;
 var chartAreaDiv;
 var chartSvg;

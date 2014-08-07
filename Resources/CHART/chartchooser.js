@@ -6,7 +6,6 @@ var usmapParams = {
     category: "Human Capital",
     index: "0"
 };
-var isChart = false;
 
 var ds = new Datasource(path);
 ds.setup().then(
@@ -39,13 +38,6 @@ ds.setup().then(
     });
 
 var selectChart = function(defs, chartType, category, chartIndex) {
-    if( isChart ) {
-        // clean up top level divs of previous chart
-        for( var i in chartTopLevelDivIds)
-            d3.select("#" + chartTopLevelDivIds[i]).remove(); //.selectAll("*").remove();
-    }
-
-    isChart = true;
     switch (chartType) {
         case "line": // TBD: no data def yet
             var defTimeline = defs[category][+chartIndex]; // scatter
@@ -61,7 +53,7 @@ var selectChart = function(defs, chartType, category, chartIndex) {
                     var defScatter = defs[category][+chartIndex]; // scatter
                     ds.get(defScatter).then(
                         function (dataScatter) {
-                            new ScatterPlot("#chart", defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state);
+                            new FREDScatterPlot.init("#chart", defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state);
                         });
                 });
             break;
@@ -69,14 +61,14 @@ var selectChart = function(defs, chartType, category, chartIndex) {
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
-                    new USMap("#chart", defUSMap, dataUSMap.usmap);
+                    new FREDUSMap.init("#chart", defUSMap, dataUSMap.usmap);
                 });
             break;
         case "worldmap":
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
-                    new WorldMap("#chart", defWorldMap, dataWorldMap.worldmap);
+                    new FREDWorldMap.init("#chart", defWorldMap, dataWorldMap.worldmap);
                 });
             break;
         default:

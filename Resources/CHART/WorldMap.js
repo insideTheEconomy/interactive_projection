@@ -22,7 +22,6 @@ var unselectedCountryOpacity = 0.9;
 //var stateFillOpacity = 0.3;
 //var stateFillColor = "white"
 
-var worldmapClass = "worldmap"; // class for plot elements in CSS
 var allocatedElement;
 var chartAreaDiv;
 var chartSvg;
@@ -54,8 +53,8 @@ var countryFeature = null;
 
 var dbDefs;
 
-var winSize = {
-    width: 800,
+var chartArea = {
+    width: 900,
     height: 600,
     offset: 150
 };
@@ -140,7 +139,7 @@ var drawWorldMapSlider = function() {
     dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
 
-getWorldMapLabels = function(tickInterval) {
+var getWorldMapLabels = function(tickInterval) {
     var labels = [];
     for( var i=0; i<dateRange.length; i++){
         if( i%tickInterval == 0 ) {
@@ -203,7 +202,9 @@ var getWorldMapTimeslotValues = function() {
         var timeSeries = countryData[i];
         if (timeSeries.date == timeSlotDate) {
             for (var j = 0; j < featureIds.length; j++) {
-                countryValuesById[featureIds[j]] = parseFloat(timeSeries.values[j + 1]);
+                if( timeSeries.values[j + 1] ) {
+                    countryValuesById[featureIds[j]] = parseFloat(timeSeries.values[j + 1]);
+                }
             }
             break;
         }

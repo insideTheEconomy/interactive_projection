@@ -11,8 +11,6 @@ var monthNames = [ "January", "February", "March", "April", "May", "June",
 var maxDataPointsForDots = 50,
     transitionDuration = 1000;
 
-var chartClassNme = "line";
-
 var svg = null,
     yAxisGroup = null,
     xAxisGroup = null,

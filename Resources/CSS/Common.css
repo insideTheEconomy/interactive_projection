@@ -15,12 +15,12 @@
 
 #chartArea.usmap {
     width: 900px;
-    height: 530px;
+    height: 450px;
 }
 
 #chartArea.worldmap {
     width: 900px;
-    height: 540px;
+    height: 500px;
 }
 
 #chartArea.scatter {
@@ -127,7 +127,7 @@ text.countyDataLabel {
     font-weight: bold;
 }
 
-#legend {
+#scatterPlotSizeLegend {
     position: absolute;
     top: 0;
     left: 0;
@@ -135,6 +135,10 @@ text.countyDataLabel {
     margin-right: 20px;
     width: 150px;
     font-size: 20px;
+}
+
+#mapColorLegend {
+    width: 150px;
 }
 
 /* ------------ end map styles -------------*/
