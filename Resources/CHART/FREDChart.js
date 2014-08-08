@@ -26,6 +26,10 @@ var FREDChart = (function (module) {
 
     var dateRange;
 
+    module.wrapperDivId = "wrapper";
+    module.menuDivId = "accordion";
+    module.chartDivId = "chart";
+
     var chartMainId = "chartMain";
     var chartAreaId = "chartArea";
     var chartTitleId = "chartTitle";
@@ -41,7 +45,6 @@ var FREDChart = (function (module) {
 
         var parentElem = d3.select(parentSelector);
         var mainElement = appendOrReclassElement(parentElem, "div", chartMainId, chartClass);
-        appendOrReclassElement(mainElement, "div", chartMainId, chartClass);
         appendOrReclassElement(mainElement, "div", chartTitleId, chartClass);
         appendOrReclassElement(mainElement, "div", chartDescriptionId, chartClass);
         dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, chartClass);

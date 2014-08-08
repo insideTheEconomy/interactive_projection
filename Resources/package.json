@@ -1,5 +1,5 @@
 {
-  "main": "testinteractiveProjections.html",
+  "main": "interactiveProjections.html",
   "name": "FRED Chart Test",
   "description": "FRED Data Display",
   "version": "0.1.0",
@@ -8,8 +8,8 @@
     "title": "Interactive Projection",
     "toolbar": true,
     "frame": true,
-    "width": 1224,
-    "height": 900
+    "width": 1300,
+    "height": 850
   },
   "webkit": {
     "plugin": true,

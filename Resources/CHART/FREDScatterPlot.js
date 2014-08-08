@@ -6,15 +6,14 @@ var FREDScatterPlot = (function (module) {
 
     var defaultSz = 4;
 
-    var chartHeight = 600;
-    var chartWidth = 600;
+    var chartAreaFactor = .8; // portion of chart area for the actual scatter area
 
     var minPointRadius = 3;
     var maxPointRadius = 20;
 
     var szlegend = {
         width: Math.max(2 * maxPointRadius + 50, 150),
-        height: .5 * chartHeight,
+        height: 0, //TBD: .5 * chartHeight,
         padding: 5,
         offset: 10,
         fill: "grey"
@@ -123,65 +122,65 @@ var FREDScatterPlot = (function (module) {
         return szscale(size);
     }
 
-    var drawLegend = function () {
-        if (!colorScale)
-            return; // no legend
-
-        // get the threshold value for each of the colors in the color scale
-        var domainElems = [];
-        $.each(FREDChart.colors, function (index) {
-            var domainExtent = colorScale.invertExtent(FREDChart.colors[index]);
-            domainElems[index] = domainExtent[0];
-        });
-
-        // set labels for the legend color bar
-        var legendLabels = [ "< " + domainElems[1].toFixed(1) ]; // initial element
-        for (var i = 1; i < domainElems.length; i++) {
-            legendLabels[i] = +domainElems[i].toFixed(1) + "+";
-        }
-
-        // reverse order so we draw bar from highest value (top) first to lowest (bottom) last
-        legendLabels.reverse();
-        domainElems.reverse();
-
-        // get the legend DOM element
-        var legendSvg = d3.select("#" + scatterPlotSizeLegendId).append("svg");
-
-        legend = legendSvg.selectAll("g.legend")
-            .data(domainElems)
-            .enter().append("g")
-            .attr("class", "legend");
-
-        var lsW = 30, lsH = 30;
-        var lsYMargin = 2 * lsH;
-        var lsTextYOffset = lsH / 2 + 4;
-        var lsTextXOffset = lsW * 2;
-
-        legend.append("rect")
-            .attr("x", 20)
-            .attr("y", function (d, i) {
-                var yVal = (i * lsH) + lsYMargin;
-                //console.log("d,i,y",d,i,yVal);
-                return yVal;
-            })
-            .attr("width", lsW)
-            .attr("height", lsH)
-            .style("fill", function (d, i) {
-                return colorScale(d);
-            })
-            .style("opacity", unselectedCountyOpacity);
-
-        legend.append("text")
-            .attr("x", lsTextXOffset)
-            .attr("y", function (d, i) {
-                return (i * lsH) + lsYMargin + lsTextYOffset;
-            })
-            .attr("font-weight", "bold")
-            .text(function (d, i) {
-                return legendLabels[i];
-            });
-
-    }
+//    var drawLegend = function () {
+//        if (!colorScale)
+//            return; // no legend
+//
+//        // get the threshold value for each of the colors in the color scale
+//        var domainElems = [];
+//        $.each(FREDChart.colors, function (index) {
+//            var domainExtent = colorScale.invertExtent(FREDChart.colors[index]);
+//            domainElems[index] = domainExtent[0];
+//        });
+//
+//        // set labels for the legend color bar
+//        var legendLabels = [ "< " + domainElems[1].toFixed(1) ]; // initial element
+//        for (var i = 1; i < domainElems.length; i++) {
+//            legendLabels[i] = +domainElems[i].toFixed(1) + "+";
+//        }
+//
+//        // reverse order so we draw bar from highest value (top) first to lowest (bottom) last
+//        legendLabels.reverse();
+//        domainElems.reverse();
+//
+//        // get the legend DOM element
+//        var legendSvg = d3.select("#" + scatterPlotSizeLegendId).append("svg");
+//
+//        legend = legendSvg.selectAll("g.legend")
+//            .data(domainElems)
+//            .enter().append("g")
+//            .attr("class", "legend");
+//
+//        var lsW = 30, lsH = 30;
+//        var lsYMargin = 2 * lsH;
+//        var lsTextYOffset = lsH / 2 + 4;
+//        var lsTextXOffset = lsW * 2;
+//
+//        legend.append("rect")
+//            .attr("x", 20)
+//            .attr("y", function (d, i) {
+//                var yVal = (i * lsH) + lsYMargin;
+//                //console.log("d,i,y",d,i,yVal);
+//                return yVal;
+//            })
+//            .attr("width", lsW)
+//            .attr("height", lsH)
+//            .style("fill", function (d, i) {
+//                return colorScale(d);
+//            })
+//            .style("opacity", unselectedCountyOpacity);
+//
+//        legend.append("text")
+//            .attr("x", lsTextXOffset)
+//            .attr("y", function (d, i) {
+//                return (i * lsH) + lsYMargin + lsTextYOffset;
+//            })
+//            .attr("font-weight", "bold")
+//            .text(function (d, i) {
+//                return legendLabels[i];
+//            });
+//
+//    }
 
     var drawChart = function () {
         var xLab = statesData.x[0].title;
@@ -191,6 +190,14 @@ var FREDScatterPlot = (function (module) {
         var yLim = getLim(statesData.y);
         var szLim = getLim(statesData.size);
         var NA = getNA();
+
+        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
+        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px","");
+        var chartAreaHeight = chartAreaStyles.getPropertyValue("height").replace("px","");
+
+        var chartHeight = Math.min( chartAreaWidth * chartAreaFactor, chartAreaHeight * chartAreaFactor );
+        var chartWidth = chartHeight;
+        szlegend.height = .5 * chartHeight;
 
         chart = scatterplot()
             .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[xDataIndex])
