@@ -14,7 +14,7 @@ try{
 	//defaults
 	window.iprojConfig = require("./iproj.json")
 }
-
+console.log("config loaded", window.iprojConfig);
 path = window.iprojConfig.dbPath;
 
 //path = "/Users/scott/Projects/projection.db"
