@@ -24,12 +24,21 @@ text {
 }
 
 .x.axis text {
-  dominant-baseline: hanging;
-  text-anchor: middle;
+    dominant-baseline: hanging;
+    text-anchor: middle;
 }
 
 .x.axis text.title {
-  fill: slateblue;
+    fill: slateblue;
+}
+
+.sz.axis text {
+    dominant-baseline: hanging;
+    text-anchor: start;
+}
+
+.sz.axis text.title {
+    fill: slateblue;
 }
 
 line.axis.grid {
@@ -53,7 +62,7 @@ line.y.axis.grid {
 }
 
 circle.selected {
-  fill: hotpink;
+  fill: darkred;
   opacity: 1;
 }
 
@@ -71,3 +80,4 @@ a:hover {
   color: #333;
   text-decoration: underline;
 }
+

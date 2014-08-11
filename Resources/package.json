@@ -1,6 +1,6 @@
 {
   "main": "interactiveProjections.html",
-  "name": "TestMapData",
+  "name": "FRED Chart Test",
   "description": "FRED Data Display",
   "version": "0.1.0",
   "keywords": [ "monadnock", "node-webkit" ],
@@ -8,8 +8,8 @@
     "title": "Interactive Projection",
     "toolbar": true,
     "frame": true,
-    "width": 1224,
-    "height": 900
+    "width": 1300,
+    "height": 850
   },
   "webkit": {
     "plugin": true,

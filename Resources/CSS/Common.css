@@ -1,0 +1,142 @@
+/*------------ common styles ------------*/
+/* everything (but slider) is positioned inside chartMain */
+#chartMain {
+    position: relative;
+    margin: 0px auto;
+}
+
+#chartArea {
+    position: relative;
+    top: 50px;
+    margin: 20px auto;
+}
+
+#chartArea.usmap {
+    width: 900px;
+    height: 450px;
+}
+
+#chartArea.worldmap {
+    width: 900px;
+    height: 500px;
+}
+
+#chartArea.scatter {
+    width: 920px;
+    height: 600px;
+}
+
+#chartTitle {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    float: left;
+    text-align: left;
+    vertical-align: middle;
+    font-size: 30px;
+    font-weight: bold;
+}
+
+#chartDescription {
+    position: absolute;
+    top: 40px;
+    left: 0px;
+    width: 70%;
+    text-align: left;
+    font-size: 15px;
+    font-weight: normal;
+}
+
+#dateLabel {
+    position: absolute;
+    top: 40px;
+    width: 30%;
+    right: 0px;
+    text-align: center;
+    vertical-align: baseline;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+/* dateSlider is positioned absolute in the chartArea */
+#dateSlider {
+    margin: 5px auto; /* center */
+    width: 100%;
+}
+
+/* sliderDateLabel is in the chartArea */
+#dateSliderLabel {
+    margin-left: auto;
+    margin-right: auto;
+    text-align: center;
+    font-weight: bold;
+}
+
+#dateSliderLabel.usmap {
+    margin-top: 20px;
+}
+
+#dateSliderLabel.worldmap {
+    margin-top: 40px;
+}
+
+#dateSliderLabel.scatter {
+    margin-top: 5px;
+}
+
+/* ------------ map styles -------------*/
+
+#resetBtn {
+    font-size: 12px;
+    font-family: Arial, sans-serif;
+}
+
+path.county {
+    stroke: white;
+    stroke-width: 1px;
+}
+
+path.state {
+    stroke: black;
+    stroke-width: 1px;
+    fill: none;
+}
+
+.city {
+    font: 10px sans-serif;
+    font-weight: bold;
+}
+
+rect.countyDataLabel {
+    fill: #FFFFE0;
+    padding: 2px;
+    border: 1px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+text.countyDataLabel {
+    text-align: center;
+    font-size: 12px;
+    fill: #000000;
+}
+
+#countyDataLabelName {
+    font-weight: bold;
+}
+
+#scatterPlotSizeLegend {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 100px;
+    margin-right: 20px;
+    width: 150px;
+    font-size: 20px;
+}
+
+#mapColorLegend {
+    width: 150px;
+}
+
+/* ------------ end map styles -------------*/

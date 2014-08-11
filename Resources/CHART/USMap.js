@@ -1,5 +1,3 @@
-var dataDir = "DATA";
-
 var domain;
 var extent;
 
@@ -24,11 +22,13 @@ var nanColor = '#D5D2CA';
 var selectedCountyOpacity = 1.0;
 var unselectedCountyOpacity = 0.9;
 var stateFillOpacity = 0.3;
-var stateFillColor = "white"
+var stateFillColor = "white";
 
-var chartDiv;
+var allocatedElement;
+var chartAreaDiv;
 var chartSvg;
-var stateOutlines;
+var dateLabelDiv;
+//var stateOutlines;
 var mapRegions;
 var countyDataLabel;
 var mapCountyFeatures; // county map geometry
@@ -45,7 +45,9 @@ var translate;
 var featureIds = [];
 var countyValuesById = {};
 var countyNameById = {};
-var timeSlotDate = "2000-04-01";
+
+var dateRange;
+var timeSlotDate;
 
 var path = d3.geo.path()
 
@@ -54,34 +56,44 @@ var countyFeature = null;
 
 var dbDefs;
 
-var winSize = {
-    width: 600,
-    height: 300
+var chartArea = {
+    width: 900,
+    height: 600,
+    offset: 150
 };
 
 
-padding = {
-    left: 60,
-    right: 60,
-    top: 60,
-    bottom: 60
-};
-
-inner = {
-    w: winSize.width - this.padding.left - this.padding.right,
-    h: winSize.height - this.padding.top - this.padding.bottom,
-    r: winSize.width - this.padding.right,
-    b: winSize.height - this.padding.bottom
-};
+//padding = {
+//    left: 60,
+//    right: 60,
+//    top: 60,
+//    bottom: 60
+//};
+//
+//inner = {
+//    chartWidth: chartArea.width - this.padding.left - this.padding.right,
+//    chartHeight: chartArea.height - this.padding.top - this.padding.bottom,
+//    r: chartArea.width - this.padding.right,
+//    b: chartArea.height - this.padding.bottom
+//};
 
 //Start of Choropleth drawing
 
 var USMap = function(sel, dataDefs, dataUSMap) {
 
-    chartDiv = d3.select(sel).attr("class","chart");
-    chartSvg = chartDiv.append("svg").attr("width", winSize.width).attr("height", winSize.height)
+    allocatedElement = d3.select(sel).append("div").attr("id", chartMainId).attr("class", usmapClass);
+    allocatedElement.append("div").attr("id", chartTitleId).attr("class", usmapClass);
+    allocatedElement.append("div").attr("id", chartDescriptionId).attr("class", usmapClass);
+    dateLabelDiv = allocatedElement.append("div").attr("id", dateLabelId).attr("class", usmapClass);
+    chartAreaDiv = allocatedElement.append("div").attr("id", chartAreaId).attr("class", usmapClass);
+
+    chartSvg = chartAreaDiv.append("svg").attr("id", chartSvgId).attr("class", usmapClass);
+        //.attr("width", chartArea.width).attr("height", chartArea.height)
 
     countyData = dataUSMap.data;
+
+    dateRange = getUSMapDateRange();
+    timeSlotDate = dateRange[0];
 
     // get feature names and Ids
     dataUSMap.maps.county.features.forEach(function (feature, i) {
@@ -90,43 +102,50 @@ var USMap = function(sel, dataDefs, dataUSMap) {
     });
 
     // get values for timeslot
-    getMapTimeslotValues();
+    getUSMapTimeslotValues();
 
-    d3.select("#chartTitle").text(dataDefs.chart_name);
-    d3.select("#chartDescription").text(dataDefs.chart_text);
+    d3.select("#" + chartTitleId).html(dataDefs.chart_name);
+    d3.select("#" + chartDescriptionId).html(dataDefs.chart_text);
 
     //Drawing Choropleth
-    initializeMapChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
+    initializeUSMapChart(dataUSMap.maps.county, dataUSMap.maps.state); // draw map
 
-    drawMapControls();
+    drawUSMapControls();
 }// <-- End of USMap
 
-function drawMapControls() {
-    drawMapSlider();
-    drawMapResetButton();
+var drawUSMapControls = function() {
+    drawUSMapSlider();
+    drawUSMapResetButton();
     var x = 0;
 }
 
-function drawMapSlider() {
-    var dateRange = getMapDateRange();
-    chartDiv.append("div").attr("class","slider");
-    $(".slider").slider({
-        min: 0,
-        max: dateRange.length - 1,
-        value: dateRange.indexOf(timeSlotDate), // start in center
+var drawUSMapSlider = function() {
+    var uiValue = null;
+    var min = 0;
+    var max = dateRange.length - 1;
+    var fullRange = max - min;
+    var numTicks = 4;
+    var tickInterval = Math.max( 1, Math.floor(fullRange/(numTicks - 1)));
+    chartAreaDiv.append("div").attr("id", dateSliderId).attr("class", usmapClass);
+    $("#" + dateSliderId).labeledslider({
+        min: min,
+        max: max,
+        value: dateRange.indexOf(timeSlotDate), // start at current date
         animate: "fast", // animate sliding
+        tickLabels: getUSMapLabels(tickInterval),
         slide: function (event, ui) {
             //console.log(ui.value, dateRange[ui.value]);
 //            var delay = function () {
             timeSlotDate = dateRange[ui.value];
-            $("#dateLabel").html(getMapFormattedDate(timeSlotDate));
+            dateLabelDiv.html(getFormattedDate(timeSlotDate));
+            dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 //            // wait for the ui.handle to set its position
 //            setTimeout(delay, 5);
         },
         stop: function (event, ui) {
-            getMapTimeslotValues();
-//            colorScale = getMapColorScale(countyData);
-            updateMapChart();
+            getUSMapTimeslotValues();
+//            colorScale = getUSMapColorScale(countyData);
+            updateUSMapChart();
 
             // if county is clicked, then update tooltip
             if (countyClicked) {
@@ -134,11 +153,60 @@ function drawMapSlider() {
             }
         }
     });
+    var dateLabelSliderDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", usmapClass);
 
-    $("#dateLabel").html(getMapFormattedDate(timeSlotDate));
+    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+    dateLabelSliderDiv.html(getFormattedDate(timeSlotDate));
 }
 
-function drawMapResetButton() {
+var getUSMapLabels = function(tickInterval) {
+    var labels = [];
+    for( var i=0; i<dateRange.length; i++){
+        if( i%tickInterval == 0 ) {
+            var date = new Date(dateRange[i]);
+            labels.push(date.getFullYear())
+        } else {
+            labels.push(" ");
+        }
+    }
+    return labels;
+}
+
+//var drawUSMapSlider = function() {
+//    var dateRange = getUSMapDateRange();
+//    chartAreaDiv.append("div").attr("id",dateSliderId).attr("class", usmapClass);
+//    $("#dateSlider").slider({
+//        min: 0,
+//        max: dateRange.length - 1,
+//        value: dateRange.indexOf(timeSlotDate), // start in center
+//        animate: "fast", // animate sliding
+//        slide: function (event, ui) {
+//            //console.log(ui.value, dateRange[ui.value]);
+////            var delay = function () {
+//            timeSlotDate = dateRange[ui.value];
+//            dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//            dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+////            // wait for the ui.handle to set its position
+////            setTimeout(delay, 5);
+//        },
+//        stop: function (event, ui) {
+//            getUSMapTimeslotValues();
+////            colorScale = getUSMapColorScale(countyData);
+//            updateUSMapChart();
+//
+//            // if county is clicked, then update tooltip
+//            if (countyClicked) {
+//                updateCountyDataLabel();
+//            }
+//        }
+//    });
+//    var dateSliderLabelDiv = chartAreaDiv.append("div").attr("id", dateSliderLabelId).attr("class", usmapClass);
+//
+//    dateLabelDiv.html(getFormattedDate(timeSlotDate));
+//    dateSliderLabelDiv.html(getFormattedDate(timeSlotDate));
+//}
+
+var drawUSMapResetButton = function() {
     $("#resetBtn").button(
         {
             disabled: true,
@@ -146,16 +214,10 @@ function drawMapResetButton() {
             id: "resetBtn"
             //click: reset
         }
-    ).on("click", resetMap);
+    ).on("click", resetUSMap);
 }
 
-function getMapFormattedDate(dateString) {
-    var date = new Date(dateString);
-    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-    return months[date.getMonth()] + " " + date.getFullYear();
-}
-
-function getMapTimeslotValues() {
+var getUSMapTimeslotValues = function() {
     // get feature values for each timeSlot
     for (var i = 0; i < countyData.length; i++) {
         var timeSeries = countyData[i];
@@ -169,7 +231,7 @@ function getMapTimeslotValues() {
 }
 
 // get data range from the data
-function getMapDateRange() {
+var getUSMapDateRange = function() {
     var dateRange = [];
     var dataSets = countyData;
     $.each(dataSets, function (index) {
@@ -178,26 +240,86 @@ function getMapDateRange() {
     return dateRange.reverse();
 }
 
-function initializeMapChart(mapCounties, mapStates) {
-    // TBD: check scaleFactor rationale
-    var projection = d3.geo.albersUsa() // projection for drawing GIS shapes
-        .scale(scaleFactor);
-    pathMap = d3.geo.path().projection(projection); //A path function for drawing shapes using the above projection
+var initializeUSMapChart = function(mapCounties, mapStates) {
+    // figure out scaling and translation
+    // create a first guess for the projection
+    // Create a unit projection.
+    var projection = d3.geo.albersUsa()
+        .scale(1)
+        .translate([0, 0]);
+
+    // Create a path generator.
+    pathMap = d3.geo.path()
+        .projection(projection);
+
+    // Compute the bounds of a feature of interest, then derive scale & translate.
+    var b = pathMap.bounds(mapCounties),
+        b_s = b[0][1],
+        b_n = b[1][1],
+        b_w = b[0][0],
+        b_e = b[1][0],
+        b_height = Math.abs(b_n - b_s),
+        b_width = Math.abs(b_e - b_w);
+    var chartWidth = chartArea.width - chartArea.offset;
+    var s = .95 / Math.max(b_width / chartWidth, (b_height / chartArea.height)),
+        t = [chartArea.offset + (chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartArea.height - s * (b[1][1] + b[0][1])) / 2];
+
+    // Update the projection to use computed scale & translate.
+    projection
+        .scale(s)
+        .translate(t);
+    pathMap = pathMap.projection(projection);
 
     mapCountyFeatures = mapCounties.features;
     mapStateFeatures = mapStates.features;
 
     // get colorScale scale
-    colorScale = getMapColorScale(countyData);
+    colorScale = getUSMapColorScale(countyData);
 
     //Adding legend for our Choropleth
-    drawMapLegend();
+    drawUSMapLegend();
 
     //then draw the shapes
-    drawMapChart();
+    drawUSMapChart();
 }
 
-function drawMapLegend() {
+var drawUSMapChart = function() {
+    // filled in counties
+    mapRegions = chartSvg.append("g");
+    mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
+        .attr("class", "county")
+        .style({
+            "fill": function (d) {
+                //apply fill from colorScale, or nanColor if NAN
+                var val = countyValuesById[d.id];
+                if (!isNaN(val)) {
+                    return colorScale(val)
+                } else {
+                    return(nanColor);
+                }
+            },
+            "opacity": unselectedCountyOpacity
+        })
+        // counties are clickable when state opacity is 0
+        .on("click", onClickCounty)
+        .attr("d", pathMap); //draw the paths
+
+    // state outlines on top
+    mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
+        .attr("class", "state")
+        .style({
+            "fill": stateFillColor,
+            "fill-opacity": stateFillOpacity
+        })
+        .on("click", onClickState)
+        .attr("d", pathMap); //draw the paths
+
+    // size the chart to fit the container
+    chartSvg.attr("width", "100%")
+        .attr("height", "100%");
+}
+
+var drawUSMapLegend = function() {
     // get the threshold value for each of the colors in the color scale
     var domainElems = [];
     $.each(colors, function (index) {
@@ -215,8 +337,8 @@ function drawMapLegend() {
     legendLabels.reverse();
     domainElems.reverse();
 
-    // get the legend DOM element
-    var legendSvg = d3.select("#legend").append("svg");
+    // add the legend DOM element
+    var legendSvg = chartSvg.append("g");
 
     legend = legendSvg.selectAll("g.legend")
         .data(domainElems)
@@ -255,50 +377,7 @@ function drawMapLegend() {
 
 }
 
-function drawMapChart() {
-    // filled in counties
-    mapRegions = chartSvg.append("g");
-    mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
-        .attr("class", "county")
-        .style({
-            "fill": function (d) {
-                //apply fill from colorScale, or nanColor if NAN
-                var val = countyValuesById[d.id];
-                if (!isNaN(val)) {
-                    return colorScale(val)
-                } else {
-                    return(nanColor);
-                }
-            },
-            "opacity": unselectedCountyOpacity
-        })
-        // counties are clickable when state opacity is 0
-        .on("click", onClickCounty)
-        .attr("d", pathMap); //draw the paths
-
-    // state outlines on top
-    mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
-        .attr("class", "state")
-        .style({
-            "fill": stateFillColor,
-            "fill-opacity": stateFillOpacity
-        })
-        .on("click", onClickState)
-        .attr("d", pathMap); //draw the paths
-
-    // size the chart to fit the container
-    chartSvg.attr("width", "100%")
-        .attr("height", "100%");
-
-    // get actual height and width and resize to fit container
-    var width = chartSvg.style("width").replace("px", "");
-    var height = chartSvg.style("height").replace("px", "");
-    chartSvg.attr("viewBox", "0 0 " + width + " " + height)
-        .attr("preserveAspectRatio", "xMaxYMax")
-        .attr("margin", "0 auto");
-}
-
-function updateMapChart() {
+var updateUSMapChart = function() {
     // filled in mapRegions
     mapRegions.data(mapCountyFeatures).selectAll("path.county")
         .style({
@@ -326,13 +405,13 @@ function updateMapChart() {
         .attr("d", pathMap);
 }
 
-function onClickCounty(d) {
+var onClickCounty = function(d) {
     countyClicked = d;
     countyFeature = this;
     updateCountyDataLabel();
 }
 
-function updateCountyDataLabel() {
+var updateCountyDataLabel = function() {
     // add a label group if there isn't one yet
     if (!countyDataLabel) {
         countyDataLabel = chartSvg.append("g");
@@ -357,13 +436,13 @@ function updateCountyDataLabel() {
     var brect = d3.select(countyFeature).node().getBoundingClientRect();
 
     // get offset of the chart div
-    var offset = $("#chart").offset();
+    var offset = chartAreaDiv.offset();
 
     d3.select("#countyDataLabelName").text(countyNameById[countyClicked.id]);
     var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
     var textHeightName = d3.select("#countyDataLabelName").node().getBBox().height;
 
-    d3.select("#countyDataLabelValue").text(displayMapValue());
+    d3.select("#countyDataLabelValue").text(displayUSMapValue());
     var textWidthValue = d3.select("#countyDataLabelValue").node().getBBox().width;
     var textHeightValue = d3.select("#countyDataLabelValue").node().getBBox().height;
     var rectWidth = Math.max(textWidthName, textWidthValue) + margin;
@@ -391,7 +470,7 @@ function updateCountyDataLabel() {
     countyDataLabel.attr("d", pathMap);
 }
 
-function displayMapValue() {
+var displayUSMapValue = function() {
     var val = countyValuesById[countyClicked.id];
     if (isNaN(val))
         return "undefined";
@@ -399,9 +478,9 @@ function displayMapValue() {
         return +val;
 }
 
-function onClickState(feature) {
+var onClickState = function(feature) {
     if (activeState) {
-        resetMap();
+        resetUSMap();
         if (this == null)
             return;
     }
@@ -412,8 +491,8 @@ function onClickState(feature) {
     $("#resetBtn").button("option", "disabled", false);
 
     // zoom to the state
-    var chartWidth = $(".chart").width();
-    var chartHeight = $(".chart").height();
+    var chartWidth = chartAreaDiv.width();
+    var chartHeight = chartAreaDiv.height();
     var bounds = pathMap.bounds(feature),
         dx = bounds[1][0] - bounds[0][0],
         dy = bounds[1][1] - bounds[0][1],
@@ -428,7 +507,7 @@ function onClickState(feature) {
         .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 }
 
-function resetMap() {
+var resetUSMap = function() {
     // unclick county (if there was one)
     countyClicked = null;
     countyFeature = null;
@@ -453,7 +532,7 @@ function resetMap() {
         .attr("transform", "translate(0,0) scale(1)");
 }
 
-function getMapColorScale(featuresData) {
+var getUSMapColorScale = function(featuresData) {
     // get extent of data for all timeseries
     var domainExtent = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
     var dataArray = [];
@@ -495,7 +574,7 @@ function getMapColorScale(featuresData) {
     return colorScale;
 }
 
-function getColorDomainExtent(domainExtent) {
+var getColorDomainExtent = function(domainExtent) {
     var niceDomainExtent = [];
     // make the domain extent round numbers
     var dx = domainExtent[1] - domainExtent[0];
@@ -511,6 +590,6 @@ function getColorDomainExtent(domainExtent) {
     return niceDomainExtent;
 }
 
-function log10(x) {
+var log10 = function(x) {
     return Math.log(x) * Math.LOG10E;
 }

@@ -1,46 +1,47 @@
-.popupRect {
+
+.popupRect.scatter {
     fill: lightcyan;
     stroke: lightgrey;
     stroke-width: 1;
     opacity: .7;
 }
 
-.popupText {
+.popupText.scatter {
     fill: black;
     font-size: 12pt;
     opacity: 1;
 }
 
-.popupTick {
+.popupTick.scatter {
     stroke: darkred;
     stroke-width: 2;
 }
 
-.popupTickLabel text {
+.popupTickLabel.scatter text {
     fill: black;
     font-size: 10pt;
     opacity: 1;
 }
 
-.popupTickLabel rect {
+.popupTickLabel.scatter rect {
     fill: lightcyan;
     stroke: lightgrey;
     opacity: .7;
 }
 
-.pt {
+.pt.scatter {
     fill: blue;
     stroke: blue;
     opacity: 1;
 }
 
-.selected {
+.selected.scatter {
     fill: darkred;
     stroke: darkred;
     opacity: 1;
 }
 
-.scattertip {
+.d3-tip.scatter {
     line-height: 1;
     font-weight: normal;
     padding: 2px;
@@ -51,7 +52,7 @@
 }
 
 /* Creates a small triangle extender for the tooltip */
-.scattertip:after {
+.d3-tip.scatter:after {
     box-sizing: border-box;
     display: inline;
     font-size: 10px;
