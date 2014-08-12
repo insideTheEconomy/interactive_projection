@@ -4,7 +4,6 @@
 
 window.iprojConfig;
 
-
 configFile = process.env.HOME+"/exhibit/iproj.json";
 
 try{
@@ -19,7 +18,6 @@ path = window.iprojConfig.dbPath;
 
 //path = "/Users/scott/Projects/projection.db"
 //path = "/Volumes/Pylos/Projects/FED/projection.db"
-
 
 var usmapMetadata = {
     category: "Human Capital",

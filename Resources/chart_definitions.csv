@@ -1,13 +1,13 @@
-id,series_hash,category,chart_name,chart_text,chart_type
-0,f36ab932a8542c1386dcdf777f52c918,Human Capital,Unemployment By County,Reflect the current job situation in the visitor's county.,usmap
-1,7eb999602b8e2baed65a03e04fb5713d,US Economic Stories,GDP per capita,,usmap
-2,57f4bc8bfef80d05c0badbdb5cd4794b,Human Capital,Education Level By State,,usmap
-3,"57f4bc8bfef80d05c0badbdb5cd4794b, 7eb999602b8e2baed65a03e04fb5713d, ae311d2a8733f2e234c72207b4b732bb",US Economic Stories,Education vs. GDP,"Freegan narwhal kitsch meh, Tonx squid ethnic flexitarian. Drinking vinegar narwhal you probably haven't heard of them, Marfa +1 fashion axe cray Brooklyn twee occupy Helvetica PBR.",scatter
-4,9f24b6a0e4639d81a69184b3f89a8dca,US Economic Stories,Great Inflation,,line
-5,3e7a27dd8dcd57eb795f906dfb113ab7,US Economic Stories,Per Capita GDP,"Country may have a large GDP (e.g., China), but if they have a big population, then per person, it may not be so huge.",worldmap
-6,25aef58a050c2e3b598fe54de114f66a,Global Economic Stories,Population over 65 (% of total),"Reflects the size of a dependent population that won't be able to work in the future (unlike kids, who are future workers)",worldmap
-7,fa7b69c486406d9bd6e0ad18b02295fc,Global Economic Stories,Migration,,worldmap
-8,"fa7b69c486406d9bd6e0ad18b02295fc, 3e7a27dd8dcd57eb795f906dfb113ab7, ceaf6a89d50b3de4ef912f969f3f0c65",Global Economic Stories,net migration vs. GDP,this would be of the correlation between net immigration per person & per capita GDP,scatter
-9,f657be8208d1cb4f06baa770bd91a3ab,Infrastructure,Access to technology and education,,worldmap
-10,f086dc7b3230fee5c50570c409e02d22,Infrastructure,Ease of Doing Business,Reflects difficulty in market making,worldmap
-11,da92db5dc110d91293c25dbe18ee4695,Human Capital,increasing acquisition of college education,,worldmap
+id,series_hash,category,chart_name,chart_text,chart_type,region_type
+0,f36ab932a8542c1386dcdf777f52c918,Human Capital,Unemployment By County,Reflect the current job situation in the visitor's county.,usmap,county
+1,7eb999602b8e2baed65a03e04fb5713d,US Economic Stories,GDP per capita,,usmap,county
+2,57f4bc8bfef80d05c0badbdb5cd4794b,Human Capital,Education Level By State,,usmap,county
+3,"57f4bc8bfef80d05c0badbdb5cd4794b, 3e7a27dd8dcd57eb795f906dfb113ab7",US Economic Stories,Education vs. GDP,"Freegan narwhal kitsch meh, Tonx squid ethnic flexitarian. Drinking vinegar narwhal you probably haven't heard of them, Marfa +1 fashion axe cray Brooklyn twee occupy Helvetica PBR.",scatter,county
+4,9f24b6a0e4639d81a69184b3f89a8dca,US Economic Stories,Great Inflation,,line,county
+5,3e7a27dd8dcd57eb795f906dfb113ab7,US Economic Stories,Per Capita GDP,"Country may have a large GDP (e.g., China), but if they have a big population, then per person, it may not be so huge.",worldmap,country
+6,25aef58a050c2e3b598fe54de114f66a,Global Economic Stories,Population over 65 (% of total),"Reflects the size of a dependent population that won't be able to work in the future (unlike kids, who are future workers)",worldmap,country
+7,fa7b69c486406d9bd6e0ad18b02295fc,Global Economic Stories,Migration,,worldmap,country
+8,"fa7b69c486406d9bd6e0ad18b02295fc, 3e7a27dd8dcd57eb795f906dfb113ab7",Global Economic Stories,net migration vs. GDP,this would be of the correlation between net immigration per person & per capita GDP,scatter,country
+9,f657be8208d1cb4f06baa770bd91a3ab,Infrastructure,Access to technology and education,,worldmap,country
+10,f086dc7b3230fee5c50570c409e02d22,Infrastructure,Ease of Doing Business,Reflects difficulty in market making,worldmap,country
+11,da92db5dc110d91293c25dbe18ee4695,Human Capital,increasing acquisition of college education,,worldmap,country
