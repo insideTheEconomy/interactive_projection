@@ -19,6 +19,8 @@ var FREDChart = (function (module) {
     ];
     module.nanColor = '#D5D2CA';
 
+    module.noValue = "NA";
+
     var chartAreaDiv;
     var dateLabelDiv;
 
@@ -111,8 +113,8 @@ var FREDChart = (function (module) {
                 var value = Math.round(ui.value);
                 if (value != uiValue) {
                     module.timeSlotDate = dateRange[value];
-                    dateLabelDiv.html(getFormattedDate(module.timeSlotDate));
-                    dateLabelSliderDiv.html(getFormattedDate(module.timeSlotDate));
+                    dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+                    dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
                     uiValue = value;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
@@ -127,15 +129,18 @@ var FREDChart = (function (module) {
         });
         var dateLabelSliderDiv = appendOrReclassElement(chartAreaDiv, "div", dateSliderLabelId, chartClass);
 
-        dateLabelDiv.html(getFormattedDate(module.timeSlotDate));
-        dateLabelSliderDiv.html(getFormattedDate(module.timeSlotDate));
+        dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
 
-    function getFormattedDate(dateString) {
-        var date = new Date(dateString);
-        var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
-        return months[date.getMonth()] + " " + date.getFullYear();
+    module.getFormattedDatestring = function(dateString) {
+        return getFormattedDate( new Date(dateString) );
     }
+
+    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    module.getFormattedDate = function( date ){
+        return months[date.getUTCMonth()] + " " + date.getUTCFullYear();
+    };
 
     var getSliderLabels = function(tickInterval) {
         var labels = [];

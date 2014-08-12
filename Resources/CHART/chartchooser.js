@@ -1,10 +1,14 @@
 /**
  * Created by scott on 6/12/14.
  */
-path = "/Users/scott/Projects/projection.db"
-var usmapParams = {
+path = "/Users/scott/Projects/projection.db";
+var usmapMetadata = {
     category: "Human Capital",
     index: "0"
+};
+var worldmapMetadata = {
+    category: "Infrastructure",
+    index: "1"
 };
 
 var ds = new Datasource(path);
@@ -83,20 +87,24 @@ ds.setup().then(
 var selectChart = function(chartElemSelector, defs, chartType, category, chartIndex) {
     switch (chartType) {
         case "line": // TBD: no data def yet
-            var defTimeline = defs[category][+chartIndex]; // scatter
-            ds.get(defTimeline).then(
-                function (dataTimeline) {
-                    new Timeline(chartElemSelector, defTimeline, dataTimeline);
+            var defWorldMap = defs[worldmapMetadata.category][+worldmapMetadata.index]; // worldmap meta data for USA Id
+            ds.get(defWorldMap).then(
+                function (dataWorldMap) {
+                    var defTimeline = defs[category][+chartIndex]; // scatter
+                    ds.get(defTimeline).then(
+                        function (dataTimeline) {
+                            new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, dataWorldMap.worldmap.map[0].features);
+                        });
                 });
             break;
         case "scatter":
-            var defUSMap = defs[usmapParams.category][+usmapParams.index]; // usmap for state names
+            var defUSMap = defs[usmapMetadata.category][+usmapMetadata.index]; // usmap fmeta data or state Ids, Names
             ds.get(defUSMap).then(
                 function (dataUSMap) {
                     var defScatter = defs[category][+chartIndex]; // scatter
                     ds.get(defScatter).then(
                         function (dataScatter) {
-                            new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state);
+                            new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state.features);
                         });
                 });
             break;

@@ -39,7 +39,6 @@ var FREDScatterPlot = (function (module) {
 
     var stateIds = [];
     var statesData = {};
-    var statesGeoData = {};
     var stateNamesById = {};
     var stateNames = [];
     var statesGeoFeatures; // state map data
@@ -56,12 +55,11 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    module.init = function (selector, dataDefsArg, statesDataArg, statesGeoDataArg) {
+    module.init = function (selector, dataDefsArg, statesDataArg, statesGeoFeaturesArg) {
         statesDataDefs = dataDefsArg;
         statesData = statesDataArg;
-        statesGeoData = statesGeoDataArg;
 
-        statesGeoFeatures = statesGeoData.features;
+        statesGeoFeatures = statesGeoFeaturesArg;
         // get feature names and Ids
         statesGeoFeatures.forEach(function (feature, i) {
             stateIds.push(feature.id);
@@ -75,7 +73,7 @@ var FREDScatterPlot = (function (module) {
         FREDChart.initChart(selector, scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, statesDataDefs.chart_name, statesDataDefs.chart_text);
 
-    }// <-- End of FREDScatterPlot
+    }
 
 
 // get data union of all the dates from the data
@@ -101,9 +99,6 @@ var FREDScatterPlot = (function (module) {
         // get colorScale scale
         colorScale = getColorScale(statesData);
 
-//    //Adding legend for our Choropleth
-//    drawLegend();
-
         //then draw the shapes
         drawChart();
 
@@ -113,7 +108,6 @@ var FREDScatterPlot = (function (module) {
         }).on("mouseout", function (d) {
             return d3.select(this).attr("r", getSize(this));
         });
-        szscale = chart.szscale();
     }
 
     var getSize = function (marker) {
@@ -202,7 +196,7 @@ var FREDScatterPlot = (function (module) {
         chart = scatterplot()
             .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[xDataIndex])
             .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[yDataIndex]).rotate_ylab(true)
-            .szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
+            //.szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
             .axispos(axispos).titlepos(titlepos).elemClass(scatterClass);
@@ -291,8 +285,8 @@ var FREDScatterPlot = (function (module) {
         for (i in stateIds) {
             var value = [];
             var idx = stateIds[i];
-            value[xDataIndex] = getDatum(xData, idx, "NA");
-            value[yDataIndex] = getDatum(yData, idx, "NA");
+            value[xDataIndex] = getDatum(xData, idx, FREDChart.noValue);
+            value[yDataIndex] = getDatum(yData, idx, FREDChart.noValue);
             value[szDataIndex] = getDatum(szData, idx, defaultSz);
             data.push(value);
         }
@@ -363,7 +357,7 @@ var FREDScatterPlot = (function (module) {
                 var dataset = dataSets[idx];
                 for (i in dataset) {
                     for (j in dataset[i].values) {
-                        if (dataset[i].values[j] === "NA") {
+                        if (dataset[i].values[j] === FREDChart.noValue) {
                             NA[idx].handle = true;
                             break;
                         }
