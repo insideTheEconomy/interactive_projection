@@ -79,7 +79,7 @@ var Datasource = function( data_path ){
 					x = self.xFilter(x,y);
 					y = self.xFilter(y,x);
 					
-					dfd.resolve({scatter:{x: x, y:x, size:d[0][2]}});
+					dfd.resolve({scatter:{x: x, y:y, size:d[0][2]}});
 				}else if(type == "line"){
 					d.sort(function(_a,_b){return _a.jsDate - _b.jsDate});
 					
