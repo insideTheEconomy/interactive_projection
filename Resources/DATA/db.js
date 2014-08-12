@@ -13,7 +13,7 @@ var Datasource = function( data_path ){
 	var ann_def = "line_annotations.csv";
 
 	
-
+	this.placeKey = {};
 	this.def;
 	this.annotations = [];
 	self = this;
@@ -33,6 +33,9 @@ var Datasource = function( data_path ){
 			console.log(d);
 		});
 		
+		var places = ["county","state","country"];
+		
+		this.buildPlaceKey();
 		return this.dfd.promise;
 	}
 	
@@ -96,6 +99,25 @@ var Datasource = function( data_path ){
 		return when.all(dfds);
 	}
 	
+	this.buildPlaceKey = function (){
+		var places = ["county","state","country"];
+		this.getMaps( places ).then(function(a){
+				
+
+			
+					a.forEach(function(map,i){
+						self.placeKey[places[i]] = new Array(map.features.length);
+
+						map.features.forEach(function(feature, j){
+							self.placeKey[places[i]][+feature.properties.gid] = feature.properties;
+						})
+
+
+					})
+
+				});
+	
+	}
 	
 	this.getMaps = function( geo_types ){
 		var dfds = [];
