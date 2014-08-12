@@ -1,9 +1,12 @@
 {
   "main": "interactiveProjections.html",
-  "name": "FRED Chart Test",
+  "name": "interActiveProjection",
   "description": "FRED Data Display",
   "version": "0.1.0",
-  "keywords": [ "monadnock", "node-webkit" ],
+  "keywords": [
+    "monadnock",
+    "node-webkit"
+  ],
   "window": {
     "title": "Interactive Projection",
     "toolbar": true,
@@ -13,6 +16,10 @@
   },
   "webkit": {
     "plugin": true,
-	"java": true
+    "java": true
+  },
+  "devDependencies": {
+    "grunt-node-webkit-builder": "^0.1.21",
+"grunt": "^0.4.5"
   }
 }

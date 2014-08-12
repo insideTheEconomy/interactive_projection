@@ -11,3 +11,7 @@ Resources/.idea/*
 *.nw
 
 interactive_projection.nw
+
+*/node_modules/
+
+*/webkitbuilds/*
