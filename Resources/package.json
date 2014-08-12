@@ -20,6 +20,10 @@
   },
   "devDependencies": {
     "grunt-node-webkit-builder": "^0.1.21",
-"grunt": "^0.4.5"
+    "grunt": "^0.4.5"
+  },
+  "dependencies": {
+    "fast-csv": "^0.4.2",
+    "when": "^3.4.3"
   }
 }
