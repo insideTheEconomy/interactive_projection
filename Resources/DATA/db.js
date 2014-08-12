@@ -68,10 +68,18 @@ var Datasource = function( data_path ){
 					d[1][0].sort(function(_a,_b){return _a.jsDate - _b.jsDate});
 					dfd.resolve({'worldmap':{map:d[0], data:d[1][0]}});
 				}else if(type == "scatter"){
-					d[0][0].sort(function(_a,_b){return _a.jsDate - _b.jsDate});
-					d[0][1].sort(function(_a,_b){return _a.jsDate - _b.jsDate});
+					var x = d[0][0];
+					var y = d[0][1];
 					
-					dfd.resolve({scatter:{x: d[0][0], y:d[0][1], size:d[0][2]}});
+					
+					
+					x.sort(function(_a,_b){return _a.jsDate - _b.jsDate});
+					y.sort(function(_a,_b){return _a.jsDate - _b.jsDate});
+					
+					x = self.xFilter(x,y);
+					y = self.xFilter(y,x);
+					
+					dfd.resolve({scatter:{x: x, y:x, size:d[0][2]}});
 				}else if(type == "line"){
 					d.sort(function(_a,_b){return _a.jsDate - _b.jsDate});
 					
@@ -81,6 +89,20 @@ var Datasource = function( data_path ){
 		})
 		
 		return dfd.promise;
+	}
+	
+	//Filter for common values
+	this.xFilter = function(_b,_a){
+		var c = [];
+
+
+		_a.forEach(function(ao){
+			d = _b.filter(function(bo){
+				return ao.date == bo.date
+			})
+			c = c.concat(d);
+		})
+		return c;
 	}
 	
 	this.getAll = function( def ){
