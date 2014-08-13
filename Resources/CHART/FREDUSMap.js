@@ -4,8 +4,8 @@ var FREDUSMap = (function (module) {
     var stateFillOpacity = 0.3;
     var stateFillColor = "white";
 
-    var chartAreaDiv;
     var chartSvg;
+    var jqSvg;
 
     var dataUSMap;
     var mapCounties;
@@ -32,8 +32,6 @@ var FREDUSMap = (function (module) {
     var countyClicked = null;
     var countyFeature = null;
 
-    var dbDefs;
-
 
 //padding = {
 //    left: 60,
@@ -52,7 +50,7 @@ var FREDUSMap = (function (module) {
     module.init = function (selector, dataDefs, dataUSMapArg) {
         dataUSMap = dataUSMapArg;
 
-        FREDChart.initChart(selector, usmapClass, getDateRange, initData, initializeChart,
+        FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
     };// <-- End of USMap
 
@@ -95,17 +93,18 @@ var FREDUSMap = (function (module) {
     };
 
     var initializeChart = function () {
-        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", chartSvgId).attr("class", usmapClass);
+        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId).attr("class", FREDChart.usmapClass);
+        jqSvg = $("#"+FREDChart.chartSvgId);
 
         //Adding legend for our Choropleth
         drawLegend();
 
         // get calculated width, height of chart area
-        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
-        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px","");
-        var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px","");
+        var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
+        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px", "");
+        var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
         // offset the chart to make room for the legend on the left
-        var offset = $("#"+mapColorLegendId)[0].getBBox().width;
+        var offset = $("#" + FREDChart.mapColorLegendId)[0].getBBox().width;
 
         // figure out scaling and translation
         // create a first guess for the projection
@@ -209,7 +208,7 @@ var FREDUSMap = (function (module) {
 
         legend = legendSvg.selectAll("g.legend")
             .data(domainElems)
-            .enter().append("g").attr("class", "legend").attr("id", mapColorLegendId );
+            .enter().append("g").attr("class", "legend").attr("id", FREDChart.mapColorLegendId);
 
         var lsW = 30, lsH = 30;
         var lsYMargin = 2 * lsH;
@@ -305,7 +304,7 @@ var FREDUSMap = (function (module) {
         var brect = d3.select(countyFeature).node().getBoundingClientRect();
 
         // get offset of the chart div
-        var offset = chartAreaDiv.offset();
+        var offset = jqSvg.offset();
 
         d3.select("#countyDataLabelName").text(countyNameById[countyClicked.id]);
         var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
@@ -360,8 +359,8 @@ var FREDUSMap = (function (module) {
         $("#resetBtn").button("option", "disabled", false);
 
         // zoom to the state
-        var chartWidth = chartAreaDiv.width();
-        var chartHeight = chartAreaDiv.height();
+        var chartWidth = jqSvg.width();
+        var chartHeight = jqSvg.height();
         var bounds = pathMap.bounds(feature),
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
@@ -403,60 +402,17 @@ var FREDUSMap = (function (module) {
 
     var getColorScale = function (featuresData) {
         // get extent of data for all timeseries
-//        var domainExtent = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
         var dataArray = [];
-        var dataArrayIndex = 0;
-        var total = 0;
-        var count = 0;
         for (var i = 0; i < featuresData.length; i++) {
             var timeSeries = featuresData[i];
             for (var j = 0; j < featureIds.length; j++) {
                 var val = parseFloat(timeSeries.values[j + 1]);
                 if (!isNaN(val)) {
-                    dataArray[dataArrayIndex++] = val;
-                    total += val;
-                    count++;
+                    dataArray.push(val);
                 }
-//            if (val) {
-//                if (val < domainExtent[0]) {
-//                    domainExtent[0] = val;
-//                }
-//                if (val > domainExtent[1]) {
-//                    domainExtent[1] = val;
-//                }
-//        }
             }
         }
-
-        var mean = total / count;
-        var stdDevSum = 0;
-        for (i = count; i--; stdDevSum += Math.pow(dataArray[i] - mean, 2));
-        var variance = stdDevSum / count;
-        var stdev = Math.sqrt(variance);
-
-        var niceDomainExtent = [mean - 2 * stdev, mean + 2 * stdev];
-
-        var colorScale = d3.scale.quantize()
-            .domain(niceDomainExtent)
-            .range(FREDChart.colors);
-
-        return colorScale;
-    };
-
-    var getColorDomainExtent = function (domainExtent) {
-        var niceDomainExtent = [];
-        // make the domain extent round numbers
-        var dx = domainExtent[1] - domainExtent[0];
-
-        // set start of color extent to zero if min data is less than 50% of of the way to the middle of the extent
-        if (domainExtent[0] < (domainExtent[0] + dx / 2))
-            niceDomainExtent[0] = 0;
-        else // otherwise, just round it
-            niceDomainExtent[0] = Math.round(domainExtent[0]);
-
-        niceDomainExtent[1] = Math.ceil(domainExtent[1]);
-
-        return niceDomainExtent;
+        return FREDChart.getNiceColorScale(dataArray);
     };
 
     return module;

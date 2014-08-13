@@ -1,36 +1,47 @@
-.line .data-line {
+.timeline .data-line {
     stroke: steelblue;
     stroke-width: 2;
     fill: none;
     stroke-dasharray: 0;
 }
 
-.line path {
+.timeline path {
     stroke: #eee;
     stroke-width: 2;
     stroke-dasharray: 0;
     fill: none;
 }
 
-.line .area {
-    fill: lightsteelblue;
+.timeline .area {
+    fill: lightgrey;
 }
 
-.line text {
+.timeline text {
     font-family: Arial;
     font-size: 8pt;
     fill: #787878;
 }
 
-.line line {
+.timeline line {
     stroke: #CDCDCD;
     stroke-width: 0.5;
     /* stroke-dasharray: 3 3; */
     fill: none;
 }
 
-.line .data-point {
+.timeline .data-point {
     stroke: steelblue;
     stroke-width: 2;
     fill: #FFF;
+}
+
+.timeline line.valueLine {
+    stroke: white;
+    stroke-dasharray: 5;
+}
+
+.timeline #valueLabelValue {
+    font-family: Arial;
+    font-size: 8pt;
+    fill: #787878;
 }

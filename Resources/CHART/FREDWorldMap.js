@@ -9,8 +9,10 @@ var FREDWorldMap = (function (module) {
     var mapRegions;
     var mapCountries;
     var mapCountryFeatures; // country map geometry
-    var colorScale; // color quantize scale
-    var legend;
+
+    var colorScale; // for mapping values to colors
+    var colorLegend;
+
     var pathMap; // path and projection
     var countryData;
 
@@ -24,11 +26,12 @@ var FREDWorldMap = (function (module) {
     var countryFeature = null;
 
     var chartSvg;
+    var jqSvg;
 
     module.init = function (selector, dataDefs, dataWorldMapArg) {
         dataWorldMap = dataWorldMapArg;
 
-        FREDChart.initChart(selector, worldmapClass, getDateRange, initData, initializeChart,
+        FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
     };// <-- End of init
 
@@ -70,17 +73,18 @@ var FREDWorldMap = (function (module) {
     }
 
     var initializeChart = function () {
-        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", chartSvgId).attr("class", worldmapClass);
+        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId).attr("class", FREDChart.worldmapClass);
+        jqSvg = $("#" + FREDChart.chartSvgId);
 
         //Adding legend for our Choropleth
         drawLegend();
 
         // get calculated width, height of chart area
-        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
-        var width = chartAreaStyles.getPropertyValue("width").replace("px","");
-        var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px","");
+        var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
+        var width = chartAreaStyles.getPropertyValue("width").replace("px", "");
+        var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
         // offset the chart to make room for the legend on the left
-        var offset = $("#"+mapColorLegendId)[0].getBBox().width;
+        var offset = $("#" + FREDChart.mapColorLegendId)[0].getBBox().width;
 
         // figure out scaling and translation
         // create a first guess for the projection
@@ -192,9 +196,9 @@ var FREDWorldMap = (function (module) {
         // add the legend DOM element
         var legendSvg = chartSvg.append("g");
 
-        legend = legendSvg.selectAll("g.legend")
+        colorLegend = legendSvg.selectAll("g.legend")
             .data(domainElems)
-            .enter().append("g").attr("class", "legend").attr("id", mapColorLegendId );
+            .enter().append("g").attr("class", "legend").attr("id", FREDChart.mapColorLegendId);
 
         var lsW = 30;
         var lsH = 30;
@@ -202,7 +206,7 @@ var FREDWorldMap = (function (module) {
         var lsTextYOffset = lsH / 2 + 4;
         var lsTextXOffset = lsW * 2;
 
-        legend.append("rect")
+        colorLegend.append("rect")
             .attr("x", 20)
             .attr("y", function (d, i) {
                 var yVal = (i * lsH) + lsYMargin;
@@ -217,7 +221,7 @@ var FREDWorldMap = (function (module) {
             })
             .style("opacity", unselectedCountryOpacity);
 
-        legend.append("text")
+        colorLegend.append("text")
             .attr("x", lsTextXOffset)
             .attr("y", function (d, i) {
                 return (i * lsH) + lsYMargin + lsTextYOffset;
@@ -260,7 +264,7 @@ var FREDWorldMap = (function (module) {
         var brect = d3.select(countryFeature).node().getBoundingClientRect();
 
         // get offset of the chart div
-        var offset = chartAreaDiv.offset();
+        var offset = jqSvg.offset();
 
         d3.select("#countryDataLabelName").text(countryNameById[countryClicked.id]);
         var textWidthName = d3.select("#countryDataLabelName").node().getBBox().width;
@@ -331,92 +335,20 @@ var FREDWorldMap = (function (module) {
 //        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 //}
 
-//function resetMap() {
-//    // unclick country (if there was one)
-//    countryClicked = null;
-//    countryFeature = null;
-//
-//    // hide the tooltip
-//    d3.select("#countryDataLabelName").attr("visibility", "hidden");
-//    d3.select("#countryDataLabelValue").attr("visibility", "hidden");
-//    d3.select("rect.countryDataLabel").attr("visibility", "hidden");
-//
-//    //
-//    activeState.classed("active", false)
-//        .style("fill", stateFillColor);
-//    activeState = null;
-//
-//    // disable the reset btn
-//    $("#resetBtn").button("option", "disabled", true)
-//
-//    // unzoom/unpan
-//    mapRegions.transition()
-//        .duration(500)
-//        .style("stroke-width", "1.5px")
-//        .attr("transform", "translate(0,0) scale(1)");
-//}
-
     var getColorScale = function (featuresData) {
         // get extent of data for all timeseries
-        var domainExtent = [Number.POSITIVE_INFINITY, Number.NEGATIVE_INFINITY];
         var dataArray = [];
-        var dataArrayIndex = 0;
-        var total = 0;
-        var count = 0;
         for (var i = 0; i < featuresData.length; i++) {
             var timeSeries = featuresData[i];
             for (var j = 0; j < featureIds.length; j++) {
                 var val = parseFloat(timeSeries.values[j + 1]);
                 if (!isNaN(val)) {
-                    dataArray[dataArrayIndex++] = val;
-                    total += val;
-                    count++;
+                    dataArray.push(val);
                 }
-//            if (val) {
-//                if (val < domainExtent[0]) {
-//                    domainExtent[0] = val;
-//                }
-//                if (val > domainExtent[1]) {
-//                    domainExtent[1] = val;
-//                }
-//        }
             }
         }
-
-        var mean = total / count;
-        var stdDevSum = 0;
-        for (i = count; i--; stdDevSum += Math.pow(dataArray[i] - mean, 2));
-        var variance = stdDevSum / count;
-        var stdev = Math.sqrt(variance);
-
-        var niceDomainExtent = [mean - 2 * stdev, mean + 2 * stdev];
-
-        var colorScale = d3.scale.quantize()
-            .domain(niceDomainExtent)
-            .range(FREDChart.colors);
-
-        return colorScale;
+        return FREDChart.getNiceColorScale(dataArray);
     }
-
-//var getColorDomainExtent = function(domainExtent) {
-//    var niceDomainExtent = [];
-//    // make the domain extent round numbers
-//    var dx = domainExtent[1] - domainExtent[0];
-//
-//    // set start of color extent to zero if min data is less than 50% of of the way to the middle of the extent
-//    if (domainExtent[0] < (domainExtent[0] + dx / 2))
-//        niceDomainExtent[0] = 0;
-//    else // otherwise, just round it
-//        niceDomainExtent[0] = Math.round(domainExtent[0]);
-//
-//    niceDomainExtent[1] = Math.ceil(domainExtent[1]);
-//
-//    return niceDomainExtent;
-//}
-
-//var log10 = function(x) {
-//    return Math.log(x) * Math.LOG10E;
-//}
 
 
     return module;

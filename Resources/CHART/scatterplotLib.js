@@ -118,8 +118,6 @@ var scatterplot = function () {
             }
             svg = d3.select(this).selectAll("svg").data([data]);
             gEnter = svg.enter().append("svg").append("g");
-//            svg.attr("width", width + margin.left + margin.right).attr("height",
-//                    height + margin.top + margin.bottom);
             g = svg.select("g");
             g.append("rect").attr("x", paneloffset + margin.left).attr("y", margin.top).attr("height",
                 panelheight).attr("width", panelwidth).attr("fill", rectcolor).attr("stroke", "none");
@@ -143,7 +141,9 @@ var scatterplot = function () {
             szrange = [minPointRadius, maxPointRadius];
             xscale.domain(xlim).range(xrange);
             yscale.domain(ylim).range(yrange);
-            if( isSize ) szscale.domain(szlim).range(szrange);
+            if (isSize) {
+                szscale.domain(szlim).range(szrange);
+            }
             na_value = ( xlim[0] < ylim[0] ? xlim[0] : ylim[0]) - 100; // min x and y minus 100 will put the NA points 100 units outside main chart areaif (xNA.handle) {
             // add na_value to scales if necessary
             if (xNA.handle) {
@@ -158,10 +158,14 @@ var scatterplot = function () {
 
             xscl = d3.scale.linear().domain(xlim).range(xrange);
             yscl = d3.scale.linear().domain(ylim).range(yrange);
-            if( isSize ) szscl = d3.scale.linear().domain(szlim).range(szrange);
+            if (isSize) {
+                szscl = d3.scale.linear().domain(szlim).range(szrange);
+            }
             xticks = xticks != null ? xticks : xscl.ticks(nxticks);
             yticks = yticks != null ? yticks : yscl.ticks(nyticks);
-            if( isSize ) szticks = szticks != null ? szticks : szscl.ticks(nszticks);
+            if (isSize) {
+                szticks = szticks != null ? szticks : szscl.ticks(nszticks);
+            }
             titlegrp = g.append("g").attr("class", "title " + scatterClass).append("text").attr("x",
                     margin.left + width / 2).attr("y",
                     margin.top - titlepos).text(title);
@@ -180,6 +184,7 @@ var scatterplot = function () {
             });
             xaxis.append("text").attr("class", "title " + scatterClass).attr("x", margin.left + width / 2).attr("y",
                     margin.top + height + axispos.xtitle).text(xlab);
+            //xaxis.select("text.title").call(FREDChart.wrapTextLines);
             if (xNA.handle) {
                 xaxis.append("text").attr("x", margin.left + xNA.width / 2).attr("y",
                         margin.top + height + axispos.xlabel).text("N/A");
@@ -201,11 +206,13 @@ var scatterplot = function () {
             yaxis.append("text").attr("class", "title " + scatterClass).attr("y", margin.top + height / 2)
                 .attr("x", margin.left - axispos.ytitle).text(ylab).attr("transform",
                 rotate_ylab ? "rotate(270," + (margin.left - axispos.ytitle) + "," + (margin.top + height / 2) + ")" : "");
+            //yaxis.select("text.title").call(FREDChart.wrapTextLines);
             if (yNA.handle) {
                 yaxis.append("text").attr("x", margin.left - axispos.ylabel).attr("y",
                         margin.top + height - yNA.width / 2).text("N/A");
             }
-            if( isSize ) {
+
+            if (isSize) {
                 var maxSz = szscale(szticks[0]);
                 for (var i = 1; i < szticks.length; i++) {
                     var sz = szscale(szticks[i]);
@@ -257,6 +264,7 @@ var scatterplot = function () {
                     .attr("transform",
                         "rotate(270," + (margin.left - axispos.sztitle) + "," + (margin.top + szlegend.height) + ")");
             }
+
             indtip = d3.tip().attr("class", "d3-tip " + scatterClass).html(function (d, i) {
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
@@ -273,7 +281,7 @@ var scatterplot = function () {
             popupLblH = tickGroupH.append("svg:text");
             popupLblV = tickGroupV.append("svg:text");
             isPopupShowing = false;
-            svg.on("click", function( d, i ) {
+            svg.on("click", function (d, i) {
                 // clicks outside of scatter points land here and hide the popup if there is one
                 chart.unselectElem();
             });
@@ -458,7 +466,7 @@ var scatterplot = function () {
         title = value;
         return chart;
     };
-    chart.isSize = function( value ) {
+    chart.isSize = function (value) {
         if (!arguments.length) {
             return isSize;
         }
@@ -547,7 +555,7 @@ var scatterplot = function () {
     chart.pointsSelect = function () {
         return pointsSelect;
     };
-    chart.svg = function() {
+    chart.svg = function () {
         return svg;
     };
     chart.initPoints = function () {
@@ -555,7 +563,7 @@ var scatterplot = function () {
         indID = data != null ? data.indID : (function () {
             // if no ID text provided, use index of element
             var results = [];
-            for (var i = 0; i< x.length; i++) {
+            for (var i = 0; i < x.length; i++) {
                 results.push(i);
             }
             return results;
@@ -581,7 +589,8 @@ var scatterplot = function () {
 //        })();
 
         var points = svg.select("g").append("g").attr("id", "points");
-        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class", "pt " + scatterClass)
+        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class",
+                "pt " + scatterClass)
             .attr("id", function (d, i) {
                 return i;
             }).attr("cx", function (d, i) {
@@ -589,11 +598,7 @@ var scatterplot = function () {
             }).attr("cy", function (d, i) {
                 return yscale(y[i]);
             }).attr("r", function (d, i) {
-                if( isSize ) {
-                    return szscale(sz[i]);
-                } else {
-                    return minPointRadius;
-                }
+                return isSize ? szscale(sz[i]) : minPointRadius;
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
             }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
@@ -602,28 +607,28 @@ var scatterplot = function () {
                 }
                 return 0;
             }).on("click", function (d, i) {
-                chart.selectElem( this, d, i);
+                chart.selectElem(this, d, i);
             }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
     };
 
-    chart.selectElem = function( elem, d, i ) {
+    chart.selectElem = function (elem, d, i) {
         indtip.hide();
         chart.unselectElem(); // unselect any previously select elem
         selectedElem = elem;
         selectedElem.setAttribute("class", "selected " + scatterClass);
-        chart.showPopup( d, i );
+        chart.showPopup(d, i);
         d3.event.stopPropagation();
     };
 
-    chart.unselectElem = function() {
-        if( selectedElem != null ) {
+    chart.unselectElem = function () {
+        if (selectedElem != null) {
             selectedElem.setAttribute("class", "pt " + scatterClass);
             chart.hidePopup();
             selectedElem = null;
         }
     };
 
-    chart.hidePopup = function() {
+    chart.hidePopup = function () {
         // clean up popup for non-point selections
         if (isPopupShowing) {
             popup.transition()
@@ -633,20 +638,20 @@ var scatterplot = function () {
         }
     };
 
-    chart.reshowPopupOnce = function( d, i ) {
+    chart.reshowPopupOnce = function (d, i) {
         // if popup should be showing, reshow it once after transition
-        if( selectedElem != null && !isPopupShowing ) {
+        if (selectedElem != null && !isPopupShowing) {
             chart.showPopup(d, i);
         }
     };
 
-    chart.showPopup = function( d, i ) {
+    chart.showPopup = function (d, i) {
         // var idx = parseInt(d3.select(selectedElem).attr("id"));
         var idx = selectedElem.getAttribute("id");
         var xVal = data.data[idx][xvar];
         var yVal = data.data[idx][yvar];
-        var szVal = data.data[idx][szvar];
-        var r = szscale(szVal);
+        var szVal = isSize ? data.data[idx][szvar] : null;
+        var r = isSize ? szscale(szVal) : minPointRadius;
         var padding = 2;
 
         var cx = selectedElem.getAttribute("cx");
@@ -663,16 +668,16 @@ var scatterplot = function () {
         //var bbox = popupText.node().getBBox();
 
         // position text above elem
-        popupText.attr("x", +padding).attr("y", +(-2*(r + padding)));
+        popupText.attr("x", +padding).attr("y", +(-2 * (r + padding)));
 
         // center rectangle on text
-        centerRectOnText( popupRect, popupText, padding );
+        centerRectOnText(popupRect, popupText, padding);
 
         // add ticks with value labels to element
-        popupTickH.attr("x1", +(-r-popupTickLen));
+        popupTickH.attr("x1", +(-r - popupTickLen));
         popupTickH.attr("x2", +(-r));
         popupTickV.attr("y1", +r);
-        popupTickV.attr("y2", +(popupTickLen+r));
+        popupTickV.attr("y2", +(popupTickLen + r));
         popupLblH.text(+yVal);
         popupLblV.text(+xVal);
 
@@ -680,16 +685,16 @@ var scatterplot = function () {
         var lblHBox = popupLblH.node().getBBox();
         var lblVBox = popupLblV.node().getBBox();
         var xHTrans = -r - lblHBox.width - popupTickLen;
-        var yHTrans = lblHBox.height/2;
-        var xVTrans = -lblVBox.width/2;
+        var yHTrans = lblHBox.height / 2;
+        var xVTrans = -lblVBox.width / 2;
         var yVTrans = lblVBox.height + popupTickLen;
         popupLblH.attr("x", +xHTrans).attr("y", +yHTrans);
         popupLblV.attr("x", +xVTrans).attr("y", +yVTrans);
 
         // center background on tick labels
         var lblRectPadding = 1;
-        centerRectOnText( popupLblRectH, popupLblH, lblRectPadding);
-        centerRectOnText( popupLblRectV, popupLblV, lblRectPadding);
+        centerRectOnText(popupLblRectH, popupLblH, lblRectPadding);
+        centerRectOnText(popupLblRectV, popupLblV, lblRectPadding);
 
         isPopupShowing = true;
     };
@@ -724,7 +729,7 @@ var scatterplot = function () {
             }).attr("cy", function (d, i) {
                 return yscale(y[i]);
             }).attr("r", function (d, i) {
-                return szscale(sz[i]);
+                return isSize ? szscale(sz[i]) : minPointRadius;
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
             }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
@@ -732,12 +737,12 @@ var scatterplot = function () {
                     return 1;
                 }
                 return 0;
-            }).each("end", function( d, i ) {
-                chart.reshowPopupOnce( d, i );
-            } );
+            }).each("end", function (d, i) {
+                chart.reshowPopupOnce(d, i);
+            });
     };
 
-    chart.getData = function() {
+    chart.getData = function () {
         if (dataByInd) {
             x = data.data.map(function (d) {
                 return d[xvar];
@@ -745,17 +750,17 @@ var scatterplot = function () {
             y = data.data.map(function (d) {
                 return d[yvar];
             });
-            if( isSize ) sz = data.data.map(function (d) {
-                return d[szvar];
-            });
+            sz = isSize ? data.data.map(function (d) {
+                    return d[szvar];
+                }) : null;
         } else {
             x = data.data[xvar];
             y = data.data[yvar];
-            if( isSize ) sz = data.data[szvar];
+            sz = isSize ? data.data[szvar] : null;
         }
         x = missing2null(x, [FREDChart.noValue, ""]);
         y = missing2null(y, [FREDChart.noValue, ""]);
-        if( isSize ) sz = missing2default(sz, [FREDChart.noValue, ""], minPointRadius);
+        sz = isSize ? missing2default(sz, [FREDChart.noValue, ""], minPointRadius) : null;
         if (xNA.handle) {
             x = x.map(function (e) {
                 if (e != null) {

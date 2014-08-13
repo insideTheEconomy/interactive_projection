@@ -104,28 +104,31 @@ ds.setup().then(
 var selectChart = function(chartElemSelector, defs, chartType, category, chartIndex) {
     switch (chartType) {
         case "line": // TBD: no data def yet
-            var defWorldMap = defs[worldmapMetadata.category][+worldmapMetadata.index]; // worldmap meta data for USA Id
-            ds.get(defWorldMap).then(
-                function (dataWorldMap) {
+            var nationMetadata = ds.placeKey["country"];
+//            var defWorldMap = defs[worldmapMetadata.category][+worldmapMetadata.index]; // worldmap meta data for USA Id
+//            ds.get(defWorldMap).then(
+//                function (dataWorldMap) {
                     var defTimeline = defs[category][+chartIndex]; // scatter
                     ds.get(defTimeline).then(
                         function (dataTimeline) {
-                            new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, dataWorldMap.worldmap.map[0].features);
+                            new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, nationMetadata );//dataWorldMap.worldmap.map[0].features);
                         });
-                });
+//                });
             break;
         case "scatter":
-            var defUSMap = defs[usmapMetadata.category][+usmapMetadata.index]; // usmap fmeta data or state Ids, Names
-            ds.get(defUSMap).then(
-                function (dataUSMap) {
+            var stateMetadata = ds.placeKey["state"];
+//            var defUSMap = defs[usmapMetadata.category][+usmapMetadata.index]; // usmap fmeta data or state Ids, Names
+//            ds.get(defUSMap).then(
+//                function (dataUSMap) {
                     var defScatter = defs[category][+chartIndex]; // scatter
                     ds.get(defScatter).then(
                         function (dataScatter) {
-                            new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, dataUSMap.usmap.maps.state.features);
+                            new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, stateMetadata );//dataUSMap.usmap.maps.state.features);
                         });
-                });
+//                });
             break;
         case "usmap":
+            var countyMetadata = ds.placeKey["county"];
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
@@ -133,6 +136,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
                 });
             break;
         case "worldmap":
+            var nationMetadata = ds.placeKey["nation"];
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {

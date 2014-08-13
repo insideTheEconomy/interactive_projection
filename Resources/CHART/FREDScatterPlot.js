@@ -11,6 +11,7 @@ var FREDScatterPlot = (function (module) {
     var minPointRadius = 3;
     var maxPointRadius = 20;
 
+    var isSize = false; // turns on and off size data display
     var szlegend = {
         width: Math.max(2 * maxPointRadius + 50, 150),
         height: 0, //TBD: .5 * chartHeight,
@@ -41,7 +42,6 @@ var FREDScatterPlot = (function (module) {
     var statesData = {};
     var stateNamesById = {};
     var stateNames = [];
-    var statesGeoFeatures; // state map data
 
     var scatterPlotData;
 
@@ -55,24 +55,22 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    module.init = function (selector, dataDefsArg, statesDataArg, statesGeoFeaturesArg) {
+    module.init = function (selector, dataDefsArg, statesDataArg, stateMetadata) {
         statesDataDefs = dataDefsArg;
         statesData = statesDataArg;
 
-        statesGeoFeatures = statesGeoFeaturesArg;
         // get feature names and Ids
-        statesGeoFeatures.forEach(function (feature, i) {
-            stateIds.push(feature.id);
-            stateNamesById[feature.id] = feature.properties.name;
+        stateMetadata.forEach(function (feature, i) {
+            stateIds.push(feature.gid);
+            stateNamesById[feature.gid] = feature.name;
         });
         // convert names by ID to names by index
         for (var i = 0; i < stateIds.length; i++) {
             stateNames.push(stateNamesById[stateIds[i]]);
         }
 
-        FREDChart.initChart(selector, scatterClass, getDateRange, initPlotData, initializeChart,
+        FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, statesDataDefs.chart_name, statesDataDefs.chart_text);
-
     }
 
 
@@ -93,9 +91,6 @@ var FREDScatterPlot = (function (module) {
     }
 
     var initializeChart = function () {
-        // get transformed, as-drawn coordinates of the div
-        var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
-
         // get colorScale scale
         colorScale = getColorScale(statesData);
 
@@ -177,29 +172,36 @@ var FREDScatterPlot = (function (module) {
 //    }
 
     var drawChart = function () {
-        var xLab = statesData.x[0].title;
-        var yLab = statesData.y[0].title;
-        var szLab = statesData.size[0].title;
+
+        var xLab = statesData.x[0].title + " (" + statesData.x[0].units + ")";
+        var yLab = statesData.y[0].title + " (" + statesData.y[0].units + ")";
+        var szLab = isSize ? statesData.size[0].title : null;
         var xLim = getLim(statesData.x);
         var yLim = getLim(statesData.y);
-        var szLim = getLim(statesData.size);
+        var szLim = isSize ? getLim(statesData.size) : null;
         var NA = getNA();
 
-        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
-        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px","");
-        var chartAreaHeight = chartAreaStyles.getPropertyValue("height").replace("px","");
+//        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
+//        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px", "");
+//        var chartAreaHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
+//
+//        var chartHeight = Math.min(chartAreaWidth * chartAreaFactor, chartAreaHeight * chartAreaFactor);
+//        var chartWidth = chartHeight;
 
-        var chartHeight = Math.min( chartAreaWidth * chartAreaFactor, chartAreaHeight * chartAreaFactor );
-        var chartWidth = chartHeight;
+        // get transformed, as-drawn coordinates of the div
+        var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
+        var chartWidth = divRect.width * chartAreaFactor;
+        var chartHeight = divRect.height * chartAreaFactor;
+
         szlegend.height = .5 * chartHeight;
 
         chart = scatterplot()
             .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[xDataIndex])
             .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[yDataIndex]).rotate_ylab(true)
-            //.szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
+            .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos).elemClass(scatterClass);
+            .axispos(axispos).titlepos(titlepos).elemClass(FREDChart.scatterClass);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 
@@ -394,10 +396,6 @@ var FREDScatterPlot = (function (module) {
             }
         }
         return false;
-    }
-
-    var log10 = function (x) {
-        return Math.log(x) * Math.LOG10E;
     }
 
     return module;

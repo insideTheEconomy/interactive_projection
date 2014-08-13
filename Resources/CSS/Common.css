@@ -1,5 +1,6 @@
 /*------------ common styles ------------*/
 /* everything (but slider) is positioned inside chartMain */
+
 #chartMain {
     position: relative;
     margin: 0px auto;
@@ -7,7 +8,7 @@
 
 #chartArea {
     position: relative;
-    top: 50px;
+    top: 0px;
     margin: 20px auto;
 }
 
@@ -32,10 +33,9 @@
 }
 
 #chartTitle {
-    position: absolute;
+    position: relative;
     top: 0px;
     left: 0px;
-    float: left;
     text-align: left;
     vertical-align: middle;
     font-size: 30px;
@@ -43,20 +43,18 @@
 }
 
 #chartDescription {
-    position: absolute;
-    top: 40px;
-    left: 0px;
-    width: 70%;
+    position: relative;
+    float: left;
+    width: 65%;
     text-align: left;
     font-size: 15px;
     font-weight: normal;
 }
 
 #dateLabel {
-    position: absolute;
-    top: 40px;
+    position: relative;
     width: 30%;
-    right: 0px;
+    float: right;
     text-align: center;
     vertical-align: baseline;
     font-size: 20px;
@@ -65,7 +63,7 @@
 
 /* dateSlider is positioned absolute in the chartArea */
 #dateSlider {
-    margin: 5px auto; /* center */
+    margin: 0px auto; /* center */
     width: 100%;
 }
 
@@ -116,7 +114,7 @@ path.state {
     font-weight: bold;
 }
 
-rect.countyDataLabel {
+rect.countyDataLabel, rect.countryDataLabel {
     fill: #FFFFE0;
     padding: 2px;
     border: 1px;
@@ -124,13 +122,13 @@ rect.countyDataLabel {
     pointer-events: none;
 }
 
-text.countyDataLabel {
+text.countyDataLabel, text.countryDataLabel {
     text-align: center;
     font-size: 12px;
     fill: #000000;
 }
 
-#countyDataLabelName {
+#countyDataLabelName, #countryDataLabelName {
     font-weight: bold;
 }
 
