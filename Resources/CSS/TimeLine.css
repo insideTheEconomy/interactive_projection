@@ -18,13 +18,14 @@
 
 .timeline text {
     font-family: Arial;
-    font-size: 8pt;
-    fill: #787878;
+    font-size: 14pt;
+    font-weight: bold;
+    fill: white;
 }
 
 .timeline line {
-    stroke: #CDCDCD;
-    stroke-width: 0.5;
+    stroke: white;
+    stroke-width: 1;
     /* stroke-dasharray: 3 3; */
     fill: none;
 }
@@ -36,12 +37,17 @@
 }
 
 .timeline line.valueLine {
-    stroke: white;
+    stroke: lightcyan;
+    stroke-width: 3;
     stroke-dasharray: 5;
 }
 
-.timeline #valueLabelValue {
+.timeline text.valuelabel {
     font-family: Arial;
-    font-size: 8pt;
-    fill: #787878;
+    font-size: 14pt;
+    fill: black;
+}
+
+.timeline rect.valueLabel {
+    fill: lightcyan;
 }
