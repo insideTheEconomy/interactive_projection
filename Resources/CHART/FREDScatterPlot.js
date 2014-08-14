@@ -206,20 +206,12 @@ var FREDScatterPlot = (function (module) {
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 
         FREDChart.chartAreaDiv.call(chart.initPoints);
-    }
+    };
 
     var updateChart = function () {
         updatePlotData();
         FREDChart.chartAreaDiv.call(chart.updatePoints);
-    }
-
-    var displayValue = function () {
-        var val = countyValuesById[countyClicked.id];
-        if (isNaN(val))
-            return "undefined";
-        else
-            return +val;
-    }
+    };
 
     var getColorScale = function (featuresData) {
         if (typeof featuresData.size === "undefined")
@@ -254,7 +246,7 @@ var FREDScatterPlot = (function (module) {
             .range(FREDChart.colors);
 
         return colorScale;
-    }
+    };
 
     var getColorDomainExtent = function (domainExtent) {
         var niceDomainExtent = [];
@@ -270,21 +262,21 @@ var FREDScatterPlot = (function (module) {
         niceDomainExtent[1] = Math.ceil(domainExtent[1]);
 
         return niceDomainExtent;
-    }
+    };
 
     var initPlotData = function () {
         scatterPlotData = {
             "data": [],
             "indID": stateNames };
         updatePlotData();
-    }
+    };
 
     var updatePlotData = function () {
         var xData = loadData(statesData.x);
         var yData = loadData(statesData.y);
         var szData = loadData(statesData.size);
         var data = [];
-        for (i in stateIds) {
+        for (var i in stateIds) {
             var value = [];
             var idx = stateIds[i];
             value[xDataIndex] = getDatum(xData, idx, FREDChart.noValue);
@@ -293,18 +285,18 @@ var FREDScatterPlot = (function (module) {
             data.push(value);
         }
         scatterPlotData.data = data;
-    }
+    };
 
     var loadData = function (dataSet) {
         if (typeof dataSet !== "undefined")
-            for (i in dataSet) {
+            for (var i in dataSet) {
                 if (dataSet[i].date === FREDChart.timeSlotDate) {
                     return dataSet[i].values;
                 }
             }
         else
             return null;
-    }
+    };
 
     var getDatum = function (data, index, defaultVal) {
         if (!data || (typeof data[index] === "undefined"))
@@ -313,14 +305,14 @@ var FREDScatterPlot = (function (module) {
             var value = parseFloat(data[index]);
             return value;
         }
-    }
+    };
 
     var getLim = function (dataSet) {
         var lim = [Number.MAX_VALUE, Number.MIN_VALUE];
-        for (i in dataSet) {
+        for (var i in dataSet) {
             var data = dataSet[i].values;
             // look for min and max
-            for (j in data) {
+            for (var j in data) {
                 var value = parseFloat(data[j]);
                 if (value < lim[0]) {
                     lim[0] = value;
@@ -331,7 +323,7 @@ var FREDScatterPlot = (function (module) {
             }
         }
         return lim;
-    }
+    };
 
     var getNA = function () {
         var dataSets = [statesData.x, statesData.y, statesData.size];
@@ -354,11 +346,11 @@ var FREDScatterPlot = (function (module) {
         ];
 
         // check if any values missing for particular dates
-        for (idx in [0, 1, 2]) {
+        for (var idx in [0, 1, 2]) {
             if (!NA[idx].handle) {
                 var dataset = dataSets[idx];
-                for (i in dataset) {
-                    for (j in dataset[i].values) {
+                for (var i in dataset) {
+                    for (var j in dataset[i].values) {
                         if (dataset[i].values[j] === FREDChart.noValue) {
                             NA[idx].handle = true;
                             break;
@@ -371,15 +363,15 @@ var FREDScatterPlot = (function (module) {
         }
 
         // check if any dates each dataset are missing from the others
-        for (i in [0, 1, 2]) {
-            for (j in [0, 1, 2]) {
+        for (var i in [0, 1, 2]) {
+            for (var j in [0, 1, 2]) {
                 if (i != j && !NA[j].handle)
                     NA[j].handle = isMissingDates(dataSets[i], dataSets[j]);
             }
         }
 
         return NA;
-    }
+    };
 
     var isMissingDates = function (standard, test) {
         for (i in standard) {

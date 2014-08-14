@@ -46,7 +46,6 @@ var scatterplot = function () {
         ylabel: 5,
         szlabel: 5
     };
-    scatterClass = "scatterplot";
     titlepos = 20;
     isSize = false;
     xNA = {
