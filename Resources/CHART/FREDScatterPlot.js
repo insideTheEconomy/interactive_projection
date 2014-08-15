@@ -22,9 +22,9 @@ var FREDScatterPlot = (function (module) {
     };
     var chartMargin = {
         left: 100,
-        top: 40,
+        top: 0, //40,
         right: 10 + szlegend.width,
-        bottom: 40,
+        bottom: 0, //40,
         inner: 5
     };
     var axispos = {
@@ -59,6 +59,12 @@ var FREDScatterPlot = (function (module) {
     module.init = function (selector, dataDefsArg, statesDataArg, stateMetadata) {
         statesDataDefs = dataDefsArg;
         statesData = statesDataArg;
+        var sampleMeta = statesData.x[statesData.x.length-1].seriesMeta; // last entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
 
         // get feature names and Ids
         stateMetadata.forEach(function (feature, i) {
@@ -71,7 +77,7 @@ var FREDScatterPlot = (function (module) {
         }
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, statesDataDefs.chart_name, statesDataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, statesDataDefs.chart_name, statesDataDefs.chart_text, srcFootnote);
     }
 
 

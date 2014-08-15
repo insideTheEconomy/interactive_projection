@@ -11,6 +11,12 @@
     text-anchor: middle;
 }
 
+.chartTitle text {
+    dominant-baseline: middle;
+    fill: blue;
+    text-anchor: middle;
+}
+
 .axis text {
     fill: white;
 }

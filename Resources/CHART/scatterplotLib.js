@@ -96,7 +96,7 @@ var scatterplot = function () {
 
     chart = function (selection) {
         return selection.each(function (chartdata) {
-            var chartGroup, gEnter, panelheight, paneloffset, panelwidth, titleGroup,
+            var chartGroup, gEnter, panelheight, paneloffset, panelwidth, titleGroup = null,
                 xaxis, xrange, xscl,
                 yaxis, yrange, yscl,
                 szaxis, szrange, szscl;
@@ -126,6 +126,13 @@ var scatterplot = function () {
                 .attr("width", panelwidth)
                 .attr("fill", rectcolor)
                 .attr("stroke", "none");
+
+            if(title) {
+                titleGroup = chartGroup.append("g").attr("class", "chartTitle").append("text")
+                    .attr("x", margin.left + width / 2)
+                    .attr("y", margin.top - titlepos).text(title);
+            }
+
             if (xNA.handle) {
                 chartGroup.append("rect").attr("x", margin.left).attr("y", margin.top).attr("height",
                     panelheight).attr("width",
@@ -171,9 +178,6 @@ var scatterplot = function () {
             if (isSize) {
                 szticks = szticks != null ? szticks : szscl.ticks(nszticks);
             }
-            titleGroup = chartGroup.append("g").attr("class", "title").append("text").attr("x",
-                    margin.left + width / 2).attr("y",
-                    margin.top - titlepos).text(title);
 
             xaxis = chartGroup.append("g").attr("class", "x axis");
             xaxis.selectAll("empty").data(xticks).enter().append("line")

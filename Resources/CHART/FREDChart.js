@@ -43,6 +43,7 @@ var FREDChart = (function (module) {
     var dateSliderId = "dateSlider";
     var dateSliderLabelId = "dateSliderLabel";
     module.mapColorLegendId = "mapColorLegend";
+    var sourceFootnoteId = "sourceFootnote";
 
     module.scatterClass = "scatter";
     module.usmapClass = "usmap";
@@ -51,7 +52,7 @@ var FREDChart = (function (module) {
 
     var numSliderTicks = 8;
 
-    module.initChart = function (parentSelector, chartClass, getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg, isUpdateOnSlide, chartTitle, chartText) {
+    module.initChart = function (parentSelector, chartClass, getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg, isUpdateOnSlide, chartTitle, chartText, sourceFootnote) {
 
         updateChartFcn = updateChartFcnArg;
 
@@ -70,12 +71,14 @@ var FREDChart = (function (module) {
         dateRange = getDateRangeFcn();
         module.timeSlotDate = dateRange[0];
 
-        d3.select("#" + chartTitleId).text(chartTitle);
+        d3.select("#" + chartTitleId).text(chartTitle+"*");
         d3.select("#" + chartDescriptionId).text(chartText);
 
         initializeChartFcn(chartClass); // draw plot
 
         drawSlider(chartClass, isUpdateOnSlide);
+
+        drawSourceFootnote(chartClass, sourceFootnote)
 
         // draw data
         updateChartFcn();
@@ -171,6 +174,12 @@ var FREDChart = (function (module) {
             }
         }
         return labels;
+    };
+
+    var drawSourceFootnote = function(chartClass, sourceFootnote){
+        appendOrReclassElement(chartAreaDiv, "div", sourceFootnoteId, chartClass)
+            .html("(*"+sourceFootnote+")")
+            .attr("id",sourceFootnoteId);
     }
 
     module.wrapTextLines = function (text) {

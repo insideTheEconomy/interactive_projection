@@ -49,9 +49,15 @@ var FREDUSMap = (function (module) {
 
     module.init = function (selector, dataDefs, dataUSMapArg) {
         dataUSMap = dataUSMapArg;
+        var sampleMeta = dataUSMap.data[dataUSMap.data.length-1].seriesMeta; // last entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
     };// <-- End of USMap
 
     var initData = function () {

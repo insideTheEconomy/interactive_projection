@@ -51,6 +51,7 @@ var FREDTimeline = (function (module) {
     var circles;
 
     var suppliedData;
+    var sampleData;
     var dataDefs;
 
     var plotData;
@@ -62,18 +63,28 @@ var FREDTimeline = (function (module) {
     module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
         dataDefs = dataDefsArg;
         suppliedData = timelineDataArg;
+        sampleData = suppliedData.line.data[0][0];
+
+        // get the source footnote text
+        var sampleMeta = sampleData[0].seriesMeta; // first entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
 
         for (var i in nationFeatures) {
             var x = nationFeatures[i];
             if (nationFeatures[i] != "undefined" && nationFeatures[i].name === "United States") {
                 usDataId = nationFeatures[i].gid
+                break;
             }
         }
 
         dataAnnotations = suppliedData.line.annotations;
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
 
     };
 
@@ -107,7 +118,6 @@ var FREDTimeline = (function (module) {
             .attr("height", chartHeight)
             .attr("width", chartWidth);
 
-        var sampleData = suppliedData.line.data[0][0];
         var yLab = sampleData[0].title + " (" + sampleData[0].units + ")";
 
         yMin = plotData.reduce(function (previous, current) {

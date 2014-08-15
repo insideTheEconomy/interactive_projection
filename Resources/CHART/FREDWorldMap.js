@@ -31,8 +31,16 @@ var FREDWorldMap = (function (module) {
     module.init = function (selector, dataDefs, dataWorldMapArg) {
         dataWorldMap = dataWorldMapArg;
 
+        // get the source footnote text
+        var sampleMeta = dataWorldMap.data[dataWorldMap.data.length-1].seriesMeta; // last entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
+
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
     };// <-- End of init
 
     var initData = function () {

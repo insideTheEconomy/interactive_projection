@@ -77,7 +77,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
             var defTimeline = defs[category][+chartIndex]; // scatter
             ds.get(defTimeline).then(
                 function (dataTimeline) {
-                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, nationMetadata);//dataWorldMap.worldmap.map[0].features);
+                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, nationMetadata);
                 });
             break;
         case "scatter":
@@ -85,7 +85,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
             var defScatter = defs[category][+chartIndex]; // scatter
             ds.get(defScatter).then(
                 function (dataScatter) {
-                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, stateMetadata);//dataUSMap.usmap.maps.state.features);
+                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, stateMetadata);
                 });
             break;
         case "usmap":
@@ -97,7 +97,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
                 });
             break;
         case "worldmap":
-            var nationMetadata = ds.placeKey["nation"];
+            var nationMetadata = ds.placeKey["country"];
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
