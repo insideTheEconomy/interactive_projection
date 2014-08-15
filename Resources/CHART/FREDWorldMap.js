@@ -273,7 +273,7 @@ var FREDWorldMap = (function (module) {
     var displayValue = function () {
         var val = countryValuesById[countryClicked.id];
         if (isNaN(val))
-            return "undefined";
+            return FREDChart.noValueLabel;
         else
             return +val;
     };

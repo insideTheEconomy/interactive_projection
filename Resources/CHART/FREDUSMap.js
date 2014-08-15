@@ -288,7 +288,7 @@ var FREDUSMap = (function (module) {
     var displayValue = function () {
         var val = countyValuesById[countyClicked.id];
         if (isNaN(val))
-            return "undefined";
+            return FREDChart.noValueLabel;
         else
             return +val;
     };

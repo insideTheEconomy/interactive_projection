@@ -19,7 +19,8 @@ var FREDChart = (function (module) {
     ];
     module.nanColor = '#D5D2CA';
 
-    module.noValue = "NA";
+    module.noValue = "ND";
+    module.noValueLabel = "No Data";
 
     var chartAreaDiv;
     var dateLabelDiv;
@@ -219,10 +220,19 @@ var FREDChart = (function (module) {
 
         var lsW = 30;
         var lsH = 30;
-        var lsYMargin = 2 * lsH;
+        var lsYMargin = 1.5 * lsH;
         var lsTextYOffset = lsH / 2 + 4;
         var lsTextXOffset = lsW * 2;
 
+        // units label above legend
+        legendGroup.append("text")
+            .attr("id", "colorLegendUnits")
+            .attr("text-anchor", "start")
+            .attr("x", lsW)
+            .attr("y", lsYMargin + lsTextYOffset - lsH)
+            .text(plotData[0].units);
+
+        // stack of color bloacks
         colorLegend.append("rect")
             .attr("id", "colorLegendBlock")
             .attr("x", 20)
@@ -239,6 +249,7 @@ var FREDChart = (function (module) {
             })
             .style("opacity", opacity);
 
+        // labels for color blocks
         colorLegend.append("text")
             .attr("id", "colorLegendLabel")
             .attr("x", lsTextXOffset)
@@ -249,12 +260,23 @@ var FREDChart = (function (module) {
                 return legendLabels[i];
             });
 
+        // append no-data block
+        var yND = domainElems.length * lsH + lsYMargin + 5;
+        legendGroup.append("rect")
+            .attr("id", "colorLegendBlock")
+            .attr("x", 20)
+            .attr("y", yND)
+            .attr("width", lsW)
+            .attr("height", lsH)
+            .style("fill", module.nanColor)
+            .style("opacity", opacity);
+
+        // label no data block
         legendGroup.append("text")
-            .attr("id", "colorLegendUnits")
-            .attr("text-anchor", "start")
-            .attr("x", lsW)
-            .attr("y", lsYMargin + lsTextYOffset - lsH)
-            .text(plotData[0].units);
+            .attr("id", "colorLegendLabel")
+            .attr("x", lsTextXOffset)
+            .attr("y", yND + lsTextYOffset)
+            .text(module.noValueLabel);
 
         return colorScale;
     };

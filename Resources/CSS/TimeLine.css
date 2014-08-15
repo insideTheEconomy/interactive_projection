@@ -1,32 +1,18 @@
 .timeline .data-line {
-    stroke: green;
-    stroke-width: 2;
+    stroke: darkgreen;
+    stroke-width: 1;
     fill: none;
     stroke-dasharray: 0;
 }
 
 .timeline .area {
-    fill: lightgreen;
+    fill: #EBFFEB;
 }
 
 .timeline path{
     stroke: grey;
-    stroke-width: 2;
-    stroke-dasharray: 0;
-    fill: none;
-}
-
-.timeline text {
-    font-family: Arial;
-    font-size: 12pt;
-    font-weight: normal;
-    fill: white;
-}
-
-.timeline line {
-    stroke: lightorange;
     stroke-width: 1;
-    /* stroke-dasharray: 3 3; */
+    stroke-dasharray: 0;
     fill: none;
 }
 

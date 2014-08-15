@@ -29,18 +29,6 @@
     opacity: .7;
 }
 
-.scatter .pt {
-    fill: blue;
-    stroke: blue;
-    opacity: 1;
-}
-
-.scatter .selected {
-    fill: darkred;
-    stroke: darkred;
-    opacity: 1;
-}
-
 .scatter .d3-tip {
     line-height: 1;
     font-weight: normal;

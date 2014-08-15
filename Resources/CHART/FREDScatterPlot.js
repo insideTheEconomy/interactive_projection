@@ -6,7 +6,8 @@ var FREDScatterPlot = (function (module) {
 
     var defaultSz = 4;
 
-    var chartAreaFactor = .8; // portion of chart area for the actual scatter area
+    var chartAreaXFactor = .8; // portion of horizontal chart area for the actual scatter area
+    var chartAreaYFactor = .9; // portion of vertical chart area for the actual scatter area
 
     var minPointRadius = 3;
     var maxPointRadius = 20;
@@ -120,17 +121,10 @@ var FREDScatterPlot = (function (module) {
         var szLim = isSize ? getLim(statesData.size) : null;
         var NA = getNA();
 
-//        var chartAreaStyles = window.getComputedStyle(document.getElementById(chartAreaId), null);
-//        var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px", "");
-//        var chartAreaHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
-//
-//        var chartHeight = Math.min(chartAreaWidth * chartAreaFactor, chartAreaHeight * chartAreaFactor);
-//        var chartWidth = chartHeight;
-
         // get transformed, as-drawn coordinates of the div
         var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
-        var chartWidth = divRect.width * chartAreaFactor;
-        var chartHeight = divRect.height * chartAreaFactor;
+        var chartWidth = divRect.width * chartAreaXFactor;
+        var chartHeight = divRect.height * chartAreaYFactor;
 
         szlegend.height = .5 * chartHeight;
 
@@ -174,17 +168,18 @@ var FREDScatterPlot = (function (module) {
 
         var mean = total / count;
         var stdDevSum = 0;
-        for (i = count; i--; stdDevSum += Math.pow(dataArray[i] - mean, 2));
+        for (i = count; i--; ){
+            stdDevSum += Math.pow(dataArray[i] - mean, 2)
+        }
         var variance = stdDevSum / count;
-        var stdev = Math.sqrt(variance);
+        var stdDev = Math.sqrt(variance);
 
-        var niceDomainExtent = [mean - 2 * stdev, mean + 2 * stdev];
+        var niceDomainExtent = [mean - 2 * stdDev, mean + 2 * stdDev];
 
-        var colorScale = d3.scale.quantize()
+        // return the color scale
+        return d3.scale.quantize()
             .domain(niceDomainExtent)
             .range(FREDChart.colors);
-
-        return colorScale;
     };
 
     var getColorDomainExtent = function (domainExtent) {

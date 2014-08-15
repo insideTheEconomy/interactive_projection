@@ -185,8 +185,6 @@ var scatterplot = function () {
                 })
                 .attr("y1", margin.top)
                 .attr("y2", margin.top + height).attr("fill", "none")
-                .attr("stroke", "white")
-                .attr("stroke-width", 1)
                 .style("pointer-events", "none");
             xaxis.selectAll("empty").data(xticks).enter().append("text")
                 .attr("x", function (d) {
@@ -215,9 +213,6 @@ var scatterplot = function () {
                 })
                 .attr("x1", margin.left)
                 .attr("x2", margin.left + width)
-                .attr("fill", "none")
-                .attr("stroke", "white")
-                .attr("stroke-width", 1)
                 .style("pointer-events", "none");
             yaxis.selectAll("empty").data(yticks).enter().append("text")
                 .attr("y", function (d) {
@@ -606,8 +601,8 @@ var scatterplot = function () {
 //        })();
 
         var points = svg.select("g").append("g").attr("id", "points");
-        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class",
-                "pt")
+        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle")
+            .attr("class","pt")
             .attr("id", function (d, i) {
                 return i;
             }).attr("cx", function (d, i) {
@@ -618,7 +613,9 @@ var scatterplot = function () {
                 return isSize ? szscale(sz[i]) : minPointRadius;
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
-            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+            }).attr("stroke", pointstroke)
+            .attr("stroke-width", "1")
+            .attr("opacity", function (d, i) {
                 if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
                     return 1;
                 }

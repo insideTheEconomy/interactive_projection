@@ -5,7 +5,8 @@
 
 var FREDTimeline = (function (module) {
 
-    var chartAreaFactor = .8; // portion of chart area for the actual scatter area
+    var chartAreaXFactor = .8; // portion of horizontal chart area for the actual scatter area
+    var chartAreaYFactor = .9; // portion of vertical chart area for the actual scatter area
 
     var chartWidth,
         chartHeight;
@@ -82,8 +83,8 @@ var FREDTimeline = (function (module) {
 
         // get transformed, as-drawn coordinates of the div
         var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
-        chartWidth = divRect.width * chartAreaFactor;
-        chartHeight = divRect.height * chartAreaFactor;
+        chartWidth = divRect.width * chartAreaXFactor;
+        chartHeight = divRect.height * chartAreaYFactor;
 
         //then draw the shapes
         drawChart();
@@ -136,7 +137,6 @@ var FREDTimeline = (function (module) {
 
         var xAxisGroup = chartGroup.append("g").attr("class", "x axis");
         xAxisGroup.selectAll("empty").data(xticks).enter().append("line")
-            .attr("id", "axisGrid")
             .attr("x1", function (d) {
                 return xScale(d);
             })
@@ -145,17 +145,14 @@ var FREDTimeline = (function (module) {
             })
             .attr("y1", chartMargin.top)
             .attr("y2", chartMargin.top + chartHeight)
-            .attr("fill", "none")
-            .attr("stroke", "white")
-            .attr("stroke-width", 1)
             .style("pointer-events", "none");
         xAxisGroup.selectAll("empty").data(xticks).enter().append("text")
             .attr("x", function (d) {
-                return d.getYear();
+                return xScale(d);
             })
             .attr("y", chartMargin.top + chartHeight + axispos.xlabel)
             .text(function (d) {
-                return formatAxis(xticks)(d);
+                return formatAxis(xticks)(d.getFullYear());
             });
 //        xAxis.append("text").attr("class", "title")
 //            .attr("x", margin.left + width / 2)
@@ -165,7 +162,6 @@ var FREDTimeline = (function (module) {
         var rotate_ylab = rotate_ylab != null ? rotate_ylab : yLab.length > 1;
         var yAxisGroup = chartGroup.append("g").attr("class", "y axis");
         yAxisGroup.selectAll("empty").data(yticks).enter().append("line")
-            .attr("id", "axisGrid")
             .attr("y1", function (d) {
                 return yScale(d);
             })
@@ -174,9 +170,6 @@ var FREDTimeline = (function (module) {
             })
             .attr("x1", chartMargin.left)
             .attr("x2", chartMargin.left + chartWidth)
-            .attr("fill", "none")
-            .attr("stroke", "white")
-            .attr("stroke-width", 1)
             .style("pointer-events", "none");
         yAxisGroup.selectAll("empty").data(yticks).enter().append("text")
             .attr("y", function (d) {
