@@ -5,18 +5,19 @@
 
 var FREDTimeline = (function (module) {
 
+    var chartAreaFactor = .8; // portion of chart area for the actual scatter area
+
     var chartWidth,
         chartHeight;
-    var tickPadding = 5;
-    var margin = {
-        left: 40,
+    var chartMargin = {
+        left: 100,
         top: 40,
         bottom: 40,
         inner: 5
     };
     var axispos = {
         xtitle: 0, // no title for date axis
-        ytitle: 30,
+        ytitle: 50,
         sztitle: 25,
         xlabel: 5,
         ylabel: 5,
@@ -53,11 +54,9 @@ var FREDTimeline = (function (module) {
 
     var plotData;
     var dataAnnotations;
-    var valueLabel;
+    var valueLabelGroup;
     var valueLine;
     var usDataId;
-
-    var timelineClass = FREDChart.timelineClass;
 
     module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
         dataDefs = dataDefsArg;
@@ -72,20 +71,19 @@ var FREDTimeline = (function (module) {
 
         dataAnnotations = suppliedData.line.annotations;
 
-        FREDChart.initChart(selector, timelineClass, getDateRange, initPlotData, initializeChart,
+        FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
 
     };
 
     var initializeChart = function () {
-        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId).attr("class",
-            FREDChart.timelineClass);
+        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId);
         jqSvg = $("#" + FREDChart.chartSvgId);
 
         // get transformed, as-drawn coordinates of the div
         var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
-        chartWidth = divRect.width;
-        chartHeight = divRect.height;
+        chartWidth = divRect.width * chartAreaFactor;
+        chartHeight = divRect.height * chartAreaFactor;
 
         //then draw the shapes
         drawChart();
@@ -99,6 +97,15 @@ var FREDTimeline = (function (module) {
     };
 
     var drawChart = function () {
+        var chartGroup = chartSvg.append("g");
+
+        chartGroup.append("rect")
+            .attr("id", FREDChart.chartPanelId )
+            .attr("x", chartMargin.left)
+            .attr("y", chartMargin.top)
+            .attr("height", chartHeight)
+            .attr("width", chartWidth);
+
         var sampleData = suppliedData.line.data[0][0];
         var yLab = sampleData[0].title + " (" + sampleData[0].units + ")";
 
@@ -112,55 +119,78 @@ var FREDTimeline = (function (module) {
         xMin = plotData[0].date;
         xMax = plotData[plotData.length - 1].date;
 
-        xScale = d3.time.scale().range([0, chartWidth - margin.bottom * 2]).domain([xMin, xMax]);
-        yScale = d3.scale.linear().range([chartHeight - margin.left * 2, 0]).domain([yMin.value, yMax.value]);
 
-        var xAxis = d3.svg.axis().scale(xScale)
-            .tickSize(chartHeight - margin.bottom * 2 + tickPadding)
-            .tickPadding(tickPadding)
-            .ticks(7);
-        var yAxis = d3.svg.axis().scale(yScale).orient('left')
-            .tickSize(-chartWidth + margin.left * 2 - tickPadding)
-            .tickPadding(tickPadding)
-            .ticks(6);
+        // scale domain and range
+        var xrange = [chartMargin.left + chartMargin.inner, chartMargin.left + chartWidth - chartMargin.inner];
+        var yrange = [chartMargin.top + chartHeight - chartMargin.inner, chartMargin.top + chartMargin.inner];
+        var xlim = [xMin, xMax];
+        var ylim = [yMin.value, yMax.value];
+        xScale = d3.time.scale().domain(xlim).range(xrange);
+        yScale = d3.scale.linear().domain(ylim).range(yrange);
+        
+        // configure ticks
+        var nxticks = 8;
+        var nyticks = 8;
+        var xticks = xScale.ticks(nxticks);
+        var yticks = yScale.ticks(nyticks);
 
-        transition = chartSvg.transition().duration(transitionDuration);
+        var xAxisGroup = chartGroup.append("g").attr("class", "x axis");
+        xAxisGroup.selectAll("empty").data(xticks).enter().append("line")
+            .attr("id", "axisGrid")
+            .attr("x1", function (d) {
+                return xScale(d);
+            })
+            .attr("x2", function (d) {
+                return xScale(d);
+            })
+            .attr("y1", chartMargin.top)
+            .attr("y2", chartMargin.top + chartHeight)
+            .attr("fill", "none")
+            .attr("stroke", "white")
+            .attr("stroke-width", 1)
+            .style("pointer-events", "none");
+        xAxisGroup.selectAll("empty").data(xticks).enter().append("text")
+            .attr("x", function (d) {
+                return d.getYear();
+            })
+            .attr("y", chartMargin.top + chartHeight + axispos.xlabel)
+            .text(function (d) {
+                return formatAxis(xticks)(d);
+            });
+//        xAxis.append("text").attr("class", "title")
+//            .attr("x", margin.left + width / 2)
+//            .attr("y", margin.top + chartHeight + axispos.xtitle)
+//            .text(xlab);
 
-        // y ticks and labels
-        if (!yAxisGroup) {
-            yAxisGroup = chartSvg.append('svg:g')
-                .attr("class", "y axis " + timelineClass)
-                .call(yAxis);
-
-            // y axis title
-            yAxisGroup.append("text")
-                .attr("class", "title " + timelineClass)
-                .attr("y", margin.top + margin.bottom + chartHeight / 2)
-                .attr("x", margin.left - axispos.ytitle)
-                .text(yLab)
-                .attr("transform", "rotate(270," + (margin.left - axispos.ytitle) + "," + (margin.top + margin.bottom + chartHeight / 2) + ")");
-        }
-        else {
-            transition.select('.y.axis').call(yAxis);
-        }
-
-        // x ticks and labels
-        if (!xAxisGroup) {
-            xAxisGroup = chartSvg.append('svg:g')
-                .attr("class", "x axis " + timelineClass)
-                .call(xAxis);
-        }
-        else {
-            transition.select('.x.axis').call(xAxis);
-        }
-
-        // Draw the lines
-        if (!dataLinesGroup) {
-            dataLinesGroup = chartSvg.append('svg:g');
-        }
-
-        var dataLines = dataLinesGroup.selectAll('.data-line')
-            .data([plotData]);
+        var rotate_ylab = rotate_ylab != null ? rotate_ylab : yLab.length > 1;
+        var yAxisGroup = chartGroup.append("g").attr("class", "y axis");
+        yAxisGroup.selectAll("empty").data(yticks).enter().append("line")
+            .attr("id", "axisGrid")
+            .attr("y1", function (d) {
+                return yScale(d);
+            })
+            .attr("y2", function (d) {
+                return yScale(d);
+            })
+            .attr("x1", chartMargin.left)
+            .attr("x2", chartMargin.left + chartWidth)
+            .attr("fill", "none")
+            .attr("stroke", "white")
+            .attr("stroke-width", 1)
+            .style("pointer-events", "none");
+        yAxisGroup.selectAll("empty").data(yticks).enter().append("text")
+            .attr("y", function (d) {
+                return yScale(d);
+            })
+            .attr("x", chartMargin.left - axispos.ylabel)
+            .text(function (d) {
+                return formatAxis(yticks)(d);
+            });
+        yAxisGroup.append("text").attr("class", "title")
+            .attr("y", chartMargin.top + chartHeight / 2)
+            .attr("x", chartMargin.left - axispos.ytitle)
+            .text(yLab)
+            .attr("transform", rotate_ylab ? "rotate(270," + (chartMargin.left - axispos.ytitle) + "," + (chartMargin.top + chartHeight / 2) + ")" : "");
 
         var line = d3.svg.line()
             // assign the X function to plot our line as we wish
@@ -178,76 +208,35 @@ var FREDTimeline = (function (module) {
             })
             .interpolate("linear");
 
-        /*
-         .attr("d", d3.svg.line()
-         .x(function(d) { return x(d.date); })
-         .y(function(d) { return y(0); }))
-         .transition()
-         .delay(transitionDuration / 2)
-         .duration(transitionDuration)
-         .style('opacity', 1)
-         .attr("transform", function(d) { return "translate(" + x(d.date) + "," + y(d.value) + ")"; });
-         */
-
         var garea = d3.svg.area()
             .interpolate("linear")
             .x(function (d) {
                 return xScale(d.date);
             })
-            .y0(chartHeight - margin.bottom - margin.top)
+            .y0(yrange[0])
             .y1(function (d) {
                 // verbose logging to show what's actually being done
                 // console.log('Plotting Y value for data value: ' + d.value + ' to be at: ' + yScale(d.value) + " using our yScale.");
                 return yScale(d.value);
             });
 
-        dataLines
-            .enter()
-            .append('svg:path')
+        chartGroup.append('svg:path')
             .attr("class", "area")
             .attr("d", garea(plotData));
 
-        dataLines.enter().append('path')
-            .attr('class', 'data-line')
+        chartGroup.append('svg:path')
+            .attr('class', "data-line")
             .style('opacity', 0.3)
             .attr("d", line(plotData))
-            .transition()
-            .delay(transitionDuration / 2)
-            .duration(transitionDuration)
-            .style('opacity', 1)
-            .attr('x1', function (d, i) {
-                return (i > 0) ? xScale(data[i - 1].date) : xScale(d.date);
-            })
-            .attr('y1', function (d, i) {
-                return (i > 0) ? yScale(data[i - 1].value) : yScale(d.value);
-            })
-            .attr('x2', function (d) {
-                return xScale(d.date);
-            })
-            .attr('y2', function (d) {
-                return yScale(d.value);
-            });
-
-//        dataLines.transition()
-//            .attr("d", line)
-//            .duration(transitionDuration)
-//            .style('opacity', 1)
-//            .attr("transform", function (d) {
-//                return "translate(" + xScale(d.date) + "," + yScale(d.value) + ")";
-//            });
-//
-//        dataLines.exit()
 //            .transition()
-//            .attr("d", line)
+//            .delay(transitionDuration / 2)
 //            .duration(transitionDuration)
-//            .attr("transform", function (d) {
-//                return "translate(" + xScale(d.date) + "," + yScale(0) + ")";
-//            })
-//            .style('opacity', 1e-6)
-//            .remove();
+            .style('opacity', 1)
+        ;
 
-        d3.selectAll(".area").transition()
-            .duration(transitionDuration)
+        d3.selectAll(".area")
+//            .transition()
+//            .duration(transitionDuration)
             .attr("d", garea(plotData));
 
         // Draw the annotated points
@@ -259,7 +248,7 @@ var FREDTimeline = (function (module) {
             .data(dataAnnotations)
             .enter()
             .append('svg:circle')
-            .attr('class', 'data-point')
+            .attr( "class", "data-point" )
             .style('opacity', 1)
             .attr('cx', function (d) {
                 return xScale(d.date);
@@ -275,7 +264,7 @@ var FREDTimeline = (function (module) {
     var updateChart = function () {
         var date = new Date(FREDChart.timeSlotDate);
         // slide sweep line across plot and popup annotations when available
-        console.log("Date: " + date);
+        // console.log("Date: " + date);
         var dataPoint = {"date": date, "value": interpolateDataValue(date)};
         updateValueTrace(dataPoint);
         //updateAnnotationLabel(dataPoint);
@@ -292,29 +281,28 @@ var FREDTimeline = (function (module) {
         var y = yScale(value);
 
         // add a label group if there isn't one yet
-        if (!valueLabel) {
-            valueLabel = chartSvg.append("g");
+        if (!valueLabelGroup) {
+            valueLabelGroup = chartSvg.append("g");
 
-            valueLabel.append("svg:rect")
-                .attr("class", "valueLabel " + timelineClass)
+            valueLabelGroup.append("svg:rect")
+                .attr("class", "valueLabel")
                 .attr("rx", "5")
                 .attr("ry", "5");
 
-            valueLabel.append("svg:text")
-                .attr("class", "valueLabel" + timelineClass)
-                .attr("id", "valueLabelValue");
+            valueLabelGroup.append("svg:text")
+                .attr("class", "valueLabel");
 
-            valueLabel.append("svg:line")
-                .attr("class", "valueLine" + timelineClass);
+            valueLabelGroup.append("svg:line")
+                .attr("class", "valueLine");
         }
 
         // get offset of the chart div
         var offset = jqSvg.offset();
 
-        d3.select("#valueLabelValue").text(valueFormat(value));
-        var textWidthValue = d3.select("#valueLabelValue").node().getBBox().width;
-        var textHeightValue = d3.select("#valueLabelValue").node().getBBox().height;
-        var rectWidth = textWidthValue + margin;
+        d3.select("text.valueLabel").text(valueFormat(value));
+//        var textWidthValue = d3.select("#valueLabelValue").node().getBBox().width;
+//        var textHeightValue = d3.select("#valueLabelValue").node().getBBox().height;
+//        var rectWidth = textWidthValue + margin;
 
         // position the popup elements
 
@@ -324,14 +312,14 @@ var FREDTimeline = (function (module) {
             .attr("x2", x)
             .attr("y2", y);
 
-        d3.select("#valueLabelValue")
+        d3.select("text.valueLabel")
             .attr("x", x + annotationPointRadius + 2) // just off the right edge of the point
             .attr("y", y);
 
         // center rectangle on text
-        centerRectOnText(d3.select("rect.valueLabel"), d3.select("#valueLabelValue"), padding);
+        centerRectOnText(d3.select("rect.valueLabel"), d3.select("text.valueLabel"), padding);
 
-        d3.select("#valueLabelValue").attr("visibility", "visible");
+        d3.select("text.valueLabel").attr("visibility", "visible");
         d3.select("rect.valueLabel").attr("visibility", "visible");
     };
 
@@ -339,15 +327,15 @@ var FREDTimeline = (function (module) {
         var annotatedCircle;
 
         // add a label group if there isn't one yet
-        if (!valueLabel) {
-            valueLabel = chartSvg.append("g");
+        if (!valueLabelGroup) {
+            valueLabelGroup = chartSvg.append("g");
 
-            valueLabel.append("rect")
+            valueLabelGroup.append("rect")
                 .attr("class", "annotationLabel")
                 .attr("rx", "5")
                 .attr("ry", "5");
 
-            valueLabel.append("text")
+            valueLabelGroup.append("text")
                 .attr("class", "annotationLabel")
                 .attr("id", "annotationLabelValue");
         }

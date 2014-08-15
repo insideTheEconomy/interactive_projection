@@ -35,6 +35,7 @@ var FREDChart = (function (module) {
     module.chartMainId = "chartMain";
     module.chartAreaId = "chartArea";
     module.chartSvgId = "chartSvg";
+    module.chartPanelId = "chartPanel";
     var chartTitleId = "chartTitle";
     var chartDescriptionId = "chartDescription";
     var dateLabelId = "dateLabel";
@@ -55,9 +56,9 @@ var FREDChart = (function (module) {
 
         var parentElem = d3.select(parentSelector);
         var mainElement = appendOrReclassElement(parentElem, "div", module.chartMainId, chartClass);
-        appendOrReclassElement(mainElement, "div", chartTitleId, chartClass);
-        appendOrReclassElement(mainElement, "div", chartDescriptionId, chartClass);
-        dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, chartClass);
+        appendOrReclassElement(mainElement, "div", chartTitleId, null);
+        appendOrReclassElement(mainElement, "div", chartDescriptionId, null);
+        dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, null);
         chartAreaDiv = replaceElement(mainElement, "div", module.chartAreaId, chartClass);
 
         module.chartAreaDiv = chartAreaDiv; // export this
@@ -75,6 +76,9 @@ var FREDChart = (function (module) {
 
         drawSlider(chartClass, isUpdateOnSlide);
 
+        // draw data
+        updateChartFcn();
+
         d3.select("body").style("cursor", "auto");
     }
 
@@ -89,7 +93,10 @@ var FREDChart = (function (module) {
     function appendOrReclassElement(parentElem, element, id, elemClass) {
         var elemRef = parentElem.select(element + "#" + id);
         if (elemRef.length == 0 || elemRef[0][0] == null) {
-            elemRef = parentElem.append(element).attr("id", id).attr("class", elemClass);
+            elemRef = parentElem.append(element).attr("id", id);
+        }
+        if( elemClass ){
+            elemRef.attr("class", elemClass);
         }
         return elemRef;
     }
@@ -99,7 +106,10 @@ var FREDChart = (function (module) {
         if (elemRef.length > 0 && elemRef[0][0] != null) {
             parentElem.select(element + " #" + id).remove();
         }
-        elemRef = parentElem.append(element).attr("id", id).attr("class", elemClass);
+        elemRef = parentElem.append(element).attr("id", id);
+        if( elemClass ){
+            elemRef.attr("class", elemClass);
+        }
         return elemRef;
     }
 
@@ -179,7 +189,103 @@ var FREDChart = (function (module) {
         });
     }
 
-    module.getNiceColorScale = function (dataArray) {
+    module.drawLegend = function (chartSvg, plotData, opacity) {
+        // get colorScale scale
+        var colorScale = getColorScale(plotData);
+
+        // get the threshold value for each of the colors in the color scale
+        var domainElems = [];
+        $.each(module.colors, function (index) {
+            var domainExtent = colorScale.invertExtent(module.colors[index]);
+            domainElems[index] = domainExtent[0];
+        });
+
+        // set labels for the legend color bar
+        var legendLabels = [ "< " + domainElems[1].toFixed(1) ]; // initial element
+        for (var i = 1; i < domainElems.length; i++) {
+            legendLabels[i] = +domainElems[i].toFixed(1) + "+";
+        }
+
+        // reverse order so we draw bar from highest value (top) first to lowest (bottom) last
+        legendLabels.reverse();
+        domainElems.reverse();
+
+        // add the legend DOM element
+        var legendGroup = chartSvg.append("g").attr("id", module.mapColorLegendId);
+
+        var colorLegend = legendGroup.selectAll("g#" + module.mapColorLegendId)
+            .data(domainElems)
+            .enter().append("g").attr("id", module.mapColorLegendId);
+
+        var lsW = 30;
+        var lsH = 30;
+        var lsYMargin = 2 * lsH;
+        var lsTextYOffset = lsH / 2 + 4;
+        var lsTextXOffset = lsW * 2;
+
+        colorLegend.append("rect")
+            .attr("id", "colorLegendBlock")
+            .attr("x", 20)
+            .attr("y", function (d, i) {
+                var yVal = (i * lsH) + lsYMargin;
+                //console.log("d,i,y",d,i,yVal);
+                return yVal;
+            })
+            .attr("width", lsW)
+            .attr("height", lsH)
+            .style("fill", function (d, i) {
+                //console.log("d,i",d,i,colorScale(d));
+                return colorScale(d);
+            })
+            .style("opacity", opacity);
+
+        colorLegend.append("text")
+            .attr("id", "colorLegendLabel")
+            .attr("x", lsTextXOffset)
+            .attr("y", function (d, i) {
+                return (i * lsH) + lsYMargin + lsTextYOffset;
+            })
+            .text(function (d, i) {
+                return legendLabels[i];
+            });
+
+        legendGroup.append("text")
+            .attr("id", "colorLegendUnits")
+            .attr("text-anchor", "start")
+            .attr("x", lsW)
+            .attr("y", lsYMargin + lsTextYOffset - lsH)
+            .text(plotData[0].units);
+
+        return colorScale;
+    };
+
+    var getColorScale = function (plotData) {
+        // get extent of data for all timeseries
+        var dataCount = countFields(plotData[0]);
+        var dataArray = [];
+        for (var i = 0; i < plotData.length; i++) {
+            var timeSeries = plotData[i];
+            for (var j = 0; j < dataCount; j++) {
+                var val = parseFloat(timeSeries.values[j + 1]);
+                if (!isNaN(val)) {
+                    dataArray.push(val);
+                }
+            }
+        }
+        return getNiceColorScale(dataArray);
+    };
+
+    var countFields = function(obj) {
+        var c = 0, p;
+        for (var p in obj) {
+            if (obj.hasOwnProperty(p)) {
+                c++;
+            }
+        }
+        return c;
+    }
+
+    var getNiceColorScale = function (dataArray) {
         var count = dataArray.length;
         var total = dataArray.reduce(function (a, b) {
             return a + b;
@@ -208,7 +314,7 @@ var FREDChart = (function (module) {
             .range(module.colors);
 
         return colorScale;
-    }
+    };
 
     module.log10 = function (x) {
         return Math.log(x) * Math.LOG10E;

@@ -1,4 +1,13 @@
 /*------------ common styles ------------*/
+body {
+    font-family: sans-serif;
+}
+
+text {
+    font-family: sans-serif;
+    font-size: 11pt;
+}
+
 /* everything (but slider) is positioned inside chartMain */
 
 #chartMain {
@@ -12,22 +21,22 @@
     margin: 20px auto;
 }
 
-#chartArea.usmap {
+.usmap #chartArea {
     width: 900px;
     height: 450px;
 }
 
-#chartArea.worldmap {
+.worldmap #chartArea {
     width: 900px;
     height: 500px;
 }
 
-#chartArea.scatter {
+.scatter #chartArea {
     width: 920px;
     height: 600px;
 }
 
-#chartArea.timeline {
+.timeline #chartArea {
     width: 920px;
     height: 600px;
 }
@@ -38,8 +47,8 @@
     left: 0px;
     text-align: left;
     vertical-align: middle;
-    font-size: 30px;
-    font-weight: bold;
+    font-size: 40px;
+    font-weight: normal;
 }
 
 #chartDescription {
@@ -47,7 +56,7 @@
     float: left;
     width: 65%;
     text-align: left;
-    font-size: 15px;
+    font-size: 20px;
     font-weight: normal;
 }
 
@@ -57,11 +66,10 @@
     float: right;
     text-align: center;
     vertical-align: baseline;
-    font-size: 20px;
-    font-weight: bold;
+    font-size: 25px;
+    font-weight: normal;
 }
 
-/* dateSlider is positioned absolute in the chartArea */
 #dateSlider {
     margin: 0px auto; /* center */
     width: 100%;
@@ -69,26 +77,27 @@
 
 /* sliderDateLabel is in the chartArea */
 #dateSliderLabel {
+    margin-top: 10px;
     margin-left: auto;
     margin-right: auto;
     text-align: center;
-    font-weight: bold;
+    font-weight: normal;
 }
 
-#dateSliderLabel.usmap {
+.usmap #dateSlider {
     margin-top: 20px;
 }
 
-#dateSliderLabel.worldmap {
-    margin-top: 40px;
+.worldmap #dateSlider {
+    margin-top: 0px;
 }
 
-#dateSliderLabel.scatter {
+.scatter #dateSlider {
     margin-top: 5px;
 }
 
-#dateSliderLabel.timeline {
-    margin-top: 5px;
+.timeline #dateSlider {
+    margin-top: 10px;
 }
 
 /* ------------ map styles -------------*/
@@ -144,6 +153,19 @@ text.countyDataLabel, text.countryDataLabel {
 
 #mapColorLegend {
     width: 150px;
+}
+
+#colorLegendBlock{ /* SVG rects for the color blocks */
+    stroke: black;
+    stroke-width: 1;
+}
+
+#colorLegendLabel{ /* SVG text for the legend labels*/
+    font-weight: normal;
+}
+
+#colorLegendUnits{ /* SVG text for the legend units*/
+    font-weight: normal;
 }
 
 /* ------------ end map styles -------------*/

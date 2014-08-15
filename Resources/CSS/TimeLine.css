@@ -1,30 +1,30 @@
 .timeline .data-line {
-    stroke: steelblue;
+    stroke: green;
     stroke-width: 2;
     fill: none;
     stroke-dasharray: 0;
-}
-
-.timeline path {
-    stroke: #eee;
-    stroke-width: 2;
-    stroke-dasharray: 0;
-    fill: none;
 }
 
 .timeline .area {
-    fill: lightgrey;
+    fill: lightgreen;
+}
+
+.timeline path{
+    stroke: grey;
+    stroke-width: 2;
+    stroke-dasharray: 0;
+    fill: none;
 }
 
 .timeline text {
     font-family: Arial;
-    font-size: 14pt;
-    font-weight: bold;
+    font-size: 12pt;
+    font-weight: normal;
     fill: white;
 }
 
 .timeline line {
-    stroke: white;
+    stroke: lightorange;
     stroke-width: 1;
     /* stroke-dasharray: 3 3; */
     fill: none;
@@ -33,21 +33,21 @@
 .timeline .data-point {
     stroke: steelblue;
     stroke-width: 2;
-    fill: #FFF;
+    fill: white;
 }
 
 .timeline line.valueLine {
-    stroke: lightcyan;
+    stroke: blue;
     stroke-width: 3;
     stroke-dasharray: 5;
 }
 
-.timeline text.valuelabel {
+.timeline text.valueLabel {
     font-family: Arial;
-    font-size: 14pt;
-    fill: black;
+    font-size: 12pt;
+    fill: white;
 }
 
 .timeline rect.valueLabel {
-    fill: lightcyan;
+    fill: blue;
 }

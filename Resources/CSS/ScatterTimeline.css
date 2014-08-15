@@ -1,0 +1,67 @@
+#chartPanel {
+    fill: lightyellow;
+    opacity: 1;
+    stroke: darkgrey;
+    stroke-width: 1;
+}
+
+.timeline rect#chartPanel {
+    fill: lightpink;
+    stroke: none;
+}
+
+.scatter .title text, .timeline .title text {
+    dominant-baseline: middle;
+    fill: blue;
+    text-anchor: middle;
+}
+
+.scatter .y.axis text, .timeline .y.axis text {
+    dominant-baseline: middle;
+    text-anchor: end;
+}
+
+.scatter .y.axis text.title, .timeline .y.axis text.title {
+    text-anchor: middle;
+    fill: slateblue;
+}
+
+.scatter .x.axis text, .timeline .x.axis text {
+    dominant-baseline: hanging;
+    text-anchor: middle;
+}
+
+.scatter .x.axis text.title, .timeline .x.axis text.title {
+    fill: slateblue;
+}
+
+.scatter .sz.axis text {
+    dominant-baseline: hanging;
+    text-anchor: start;
+}
+
+.scatter .sz.axis text.title {
+    fill: slateblue;
+}
+
+.scatter .axis line, .timeline .axis line {
+    stroke: skyblue;
+    stroke-width: 1;
+    pointer-events: none;
+}
+
+.scatter .extent, .timeline .extent {
+    fill: lightgreen;
+    opacity: 0.3;
+}
+
+.scatter circle.selected {
+    fill: darkred;
+    opacity: 1;
+}
+
+.scatter .caption {
+    margin-left: 60px;
+    width: 600px;
+}
+

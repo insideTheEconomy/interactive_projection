@@ -11,7 +11,6 @@ var FREDWorldMap = (function (module) {
     var mapCountryFeatures; // country map geometry
 
     var colorScale; // for mapping values to colors
-    var colorLegend;
 
     var pathMap; // path and projection
     var countryData;
@@ -27,6 +26,7 @@ var FREDWorldMap = (function (module) {
 
     var chartSvg;
     var jqSvg;
+    var chartGroup;
 
     module.init = function (selector, dataDefs, dataWorldMapArg) {
         dataWorldMap = dataWorldMapArg;
@@ -69,15 +69,16 @@ var FREDWorldMap = (function (module) {
         $.each(dataSets, function (index) {
             dateRange.push(dataSets[index].date);
         });
-        return dateRange.reverse();
+        return dateRange;//.reverse();
     }
 
     var initializeChart = function () {
-        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId).attr("class", FREDChart.worldmapClass);
+        chartSvg = FREDChart.chartAreaDiv.append("svg").attr("id", FREDChart.chartSvgId);
+        chartGroup = chartSvg.append("g").attr("id", "chartGroup");
         jqSvg = $("#" + FREDChart.chartSvgId);
 
         //Adding legend for our Choropleth
-        drawLegend();
+        colorScale = FREDChart.drawLegend(chartSvg, countryData, unselectedCountryOpacity);
 
         // get calculated width, height of chart area
         var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
@@ -117,6 +118,8 @@ var FREDWorldMap = (function (module) {
 
         //then draw the shapes
         drawChart();
+
+        chartSvg.on("click", reset ); // clicks outside of map land here and hide the popup if there is one
     }
 
     var drawChart = function () {
@@ -124,7 +127,7 @@ var FREDWorldMap = (function (module) {
         updateTimeslotValues();
 
         // filled in counties
-        mapRegions = chartSvg.append("g");
+        mapRegions = chartGroup.append("g");
         mapRegions.selectAll("path.country").data(mapCountryFeatures).enter().append("path")
             .attr("class", "country")
             .style({
@@ -170,79 +173,24 @@ var FREDWorldMap = (function (module) {
                 }
             })
             .attr("d", pathMap);
-    }
 
-    var drawLegend = function () {
-        // get colorScale scale
-        colorScale = getColorScale(countryData);
-
-        // get the threshold value for each of the colors in the color scale
-        var domainElems = [];
-        $.each(FREDChart.colors, function (index) {
-            var domainExtent = colorScale.invertExtent(FREDChart.colors[index]);
-            domainElems[index] = domainExtent[0];
-        });
-
-        // set labels for the legend color bar
-        var legendLabels = [ "< " + domainElems[1].toFixed(1) ]; // initial element
-        for (var i = 1; i < domainElems.length; i++) {
-            legendLabels[i] = +domainElems[i].toFixed(1) + "+";
+        // update the popup value text if it's popped up
+        if(countryClicked) {
+            d3.select("#countryDataLabelValue").text(displayValue())
         }
-
-        // reverse order so we draw bar from highest value (top) first to lowest (bottom) last
-        legendLabels.reverse();
-        domainElems.reverse();
-
-        // add the legend DOM element
-        var legendSvg = chartSvg.append("g");
-
-        colorLegend = legendSvg.selectAll("g.legend")
-            .data(domainElems)
-            .enter().append("g").attr("class", "legend").attr("id", FREDChart.mapColorLegendId);
-
-        var lsW = 30;
-        var lsH = 30;
-        var lsYMargin = 2 * lsH;
-        var lsTextYOffset = lsH / 2 + 4;
-        var lsTextXOffset = lsW * 2;
-
-        colorLegend.append("rect")
-            .attr("x", 20)
-            .attr("y", function (d, i) {
-                var yVal = (i * lsH) + lsYMargin;
-                //console.log("d,i,y",d,i,yVal);
-                return yVal;
-            })
-            .attr("width", lsW)
-            .attr("height", lsH)
-            .style("fill", function (d, i) {
-                //console.log("d,i",d,i,colorScale(d));
-                return colorScale(d);
-            })
-            .style("opacity", unselectedCountryOpacity);
-
-        colorLegend.append("text")
-            .attr("x", lsTextXOffset)
-            .attr("y", function (d, i) {
-                return (i * lsH) + lsYMargin + lsTextYOffset;
-            })
-            .attr("font-weight", "bold")
-            .text(function (d, i) {
-                return legendLabels[i];
-            });
-
     }
 
     var onClickCountry = function (d) {
         countryClicked = d;
         countryFeature = this;
+        d3.event.stopPropagation();
         updateCountryDataLabel();
     }
 
     var updateCountryDataLabel = function () {
         // add a label group if there isn't one yet
         if (!countryDataLabel) {
-            countryDataLabel = chartSvg.append("g");
+            countryDataLabel = chartGroup.append("g");
 
             countryDataLabel.append("rect")
                 .attr("class", "countryDataLabel")
@@ -258,10 +206,23 @@ var FREDWorldMap = (function (module) {
                 .attr("id", "countryDataLabelValue");
         }
 
-        var margin = 10;
+        var margin = 5;
 
         // get transformed, as-drawn coordinates of the country
         var brect = d3.select(countryFeature).node().getBoundingClientRect();
+        var featureWidth = brect.width;
+        var featureHeight = brect.height;
+        var featureLeft = brect.left;
+        var featureTop = brect.top;
+        if( countryNameById[countryClicked.id] == "United States"){
+            // manually tweak for distributed location of USA (alaska in west, hawaii in east)
+            featureWidth = .5 * featureWidth; // back towards to the left edge
+            featureHeight = 1.1 * featureHeight; // a little further down from the top
+        }
+
+        var mouse = d3.mouse(chartGroup.node());
+        var mouseX = mouse[0];
+        var mouseY = mouse[1];
 
         // get offset of the chart div
         var offset = jqSvg.offset();
@@ -273,30 +234,41 @@ var FREDWorldMap = (function (module) {
         d3.select("#countryDataLabelValue").text(displayValue());
         var textWidthValue = d3.select("#countryDataLabelValue").node().getBBox().width;
         var textHeightValue = d3.select("#countryDataLabelValue").node().getBBox().height;
-        var rectWidth = Math.max(textWidthName, textWidthValue) + margin;
+
+        var rectWidth = Math.max(textWidthName, textWidthValue) + 2 * margin;
+        var rectHeight = textHeightName + textHeightValue + 2 * margin;
 
         // position the popup elements
         d3.select("#countryDataLabelName")
-            .attr("x", +((brect.left + (brect.width - textWidthName) / 2 - offset.left))) // center on the country
-            .attr("y", +(brect.top + brect.height / 2 - offset.top) + margin);
+            .style({"text-anchor": "middle", "alignment-baseline": "before-edge"})
+            .attr("x", mouseX + rectWidth/2)//+((featureLeft + (featureWidth - textWidthName) / 2 - offset.left))) // center on the country
+            .attr("y", mouseY + margin);//+(featureTop + featureHeight / 2 - offset.top) + margin);
 
         d3.select("#countryDataLabelValue")
-            .attr("x", +((brect.left + (brect.width - textWidthValue) / 2 - offset.left))) // center on the country
-            .attr("y", +(textHeightName + brect.top + brect.height / 2 - offset.top) + margin);
+            .style({"text-anchor": "middle", "alignment-baseline": "before-edge"})
+            .attr("x", mouseX + rectWidth/2)//+((featureLeft + (featureWidth - textWidthValue) / 2 - offset.left))) // center on the country
+            .attr("y", mouseY + margin + textHeightName);//+(textHeightName + featureTop + featureHeight / 2 - offset.top) + margin);
 
         // Update the width and height of the rectangle to match the text, with a little padding
-        var rectHeight = textHeightName + textHeightValue + margin;
         d3.select("rect.countryDataLabel")
-            .attr("width", rectWidth + 5)
-            .attr("height", rectHeight + 5)
-            .attr("x", +(brect.left + (brect.width - rectWidth) / 2 - offset.left)) // center on the country
-            .attr("y", +(brect.top + brect.height / 2 - offset.top - margin));
+            .attr("width", rectWidth)
+            .attr("height", rectHeight)
+            .attr("x", mouseX)//+(featureLeft + (featureWidth - rectWidth) / 2 - offset.left)) // center on the country
+            .attr("y", mouseY);//+(featureTop + featureHeight / 2 - offset.top - margin));
 
         d3.select("#countryDataLabelName").attr("visibility", "visible");
         d3.select("#countryDataLabelValue").attr("visibility", "visible");
         d3.select("rect.countryDataLabel").attr("visibility", "visible");
         countryDataLabel.attr("d", pathMap);
-    }
+    };
+
+    var reset = function () {
+        // hide the tooltip
+        d3.select("#countryDataLabelName").attr("visibility", "hidden");
+        d3.select("#countryDataLabelValue").attr("visibility", "hidden");
+        d3.select("rect.countryDataLabel").attr("visibility", "hidden");
+        countryClicked = null;
+    };
 
     var displayValue = function () {
         var val = countryValuesById[countryClicked.id];
@@ -304,52 +276,7 @@ var FREDWorldMap = (function (module) {
             return "undefined";
         else
             return +val;
-    }
-
-//function onClickState(feature) {
-//    if (activeState) {
-//        resetMap();
-//        if (this == null)
-//            return;
-//    }
-//    activeState = d3.select(this).classed("active", true)
-//        .style("fill", "none"); // make counties clickable
-//
-//    // enable the reset button
-//    $("#resetBtn").button("option", "disabled", false);
-//
-//    // zoom to the state
-//    var chartWidth = chartAreaDiv.width();
-//    var chartHeight = chartAreaDiv.height();
-//    var bounds = pathMap.bounds(feature),
-//        dx = bounds[1][0] - bounds[0][0],
-//        dy = bounds[1][1] - bounds[0][1],
-//        x = (bounds[0][0] + bounds[1][0]) / 2,
-//        y = (bounds[0][1] + bounds[1][1]) / 2;
-//    scale = .9 / Math.max(dx / chartWidth, dy / chartHeight);
-//    translate = [chartWidth / 2 - scale * x, chartHeight / 2 - scale * y];
-//
-//    mapRegions.transition()
-//        .duration(500)
-//        .style("stroke-width", 1.5 / scale + "px")
-//        .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
-//}
-
-    var getColorScale = function (featuresData) {
-        // get extent of data for all timeseries
-        var dataArray = [];
-        for (var i = 0; i < featuresData.length; i++) {
-            var timeSeries = featuresData[i];
-            for (var j = 0; j < featureIds.length; j++) {
-                var val = parseFloat(timeSeries.values[j + 1]);
-                if (!isNaN(val)) {
-                    dataArray.push(val);
-                }
-            }
-        }
-        return FREDChart.getNiceColorScale(dataArray);
-    }
-
+    };
 
     return module;
 
