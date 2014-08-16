@@ -39,14 +39,14 @@ var FREDScatterPlot = (function (module) {
 
     var chart;
 
-    var stateIds = [];
-    var statesData = {};
-    var stateNamesById = {};
-    var stateNames = [];
+    var regionIds = [];
+    var regionData = {};
+    var regionNamesById = {};
+    var regionNames = [];
 
     var scatterPlotData;
 
-    var statesDataDefs;
+    var regionsDataDefs;
 
     var xDataIndex = 0;
     var yDataIndex = 1;
@@ -56,10 +56,10 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    module.init = function (selector, dataDefsArg, statesDataArg, stateMetadata) {
-        statesDataDefs = dataDefsArg;
-        statesData = statesDataArg;
-        var sampleMeta = statesData.x[statesData.x.length-1].seriesMeta; // last entry is most recent
+    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata) {
+        regionsDataDefs = dataDefsArg;
+        regionData = regionDataArg;
+        var sampleMeta = regionData.x[regionData.x.length-1].seriesMeta; // last entry is most recent
         var srcFootnote;
         for(var meta in sampleMeta) {
             srcFootnote = sampleMeta[meta].source;
@@ -67,24 +67,24 @@ var FREDScatterPlot = (function (module) {
         }
 
         // get feature names and Ids
-        stateMetadata.forEach(function (feature, i) {
-            stateIds.push(feature.gid);
-            stateNamesById[feature.gid] = feature.name;
+        regionMetadata.forEach(function (feature, i) {
+            regionIds.push(feature.gid);
+            regionNamesById[feature.gid] = feature.name;
         });
         // convert names by ID to names by index
-        for (var i = 0; i < stateIds.length; i++) {
-            stateNames.push(stateNamesById[stateIds[i]]);
+        for (var i = 0; i < regionIds.length; i++) {
+            regionNames.push(regionNamesById[regionIds[i]]);
         }
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, statesDataDefs.chart_name, statesDataDefs.chart_text, srcFootnote);
+            updateChart, true /*isUpdateOnSlide*/, regionsDataDefs.chart_name, regionsDataDefs.chart_text, srcFootnote);
     }
 
 
 // get data union of all the dates from the data
     var getDateRange = function () {
         var dateRange = [];
-        var dataSets = [statesData.x, statesData.y, statesData.size];
+        var dataSets = [regionData.x, regionData.y, regionData.size];
         $.each(dataSets, function (index) {
             if (typeof dataSets[index] !== "undefined") {
                 $.each(dataSets[index], function (slot) {
@@ -99,7 +99,7 @@ var FREDScatterPlot = (function (module) {
 
     var initializeChart = function () {
         // get colorScale scale
-        colorScale = getColorScale(statesData);
+        colorScale = getColorScale(regionData);
 
         //then draw the shapes
         drawChart();
@@ -119,12 +119,12 @@ var FREDScatterPlot = (function (module) {
     }
     var drawChart = function () {
 
-        var xLab = statesData.x[0].title + " (" + statesData.x[0].units + ")";
-        var yLab = statesData.y[0].title + " (" + statesData.y[0].units + ")";
-        var szLab = isSize ? statesData.size[0].title : null;
-        var xLim = getLim(statesData.x);
-        var yLim = getLim(statesData.y);
-        var szLim = isSize ? getLim(statesData.size) : null;
+        var xLab = regionData.x[0].title + " (" + regionData.x[0].units + ")";
+        var yLab = regionData.y[0].title + " (" + regionData.y[0].units + ")";
+        var szLab = isSize ? regionData.size[0].title : null;
+        var xLim = getLim(regionData.x);
+        var yLim = getLim(regionData.y);
+        var szLim = isSize ? getLim(regionData.size) : null;
         var NA = getNA();
 
         // get transformed, as-drawn coordinates of the div
@@ -207,18 +207,18 @@ var FREDScatterPlot = (function (module) {
     var initPlotData = function () {
         scatterPlotData = {
             "data": [],
-            "indID": stateNames };
+            "indID": regionNames };
         updatePlotData();
     };
 
     var updatePlotData = function () {
-        var xData = loadData(statesData.x);
-        var yData = loadData(statesData.y);
-        var szData = loadData(statesData.size);
+        var xData = loadData(regionData.x);
+        var yData = loadData(regionData.y);
+        var szData = loadData(regionData.size);
         var data = [];
-        for (var i in stateIds) {
+        for (var i in regionIds) {
             var value = [];
-            var idx = stateIds[i];
+            var idx = regionIds[i];
             value[xDataIndex] = getDatum(xData, idx, FREDChart.noValue);
             value[yDataIndex] = getDatum(yData, idx, FREDChart.noValue);
             value[szDataIndex] = getDatum(szData, idx, defaultSz);
@@ -266,7 +266,7 @@ var FREDScatterPlot = (function (module) {
     };
 
     var getNA = function () {
-        var dataSets = [statesData.x, statesData.y, statesData.size];
+        var dataSets = [regionData.x, regionData.y, regionData.size];
         var NA = [
             {
                 handle: false,
