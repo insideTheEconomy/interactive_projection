@@ -43,7 +43,7 @@ ds.setup().then(
             .insert("p")
             .on("click", function (d, i) {
                 console.log(d.chart_type + " " + d.category + " " + i);
-                selectChart(chartElemSelector, defs, d.chart_type, d.category, i);
+                selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i);
             })
             .text(function(d){return d.chart_name});
 
@@ -70,10 +70,10 @@ ds.setup().then(
     }
 );
 
-var selectChart = function(chartElemSelector, defs, chartType, category, chartIndex) {
+var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex) {
     switch (chartType) {
         case "line": // TBD: no data def yet
-            var nationMetadata = ds.placeKey["country"];
+            var nationMetadata = ds.placeKey[regionType];
             var defTimeline = defs[category][+chartIndex]; // scatter
             ds.get(defTimeline).then(
                 function (dataTimeline) {
@@ -81,7 +81,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
                 });
             break;
         case "scatter":
-            var stateMetadata = ds.placeKey["state"];
+            var stateMetadata = ds.placeKey[regionType];
             var defScatter = defs[category][+chartIndex]; // scatter
             ds.get(defScatter).then(
                 function (dataScatter) {
@@ -89,7 +89,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
                 });
             break;
         case "usmap":
-            var countyMetadata = ds.placeKey["county"];
+            var countyMetadata = ds.placeKey[regionType];
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
@@ -97,7 +97,7 @@ var selectChart = function(chartElemSelector, defs, chartType, category, chartIn
                 });
             break;
         case "worldmap":
-            var nationMetadata = ds.placeKey["country"];
+            var nationMetadata = ds.placeKey[regionType];
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
