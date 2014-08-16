@@ -45,6 +45,7 @@ var FREDChart = (function (module) {
     var dateSliderLabelId = "dateSliderLabel";
     module.mapColorLegendId = "mapColorLegend";
     var sourceFootnoteId = "sourceFootnote";
+    module.resetBtnClass = "resetBtn";
 
     module.scatterClass = "scatter";
     module.usmapClass = "usmap";
@@ -53,9 +54,16 @@ var FREDChart = (function (module) {
 
     var numSliderTicks = 8;
 
-    module.initChart = function (parentSelector, chartClass, getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg, isUpdateOnSlide, chartTitle, chartText, sourceFootnote) {
+    var resetFcn;
+
+    module.initChart = function (parentSelector, chartClass,
+                                 getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
+                                 isUpdateOnSlide, chartTitle, chartText, sourceFootnote) {
 
         updateChartFcn = updateChartFcnArg;
+
+        // hide the reset btn if there is one
+        d3.selectAll("."+module.resetBtnClass).attr("visibility", "hidden");
 
         var parentElem = d3.select(parentSelector);
         var mainElement = appendOrReclassElement(parentElem, "div", module.chartMainId, chartClass);
@@ -283,6 +291,23 @@ var FREDChart = (function (module) {
             .attr("y", yND + lsTextYOffset)
             .text(module.noValueLabel);
 
+        /** reset button for unzooming maps **/
+        var resetRect = legendGroup.append("rect").attr("class", module.resetBtnClass)
+            .attr("visibility", "hidden")
+            .on("click", function(){
+                resetFcn();
+            });
+
+        var resetPadding = 5;
+        var resetText = legendGroup.append("text").attr("class", module.resetBtnClass)
+            .attr("x", marginLeft + resetPadding)
+            .attr("y", yND + lsH + lsYMargin + 5)
+            .attr("visibility", "hidden")
+            .text("Reset");
+
+        // center rectangle on text
+        centerRectOnText(resetRect, resetText, resetPadding);
+
         return colorScale;
     };
 
@@ -342,6 +367,10 @@ var FREDChart = (function (module) {
 
         return colorScale;
     };
+
+    module.setResetFcn = function(resetFcnArg){
+        resetFcn = resetFcnArg;
+    }
 
     module.log10 = function (x) {
         return Math.log(x) * Math.LOG10E;

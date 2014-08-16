@@ -45,6 +45,8 @@ var FREDUSMap = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+
+        FREDChart.setResetFcn(module.reset);
     };
 
     var initData = function () {
@@ -177,7 +179,7 @@ var FREDUSMap = (function (module) {
         // size the chart to fit the container
         chartSvg.attr("width", "100%")
             .attr("height", "100%")
-            .on("click", reset ); // clicks outside of map land here and hide the popup if there is one;
+            .on("click", module.reset ); // clicks outside of map land here and hide the popup if there is one;
     };
 
     var updateChart = function () {
@@ -324,12 +326,17 @@ var FREDUSMap = (function (module) {
 
         // prevent click from triggering reset in svg
         d3.event.stopPropagation();
+
+        d3.selectAll("."+FREDChart.resetBtnClass).attr("visibility", "visible");
     };
 
-    var reset = function () {
+    module.reset = function () {
         // unclick county (if there was one)
         countyClicked = null;
         countyFeature = null;
+
+        // hide the reset btn
+        d3.selectAll("."+FREDChart.resetBtnClass).attr("visibility", "hidden");
 
         // hide the tooltip
         d3.select("#countyDataLabelName").attr("visibility", "hidden");
