@@ -57,8 +57,11 @@ body {
   height: 1080px;
   */
     margin: 0px !important;
-    background-color: lightskyblue;
     color: white;
+}
+
+body, #colorLegendBackground {
+    background-color: lightskyblue;
 }
 
 #chart {

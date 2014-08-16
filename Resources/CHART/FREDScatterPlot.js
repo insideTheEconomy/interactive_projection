@@ -15,16 +15,16 @@ var FREDScatterPlot = (function (module) {
     var isSize = false; // turns on and off size data display
     var szlegend = {
         width: Math.max(2 * maxPointRadius + 50, 150),
-        height: 0, //TBD: .5 * chartHeight,
+        height: 0,
         padding: 5,
         offset: 10,
         fill: "grey"
     };
     var chartMargin = {
         left: 100,
-        top: 0, //40,
+        top: 0,
         right: 10 + szlegend.width,
-        bottom: 0, //40,
+        bottom: 0,
         inner: 5
     };
     var axispos = {

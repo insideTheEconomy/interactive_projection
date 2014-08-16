@@ -12,8 +12,8 @@ path.county {
 }
 
 path.state {
-    stroke: black;
-    stroke-width: 1px;
+    stroke: #202020; /* code will darken by 49% when zoomed */
+    stroke-width: 1px; /* code will double when zoomed in */
     fill: none;
 }
 
@@ -48,10 +48,6 @@ text.countyDataLabel, text.countryDataLabel {
     margin-right: 20px;
     width: 150px;
     font-size: 20px;
-}
-
-#mapColorLegend {
-    width: 150px;
 }
 
 #colorLegendBlock{ /* SVG rects for the color blocks */

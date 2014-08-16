@@ -4,6 +4,9 @@ var FREDUSMap = (function (module) {
     var stateFillOpacity = 0.3;
     var stateFillColor = "white";
 
+    var strokeWidthUnzoomed;
+    var strokeUnzoomed;
+
     var chartSvg;
     var jqSvg;
 
@@ -15,7 +18,6 @@ var FREDUSMap = (function (module) {
     var mapCountyFeatures; // county map geometry
     var mapStateFeatures; // state map geometry
     var colorScale; // color quantize scale
-    var offset;
     var pathMap; // path and projection
     var countyData;
     var activeState = null;
@@ -32,21 +34,6 @@ var FREDUSMap = (function (module) {
     var countyClicked = null;
     var countyFeature = null;
 
-
-//padding = {
-//    left: 60,
-//    right: 60,
-//    top: 60,
-//    bottom: 60
-//};
-//
-//inner = {
-//    chartWidth: chartArea.width - this.padding.left - this.padding.right,
-//    chartHeight: chartArea.height - this.padding.top - this.padding.bottom,
-//    r: chartArea.width - this.padding.right,
-//    b: chartArea.height - this.padding.bottom
-//};
-
     module.init = function (selector, dataDefs, dataUSMapArg) {
         dataUSMap = dataUSMapArg;
         var sampleMeta = dataUSMap.data[dataUSMap.data.length-1].seriesMeta; // last entry is most recent
@@ -57,8 +44,8 @@ var FREDUSMap = (function (module) {
         }
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
-    };// <-- End of USMap
+            updateChart, false /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+    };
 
     var initData = function () {
         countyData = dataUSMap.data;
@@ -88,7 +75,7 @@ var FREDUSMap = (function (module) {
         }
     };
 
-// get data range from the data
+    // get data range from the data
     var getDateRange = function () {
         var dateRange = [];
         var dataSets = countyData;
@@ -103,14 +90,14 @@ var FREDUSMap = (function (module) {
         jqSvg = $("#"+FREDChart.chartSvgId);
 
         //Adding legend for our Choropleth
-        colorScale = FREDChart.drawLegend(chartSvg, countyData, unselectedCountyOpacity);
+        colorScale = FREDChart.drawLegend(countyData, unselectedCountyOpacity);
 
         // get calculated width, height of chart area
         var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
         var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px", "");
         var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
         // offset the chart to make room for the legend on the left
-        offset = $("#" + FREDChart.mapColorLegendId)[0].getBBox().width;
+//        offset = $("#" + FREDChart.mapColorLegendId)[0].getBBox().width;
 
         // figure out scaling and translation
         // create a first guess for the projection
@@ -131,9 +118,9 @@ var FREDUSMap = (function (module) {
             b_e = b[1][0],
             b_height = Math.abs(b_n - b_s),
             b_width = Math.abs(b_e - b_w);
-        var chartWidth = chartAreaWidth - offset;
+        var chartWidth = chartAreaWidth; // - offset;
         var s = .95 / Math.max(b_width / chartWidth, (b_height / chartHeight)),
-            t = [offset + (chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartHeight - s * (b[1][1] + b[0][1])) / 2];
+            t = [/*offset +*/ (chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartHeight - s * (b[1][1] + b[0][1])) / 2];
 
         // Update the projection to use computed scale & translate.
         projection
@@ -156,6 +143,7 @@ var FREDUSMap = (function (module) {
         mapRegions = chartSvg.append("g");
         mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
             .attr("class", "county")
+            .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": function (d) {
                     //apply fill from colorScale, or nanColor if NAN
@@ -175,12 +163,16 @@ var FREDUSMap = (function (module) {
         // state outlines on top
         mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
             .attr("class", "state")
+            .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": stateFillColor,
                 "fill-opacity": stateFillOpacity
             })
             .on("click", onClickState)
             .attr("d", pathMap); //draw the paths
+
+        strokeWidthUnzoomed = parseFloat(mapRegions.select("path.state").style("stroke-width").replace("px",""));
+        strokeUnzoomed = d3.rgb(mapRegions.select("path.state").style("stroke"));
 
         // size the chart to fit the container
         chartSvg.attr("width", "100%")
@@ -254,7 +246,7 @@ var FREDUSMap = (function (module) {
         var margin = 10;
 
         // get transformed, as-drawn coordinates of the county
-        var brect = d3.select(countyFeature).node().getBoundingClientRect();
+        var bRect = d3.select(countyFeature).node().getBoundingClientRect();
 
         // get offset of the chart div
         var offset = jqSvg.offset();
@@ -270,20 +262,20 @@ var FREDUSMap = (function (module) {
 
         // position the popup elements
         d3.select("#countyDataLabelName")
-            .attr("x", +((brect.left + (brect.width - textWidthName) / 2 - offset.left))) // center on the county
-            .attr("y", +(brect.top + brect.height / 2 - offset.top) + margin);
+            .attr("x", +((bRect.left + (bRect.width - textWidthName) / 2 - offset.left))) // center on the county
+            .attr("y", +(bRect.top + bRect.height / 2 - offset.top) + margin);
 
         d3.select("#countyDataLabelValue")
-            .attr("x", +((brect.left + (brect.width - textWidthValue) / 2 - offset.left))) // center on the county
-            .attr("y", +(textHeightName + brect.top + brect.height / 2 - offset.top) + margin);
+            .attr("x", +((bRect.left + (bRect.width - textWidthValue) / 2 - offset.left))) // center on the county
+            .attr("y", +(textHeightName + bRect.top + bRect.height / 2 - offset.top) + margin);
 
         // Update the width and height of the rectangle to match the text, with a little padding
         var rectHeight = textHeightName + textHeightValue + margin;
         d3.select("rect.countyDataLabel")
             .attr("width", rectWidth + 5)
             .attr("height", rectHeight + 5)
-            .attr("x", +(brect.left + (brect.width - rectWidth) / 2 - offset.left)) // center on the county
-            .attr("y", +(brect.top + brect.height / 2 - offset.top - margin));
+            .attr("x", +(bRect.left + (bRect.width - rectWidth) / 2 - offset.left)) // center on the county
+            .attr("y", +(bRect.top + bRect.height / 2 - offset.top - margin));
 
         d3.select("#countyDataLabelName").attr("visibility", "visible");
         d3.select("#countyDataLabelValue").attr("visibility", "visible");
@@ -311,19 +303,23 @@ var FREDUSMap = (function (module) {
         // zoom to the state
         var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
         var chartAreaWidth = chartAreaStyles.getPropertyValue("width").replace("px", "");
-        var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
-        var chartWidth = chartAreaWidth - offset;
+        var chartAreaHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
         var bounds = pathMap.bounds(feature),
             dx = bounds[1][0] - bounds[0][0],
             dy = bounds[1][1] - bounds[0][1],
             x = (bounds[0][0] + bounds[1][0]) / 2,
             y = (bounds[0][1] + bounds[1][1]) / 2;
-        scale = .95 / Math.max(dx / chartWidth, dy / chartHeight);
-        translate = [offset + chartAreaWidth / 2 - scale * x, chartHeight / 2 - scale * y];
+        scale = .95 / Math.max(dx / chartAreaWidth, dy / chartAreaHeight);
+        translate = [chartAreaWidth / 2 - scale * x, chartAreaHeight / 2 - scale * y];
+
+        // adjust boundary lines when zoomed
+        var strokeWidthZoomed = 2 * strokeWidthUnzoomed; // make boundaries double wide
+        var strokeZoomed = strokeUnzoomed.darker().darker(); // and twice as dark, .7 * .7
 
         mapRegions.transition()
             .duration(500)
-            .style("stroke-width", 1.5 / scale + "px")
+            .style("stroke-width", strokeWidthZoomed + "px")
+            .style("stroke", strokeZoomed.toString())
             .attr("transform", "translate(" + translate + ")scale(" + scale + ")");
 
         // prevent click from triggering reset in svg
@@ -348,7 +344,8 @@ var FREDUSMap = (function (module) {
         // unzoom/unpan
         mapRegions.transition()
             .duration(500)
-            .style("stroke-width", "1.5px")
+            .style("stroke-width", + strokeWidthUnzoomed +"px")
+            .style("stroke", + strokeUnzoomed)
             .attr("transform", "translate(0,0) scale(1)");
     };
 

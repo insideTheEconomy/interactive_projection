@@ -24,6 +24,7 @@ var FREDChart = (function (module) {
 
     var chartAreaDiv;
     var dateLabelDiv;
+    var colorLegendDiv;
 
     var updateChartFcn;
 
@@ -62,6 +63,7 @@ var FREDChart = (function (module) {
         appendOrReclassElement(mainElement, "div", chartDescriptionId, null);
         dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, null);
         chartAreaDiv = replaceElement(mainElement, "div", module.chartAreaId, chartClass);
+        colorLegendDiv = replaceElement(mainElement, "div", module.mapColorLegendId, chartClass);
 
         module.chartAreaDiv = chartAreaDiv; // export this
 
@@ -84,15 +86,7 @@ var FREDChart = (function (module) {
         updateChartFcn();
 
         d3.select("body").style("cursor", "auto");
-    }
-
-//    function d3AppendOrReclassElement(parentSelector, element, id, elemClass) {
-//        var elemRef = d3.select(parentSelector + " " + element + "#" + id);
-//        if (elemRef.length == 0 || elemRef[0][0] == null) {
-//            elemRef = d3.select(parentSelector).append(element).attr("id", id).attr("class", elemClass);
-//        }
-//        return elemRef;
-//    }
+    };
 
     function appendOrReclassElement(parentElem, element, id, elemClass) {
         var elemRef = parentElem.select(element + "#" + id);
@@ -199,8 +193,8 @@ var FREDChart = (function (module) {
         });
     }
 
-    module.drawLegend = function (chartSvg, plotData, opacity) {
-        // get colorScale scale
+    module.drawLegend = function (plotData, opacity) {
+        // get colorScale
         var colorScale = getColorScale(plotData);
 
         // get the threshold value for each of the colors in the color scale
@@ -221,12 +215,14 @@ var FREDChart = (function (module) {
         domainElems.reverse();
 
         // add the legend DOM element
-        var legendGroup = chartSvg.append("g").attr("id", module.mapColorLegendId);
+        var colorLegendSvg = colorLegendDiv.append("svg").attr("id", module.mapColorLegendId);
+        var legendGroup = colorLegendSvg.append("g");
 
         var colorLegend = legendGroup.selectAll("g#" + module.mapColorLegendId)
             .data(domainElems)
             .enter().append("g").attr("id", module.mapColorLegendId);
 
+        var marginLeft = 0;
         var lsW = 30;
         var lsH = 30;
         var lsYMargin = 1.5 * lsH;
@@ -244,7 +240,7 @@ var FREDChart = (function (module) {
         // stack of color bloacks
         colorLegend.append("rect")
             .attr("id", "colorLegendBlock")
-            .attr("x", 20)
+            .attr("x", marginLeft)
             .attr("y", function (d, i) {
                 var yVal = (i * lsH) + lsYMargin;
                 //console.log("d,i,y",d,i,yVal);
@@ -273,7 +269,7 @@ var FREDChart = (function (module) {
         var yND = domainElems.length * lsH + lsYMargin + 5;
         legendGroup.append("rect")
             .attr("id", "colorLegendBlock")
-            .attr("x", 20)
+            .attr("x", marginLeft)
             .attr("y", yND)
             .attr("width", lsW)
             .attr("height", lsH)

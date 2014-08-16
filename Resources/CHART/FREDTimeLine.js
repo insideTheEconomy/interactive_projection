@@ -303,9 +303,6 @@ var FREDTimeline = (function (module) {
         var offset = jqSvg.offset();
 
         d3.select("text.valueLabel").text(valueFormat(value));
-//        var textWidthValue = d3.select("#valueLabelValue").node().getBBox().width;
-//        var textHeightValue = d3.select("#valueLabelValue").node().getBBox().height;
-//        var rectWidth = textWidthValue + margin;
 
         // position the popup elements
 
