@@ -16,15 +16,6 @@ try{
 console.log("config loaded", window.iprojConfig);
 path = window.iprojConfig.dbPath;
 
-var usmapMetadata = {
-    category: "Human Capital",
-    index: "0"
-};
-var worldmapMetadata = {
-    category: "Infrastructure",
-    index: "1"
-};
-
 var ds = new Datasource(path);
 
 ds.setup().then(
@@ -59,7 +50,7 @@ ds.setup().then(
 //        $( "p" ).on( "click", function() {
 //            $("p").removeClass("selected");
 //            $(this).addClass("selected");
-//            console.log($(this).prop("__data__")); //this is the definition, to pass to db.js fu ction
+//            console.log($(this).prop("__data__")); //this is the definition, to pass to db.js function
 //        });
 
 
@@ -71,25 +62,23 @@ ds.setup().then(
 );
 
 var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex) {
+    var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
         case "line": // TBD: no data def yet
-            var nationMetadata = ds.placeKey[regionType];
             var defTimeline = defs[category][+chartIndex]; // scatter
             ds.get(defTimeline).then(
                 function (dataTimeline) {
-                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, nationMetadata);
+                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, regionMetadata);
                 });
             break;
         case "scatter":
-            var stateMetadata = ds.placeKey[regionType];
             var defScatter = defs[category][+chartIndex]; // scatter
             ds.get(defScatter).then(
                 function (dataScatter) {
-                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, stateMetadata);
+                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, regionMetadata);
                 });
             break;
         case "usmap":
-            var countyMetadata = ds.placeKey[regionType];
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
@@ -97,7 +86,6 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
                 });
             break;
         case "worldmap":
-            var nationMetadata = ds.placeKey[regionType];
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
