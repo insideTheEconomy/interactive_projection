@@ -291,7 +291,7 @@ var scatterplot = function () {
                         "rotate(270," + (margin.left - axispos.sztitle) + "," + (margin.top + szlegend.height) + ")");
             }
 
-            indtip = d3.tip().attr("class", "d3-tip").html(function (d, i) {
+            indtip = d3.tip().attr("class", "d3-tip " + FREDChart.scatterClass).html(function (d, i) {
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
             svg.call(indtip);
@@ -683,7 +683,6 @@ var scatterplot = function () {
         popup.transition().duration(200).style("opacity", 1);
 
         popupText.text(data.indID[idx]);
-        //var bbox = popupText.node().getBBox();
 
         // position text above elem
         popupText.attr("x", +padding).attr("y", +(-2 * (r + padding)));

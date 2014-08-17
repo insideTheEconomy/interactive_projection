@@ -3,7 +3,7 @@
 1,"7eb999602b8e2baed65a03e04fb5713d","US Economic Stories","GDP per capita",,"usmap","county"
 2,"57f4bc8bfef80d05c0badbdb5cd4794b","Human Capital","Education Level By State",,"usmap","county"
 3,"57f4bc8bfef80d05c0badbdb5cd4794b, 7eb999602b8e2baed65a03e04fb5713d","US Economic Stories","Education vs. GDP","Freegan narwhal kitsch meh, Tonx squid ethnic flexitarian. Drinking vinegar narwhal you probably haven't heard of them, Marfa +1 fashion axe cray Brooklyn twee occupy Helvetica PBR.","scatter","state"
-4,"9f24b6a0e4639d81a69184b3f89a8dca","US Economic Stories","Great Inflation",,"line","county"
+4,"25aef58a050c2e3b598fe54de114f66a","US Economic Stories","Great Inflation","Freegan narwhal kitsch meh, Tonx squid ethnic flexitarian. Drinking vinegar narwhal you probably haven't heard of them, Marfa +1 fashion axe cray Brooklyn twee occupy Helvetica PBR.","line","country"
 5,"3e7a27dd8dcd57eb795f906dfb113ab7","Global Economic Stories","Per Capita GDP","Country may have a large GDP (e.g., China), but if they have a big population, then per person, it may not be so huge.","worldmap","country"
 6,"25aef58a050c2e3b598fe54de114f66a","Global Economic Stories","Population over 65 (% of total)","Reflects the size of a dependent population that won't be able to work in the future (unlike kids, who are future workers)","worldmap","country"
 7,"fa7b69c486406d9bd6e0ad18b02295fc","Global Economic Stories","Migration",,"worldmap","country"

@@ -31,9 +31,26 @@
 .timeline text.valueLabel {
     font-family: Arial;
     font-size: 12pt;
-    fill: white;
+    fill: black;
+    text-anchor: end;
 }
 
 .timeline rect.valueLabel {
-    fill: blue;
+    fill: lightblue;
+}
+
+p.timelineAnnotationLabel {
+    font-family: Arial;
+    font-size: 10pt !important;
+    color: black;
+    text-anchor: start;
+    padding: 10px;
+    opacity: 1;
+}
+
+div.timelineAnnotationLabel {
+    background-color: lightblue;
+    border: 1px;
+    color: grey;
+    opacity: 1;
 }

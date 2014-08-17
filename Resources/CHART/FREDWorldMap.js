@@ -40,7 +40,8 @@ var FREDWorldMap = (function (module) {
         }
 
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+            updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
     };// <-- End of init
 
     var initData = function () {
