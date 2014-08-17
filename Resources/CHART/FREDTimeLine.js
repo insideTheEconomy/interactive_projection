@@ -25,22 +25,19 @@ var FREDTimeline = (function (module) {
         szlabel: 5
     };
 
-    var monthNames = [ "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December" ];
-
-    var maxDataPointsForDots = 50,
-        transitionDuration = 1000;
+//    var maxDataPointsForDots = 50,
+//        transitionDuration = 1000;
 
     var chartSvg = null;
     var jqSvg;
 
-    var yAxisGroup = null;
-    var xAxisGroup = null;
+//    var yAxisGroup = null;
+//    var xAxisGroup = null;
     var dataCirclesGroup = null;
     var dataLinesGroup = null;
 
     var annotationPointRadius = 4;
-    var dataPointRadius = 2;
+//    var dataPointRadius = 2;
     var xScale;
     var yScale;
 
@@ -65,7 +62,7 @@ var FREDTimeline = (function (module) {
     var annotX;
     var annotY;
     var curAnnotation;
-    var annotationGroup;
+    var isAnnotationInitialized;
 
     var usDataId;
 
@@ -92,6 +89,9 @@ var FREDTimeline = (function (module) {
         }
 
         dataAnnotations = suppliedData.line.annotations;
+        valueLabelGroup = null;
+        curAnnotation = null;
+        isAnnotationInitialized = false;
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
@@ -254,9 +254,7 @@ var FREDTimeline = (function (module) {
             .attr("d", garea(plotData));
 
         // Draw the annotated points
-        if (!dataCirclesGroup) {
-            dataCirclesGroup = chartSvg.append('svg:g');
-        }
+        dataCirclesGroup = chartSvg.append('svg:g');
 
         circles = dataCirclesGroup.selectAll('.data-point')
             .data(dataAnnotations)
@@ -350,9 +348,9 @@ var FREDTimeline = (function (module) {
         annotY = yScale(interpolateDataValue(annotation.date));
 
         // add a label group if there isn't one yet
-        if (!annotationGroup) {
+        if (!isAnnotationInitialized) {
             var svgRect = chartSvg[0][0].getBoundingClientRect();
-            annotationGroup = true;
+            isAnnotationInitialized = true;
             annotFO = chartSvg.append("svg:foreignObject")
                 .attr("width", .25 * svgRect.width)
                 .attr("height", svgRect.height) // temporary height limit
