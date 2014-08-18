@@ -17,6 +17,7 @@ makeMenu = function(_defs){
 	$( "p" ).on( "click", function() {
 		$("p").removeClass("selected");
 		$(this).addClass("selected");
+		console.log("Add Selected");
 		console.log($(this).prop("__data__")); //this is the definition, to pass to db.js fu ction
 	});
 	

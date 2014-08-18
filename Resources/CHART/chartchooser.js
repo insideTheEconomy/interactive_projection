@@ -33,6 +33,9 @@ ds.setup().then(
             .selectAll("p").data(function(d){return defs[d]}).enter()
             .insert("p")
             .on("click", function (d, i) {
+				$("p").removeClass("selected");
+				$(this).addClass("selected");
+				console.log("Add Selected");
                 console.log(d.chart_type + " " + d.category + " " + i);
                 selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i);
             })

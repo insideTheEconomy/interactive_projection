@@ -66,37 +66,49 @@ text {
 }
 
 #chartTitle {
-    position: relative;
-    top: 0px;
-    left: 0px;
-    text-align: left;
-    vertical-align: middle;
-    font-size: 40px;
-    font-weight: normal;
+    position: absolute;
+	top: -16px;
+	left: 0px;
+	text-align: center;
+	vertical-align: middle;
+	font-size: 60px;
+	font-weight: normal;
+	width: 100%;
+	font-family: title;
+	color: #A4DBE8;
 }
 
 #chartDescription {
-    position: relative;
-    float: left;
-    width: 65%;
-    text-align: left;
-    font-size: 20px;
-    font-weight: normal;
+    position: absolute;
+	float: left;
+	width: 80%;
+	text-align: left;
+	font-size: 28px;
+	font-weight: normal;
+	font-family: sub-title;
+	padding: 130px;
+	top: 575px;
 }
 
 #dateLabel {
-    position: relative;
-    width: 30%;
-    float: right;
-    text-align: center;
-    vertical-align: baseline;
-    font-size: 25px;
-    font-weight: normal;
+    position: absolute;
+	width: 85%;
+	float: right;
+	text-align: right;
+	vertical-align: baseline;
+	font-size: 25px;
+	font-weight: normal;
+	font-family: medium;
+	margin-top: 35px;
 }
 
 #dateSlider {
     margin: 0px auto; /* center */
     width: 100%;
+}
+
+#chartSvg {
+	margin-top: 75px;
 }
 
 /* sliderDateLabel is in the chartArea */
@@ -129,3 +141,28 @@ text {
     float: right;
     font-size: 12px;
 }
+
+#mapColorLegend {
+    width: 150px;
+}
+
+#colorLegendBlock{ /* SVG rects for the color blocks */
+    stroke: white;
+    stroke-width: 1;
+}
+
+#colorLegendLabel{ /* SVG text for the legend labels*/
+    font-weight: normal;
+	color: white;
+	font-family:'sub-title';
+	fill: white !important;
+}
+
+#colorLegendUnits{ /* SVG text for the legend units*/
+    font-weight: normal;
+	color: white;
+	font-family:'sub-title';
+	fill: white !important;
+}
+
+/* ------------ end map styles -------------*/
