@@ -666,8 +666,8 @@ var scatterplot = function () {
     chart.showPopup = function (d, i) {
         // var idx = parseInt(d3.select(selectedElem).attr("id"));
         var idx = selectedElem.getAttribute("id");
-        var xVal = data.data[idx][xvar];
-        var yVal = data.data[idx][yvar];
+        var xVal = Number(data.data[idx][xvar]);
+        var yVal = Number(data.data[idx][yvar]);
         var szVal = isSize ? data.data[idx][szvar] : null;
         var r = isSize ? szscale(szVal) : minPointRadius;
         var padding = 2;
@@ -682,7 +682,7 @@ var scatterplot = function () {
         popup.attr("transform", "translate(" + (matrix.e) + "," + (matrix.f) + ")");
         popup.transition().duration(200).style("opacity", 1);
 
-        popupText.text(data.indID[idx]);
+        popupText.text(data.indID[idx]); // region name
 
         // position text above elem
         popupText.attr("x", +padding).attr("y", +(-2 * (r + padding)));
@@ -695,8 +695,8 @@ var scatterplot = function () {
         popupTickH.attr("x2", +(-r));
         popupTickV.attr("y1", +r);
         popupTickV.attr("y2", +(popupTickLen + r));
-        popupLblH.text(+yVal);
-        popupLblV.text(+xVal);
+        popupLblH.text(FREDChart.formatNumber(yVal));
+        popupLblV.text(FREDChart.formatNumber(xVal));
 
         // get text centered at end of ticks
         var lblHBox = popupLblH.node().getBBox();

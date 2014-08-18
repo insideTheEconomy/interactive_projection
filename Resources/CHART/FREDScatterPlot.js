@@ -114,9 +114,13 @@ var FREDScatterPlot = (function (module) {
     }
 
     var getSize = function (marker) {
-        var datumIdx = parseInt(marker.id);
-        var size = scatterPlotData.data[datumIdx][szDataIndex];
-        return szscale(size);
+        if(isSize) {
+            var datumIdx = parseInt(marker.id);
+            var size = scatterPlotData.data[datumIdx][szDataIndex];
+            return szscale(size);
+        } else {
+            return defaultSz;
+        }
     }
     var drawChart = function () {
 

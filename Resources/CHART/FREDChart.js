@@ -454,5 +454,10 @@ var FREDChart = (function (module) {
         return Math.log(x) * Math.LOG10E;
     };
 
+    module.formatNumber = function(number){
+        // return number.toFixed(2);
+        return Math.floor(number) === number ? number : module.log10(number) > 4 ? number.toFixed() : number.toFixed(2);
+    }
+
     return module;
 }(FREDChart || {}));

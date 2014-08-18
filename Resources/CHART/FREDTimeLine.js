@@ -465,7 +465,7 @@ var FREDTimeline = (function (module) {
     };
 
     var displayValue = function (date) {
-        return interpolateDataValue(date)
+        return FREDChart.formatNumber(interpolateDataValue(date));
     };
 
     var getNearestAnnotation = function(dataPoint){
