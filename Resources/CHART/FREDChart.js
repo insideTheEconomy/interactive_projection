@@ -19,10 +19,12 @@ var FREDChart = (function (module) {
     ];
     module.nanColor = '#D5D2CA';
 
-    module.noValue = "NA";
+    module.noValue = "ND";
+    module.noValueLabel = "No Data";
 
     var chartAreaDiv;
     var dateLabelDiv;
+    var colorLegendDiv;
 
     var updateChartFcn;
 
@@ -42,6 +44,8 @@ var FREDChart = (function (module) {
     var dateSliderId = "dateSlider";
     var dateSliderLabelId = "dateSliderLabel";
     module.mapColorLegendId = "mapColorLegend";
+    var sourceFootnoteId = "sourceFootnote";
+    module.resetBtnClass = "resetBtn";
 
     module.scatterClass = "scatter";
     module.usmapClass = "usmap";
@@ -50,9 +54,16 @@ var FREDChart = (function (module) {
 
     var numSliderTicks = 8;
 
-    module.initChart = function (parentSelector, chartClass, getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg, isUpdateOnSlide, chartTitle, chartText) {
+    var resetFcn;
+
+    module.initChart = function (parentSelector, chartClass,
+                                 getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
+                                 isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote) {
 
         updateChartFcn = updateChartFcnArg;
+
+        // hide the reset btn if there is one
+        d3.selectAll("."+module.resetBtnClass).attr("visibility", "hidden");
 
         var parentElem = d3.select(parentSelector);
         var mainElement = appendOrReclassElement(parentElem, "div", module.chartMainId, chartClass);
@@ -60,6 +71,7 @@ var FREDChart = (function (module) {
         appendOrReclassElement(mainElement, "div", chartDescriptionId, null);
         dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, null);
         chartAreaDiv = replaceElement(mainElement, "div", module.chartAreaId, chartClass);
+        colorLegendDiv = replaceElement(mainElement, "div", module.mapColorLegendId, chartClass);
 
         module.chartAreaDiv = chartAreaDiv; // export this
 
@@ -69,26 +81,24 @@ var FREDChart = (function (module) {
         dateRange = getDateRangeFcn();
         module.timeSlotDate = dateRange[0];
 
-        d3.select("#" + chartTitleId).text(chartTitle);
+        d3.select("#" + chartTitleId).text(chartTitle+"*");
         d3.select("#" + chartDescriptionId).text(chartText);
 
         initializeChartFcn(chartClass); // draw plot
 
-        drawSlider(chartClass, isUpdateOnSlide);
+        if( isMonthSlider ) {
+            drawMonthSlider(chartClass, isUpdateOnSlide);
+        } else {
+            drawSlider(chartClass, isUpdateOnSlide);
+        }
+
+        drawSourceFootnote(chartClass, sourceFootnote);
 
         // draw data
         updateChartFcn();
 
         d3.select("body").style("cursor", "auto");
-    }
-
-//    function d3AppendOrReclassElement(parentSelector, element, id, elemClass) {
-//        var elemRef = d3.select(parentSelector + " " + element + "#" + id);
-//        if (elemRef.length == 0 || elemRef[0][0] == null) {
-//            elemRef = d3.select(parentSelector).append(element).attr("id", id).attr("class", elemClass);
-//        }
-//        return elemRef;
-//    }
+    };
 
     function appendOrReclassElement(parentElem, element, id, elemClass) {
         var elemRef = parentElem.select(element + "#" + id);
@@ -150,13 +160,72 @@ var FREDChart = (function (module) {
         dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
 
+    // slider that steps by month over a date range, used for the timeline chart
+    function drawMonthSlider(chartClass, isUpdateOnSlide) {
+        var numDates = dateRange.length - 1;
+        var startDate = new Date(dateRange[0]);
+        var endDate = new Date(dateRange[numDates]);
+        var curDate = new Date(module.timeSlotDate);
+        var startDateYr = startDate.getUTCFullYear();
+        var endDateYr = endDate.getUTCFullYear();
+        var curDateYr = curDate.getUTCFullYear();
+        var startDateMo = startDate.getUTCMonth();
+        var endDateMo = endDate.getUTCMonth();
+        var curDateMo = curDate.getUTCMonth();
+        var totalMonths = 12 * (endDateYr - startDateYr + 1) - startDateMo - (11 - endDateMo);
+        var curMo = 12 * (curDateYr - startDateYr + 1) - startDateMo - (11 - curDateMo);
+
+        var uiValue = null;
+        var min = 0;
+        var max = totalMonths-1;
+        appendOrReclassElement(chartAreaDiv, "div", dateSliderId, chartClass);
+        $("#" + dateSliderId).slider({
+            min: min,
+            max: max,
+            value: curMo, // start at global date
+            animate: "fast", // animate sliding
+            slide: function (event, ui) {
+                var sliderMo = ui.value;
+                var sliderYr = startDateYr + Math.floor((sliderMo + startDateMo)/12);
+                var sliderYrMo = (sliderMo + startDateMo) % 12;
+                if( sliderMo != uiValue ) {
+                    var date = new Date().setUTCFullYear(sliderYr, sliderYrMo);
+                    module.timeSlotDate = date;
+                    dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+                    dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+                    uiValue = sliderMo;
+                    if (isUpdateOnSlide) {
+                        updateChartFcn();
+                    }
+                }
+            },
+            stop: function () {
+                if (!isUpdateOnSlide) {
+                    updateChartFcn();
+                }
+            }
+        });
+        var dateLabelSliderDiv = appendOrReclassElement(chartAreaDiv, "div", dateSliderLabelId, chartClass);
+
+        dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+    }
+
     module.getFormattedDatestring = function (dateString) {
         return module.getFormattedDate(new Date(dateString));
-    }
+    };
+
+    module.getFullFormattedDatestring = function (dateString) {
+        return module.getFormattedDate(new Date(dateString));
+    };
 
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     module.getFormattedDate = function (date) {
         return months[date.getUTCMonth()] + " " + date.getUTCFullYear();
+    };
+
+    module.getFullFormattedDate = function (date) {
+        return months[date.getUTCMonth()] + " " + date.getUTCDate() + ", " + date.getUTCFullYear();
     };
 
     var getSliderLabels = function (tickInterval) {
@@ -164,13 +233,34 @@ var FREDChart = (function (module) {
         for (var i = 0; i < dateRange.length; i++) {
             if (i % tickInterval == 0) {
                 var date = new Date(dateRange[i]);
-                labels.push(date.getFullYear())
+                labels.push(date.getUTCFullYear())
             } else {
                 labels.push(" ");
             }
         }
         return labels;
-    }
+    };
+
+    var getSmoothSliderLabels = function (numSliderTicks) {
+        var numDates = dateRange.length;
+        var tickInterval = Math.floor(numDates / numSliderTicks);
+        var labels = [];
+        for (var i = 0; i < numDates; i++) {
+            if (i % tickInterval == 0) {
+                var date = new Date(dateRange[i]);
+                labels.push(date.getUTCFullYear())
+            } else {
+                labels.push(" ");
+            }
+        }
+        return labels;
+    };
+
+    var drawSourceFootnote = function(chartClass, sourceFootnote){
+        appendOrReclassElement(chartAreaDiv, "div", sourceFootnoteId, chartClass)
+            .html("(*"+sourceFootnote+")")
+            .attr("id",sourceFootnoteId);
+    };
 
     module.wrapTextLines = function (text) {
         text.each(function () {
@@ -187,10 +277,10 @@ var FREDChart = (function (module) {
                         ++lineNumber * lineHeight + dy + "em").text(line);
             }
         });
-    }
+    };
 
-    module.drawLegend = function (chartSvg, plotData, opacity) {
-        // get colorScale scale
+    module.drawLegend = function (plotData, opacity) {
+        // get colorScale
         var colorScale = getColorScale(plotData);
 
         // get the threshold value for each of the colors in the color scale
@@ -211,21 +301,32 @@ var FREDChart = (function (module) {
         domainElems.reverse();
 
         // add the legend DOM element
-        var legendGroup = chartSvg.append("g").attr("id", module.mapColorLegendId);
+        var colorLegendSvg = colorLegendDiv.append("svg").attr("id", module.mapColorLegendId);
+        var legendGroup = colorLegendSvg.append("g");
 
         var colorLegend = legendGroup.selectAll("g#" + module.mapColorLegendId)
             .data(domainElems)
             .enter().append("g").attr("id", module.mapColorLegendId);
 
+        var marginLeft = 0;
         var lsW = 30;
         var lsH = 30;
-        var lsYMargin = 2 * lsH;
+        var lsYMargin = 1.5 * lsH;
         var lsTextYOffset = lsH / 2 + 4;
         var lsTextXOffset = lsW * 2;
 
+        // units label above legend
+        legendGroup.append("text")
+            .attr("id", "colorLegendUnits")
+            .attr("text-anchor", "start")
+            .attr("x", lsW)
+            .attr("y", lsYMargin + lsTextYOffset - lsH)
+            .text(plotData[0].units);
+
+        // stack of color bloacks
         colorLegend.append("rect")
             .attr("id", "colorLegendBlock")
-            .attr("x", 20)
+            .attr("x", marginLeft)
             .attr("y", function (d, i) {
                 var yVal = (i * lsH) + lsYMargin;
                 //console.log("d,i,y",d,i,yVal);
@@ -239,6 +340,7 @@ var FREDChart = (function (module) {
             })
             .style("opacity", opacity);
 
+        // labels for color blocks
         colorLegend.append("text")
             .attr("id", "colorLegendLabel")
             .attr("x", lsTextXOffset)
@@ -249,12 +351,40 @@ var FREDChart = (function (module) {
                 return legendLabels[i];
             });
 
+        // append no-data block
+        var yND = domainElems.length * lsH + lsYMargin + 5;
+        legendGroup.append("rect")
+            .attr("id", "colorLegendBlock")
+            .attr("x", marginLeft)
+            .attr("y", yND)
+            .attr("width", lsW)
+            .attr("height", lsH)
+            .style("fill", module.nanColor)
+            .style("opacity", opacity);
+
+        // label no data block
         legendGroup.append("text")
-            .attr("id", "colorLegendUnits")
-            .attr("text-anchor", "start")
-            .attr("x", lsW)
-            .attr("y", lsYMargin + lsTextYOffset - lsH)
-            .text(plotData[0].units);
+            .attr("id", "colorLegendLabel")
+            .attr("x", lsTextXOffset)
+            .attr("y", yND + lsTextYOffset)
+            .text(module.noValueLabel);
+
+        /** reset button for unzooming maps **/
+        var resetRect = legendGroup.append("rect").attr("class", module.resetBtnClass)
+            .attr("visibility", "hidden")
+            .on("click", function(){
+                resetFcn();
+            });
+
+        var resetPadding = 5;
+        var resetText = legendGroup.append("text").attr("class", module.resetBtnClass)
+            .attr("x", marginLeft + resetPadding)
+            .attr("y", yND + lsH + lsYMargin + 5)
+            .attr("visibility", "hidden")
+            .text("Reset");
+
+        // center rectangle on text
+        centerRectOnText(resetRect, resetText, resetPadding);
 
         return colorScale;
     };
@@ -276,14 +406,14 @@ var FREDChart = (function (module) {
     };
 
     var countFields = function(obj) {
-        var c = 0, p;
+        var c = 0;
         for (var p in obj) {
             if (obj.hasOwnProperty(p)) {
                 c++;
             }
         }
         return c;
-    }
+    };
 
     var getNiceColorScale = function (dataArray) {
         var count = dataArray.length;
@@ -316,9 +446,13 @@ var FREDChart = (function (module) {
         return colorScale;
     };
 
+    module.setResetFcn = function(resetFcnArg){
+        resetFcn = resetFcnArg;
+    };
+
     module.log10 = function (x) {
         return Math.log(x) * Math.LOG10E;
-    }
+    };
 
     return module;
 }(FREDChart || {}));

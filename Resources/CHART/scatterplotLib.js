@@ -96,7 +96,7 @@ var scatterplot = function () {
 
     chart = function (selection) {
         return selection.each(function (chartdata) {
-            var chartGroup, gEnter, panelheight, paneloffset, panelwidth, titleGroup,
+            var chartGroup, gEnter, panelheight, paneloffset, panelwidth, titleGroup = null,
                 xaxis, xrange, xscl,
                 yaxis, yrange, yscl,
                 szaxis, szrange, szscl;
@@ -126,6 +126,13 @@ var scatterplot = function () {
                 .attr("width", panelwidth)
                 .attr("fill", rectcolor)
                 .attr("stroke", "none");
+
+            if(title) {
+                titleGroup = chartGroup.append("g").attr("class", "chartTitle").append("text")
+                    .attr("x", margin.left + width / 2)
+                    .attr("y", margin.top - titlepos).text(title);
+            }
+
             if (xNA.handle) {
                 chartGroup.append("rect").attr("x", margin.left).attr("y", margin.top).attr("height",
                     panelheight).attr("width",
@@ -171,9 +178,6 @@ var scatterplot = function () {
             if (isSize) {
                 szticks = szticks != null ? szticks : szscl.ticks(nszticks);
             }
-            titleGroup = chartGroup.append("g").attr("class", "title").append("text").attr("x",
-                    margin.left + width / 2).attr("y",
-                    margin.top - titlepos).text(title);
 
             xaxis = chartGroup.append("g").attr("class", "x axis");
             xaxis.selectAll("empty").data(xticks).enter().append("line")
@@ -185,8 +189,6 @@ var scatterplot = function () {
                 })
                 .attr("y1", margin.top)
                 .attr("y2", margin.top + height).attr("fill", "none")
-                .attr("stroke", "white")
-                .attr("stroke-width", 1)
                 .style("pointer-events", "none");
             xaxis.selectAll("empty").data(xticks).enter().append("text")
                 .attr("x", function (d) {
@@ -215,9 +217,6 @@ var scatterplot = function () {
                 })
                 .attr("x1", margin.left)
                 .attr("x2", margin.left + width)
-                .attr("fill", "none")
-                .attr("stroke", "white")
-                .attr("stroke-width", 1)
                 .style("pointer-events", "none");
             yaxis.selectAll("empty").data(yticks).enter().append("text")
                 .attr("y", function (d) {
@@ -292,7 +291,7 @@ var scatterplot = function () {
                         "rotate(270," + (margin.left - axispos.sztitle) + "," + (margin.top + szlegend.height) + ")");
             }
 
-            indtip = d3.tip().attr("class", "d3-tip").html(function (d, i) {
+            indtip = d3.tip().attr("class", "d3-tip " + FREDChart.scatterClass).html(function (d, i) {
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
             svg.call(indtip);
@@ -606,8 +605,8 @@ var scatterplot = function () {
 //        })();
 
         var points = svg.select("g").append("g").attr("id", "points");
-        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle").attr("class",
-                "pt")
+        pointsSelect = points.selectAll(".pt").data(d3.range(x.length)).enter().append("circle")
+            .attr("class","pt")
             .attr("id", function (d, i) {
                 return i;
             }).attr("cx", function (d, i) {
@@ -618,7 +617,9 @@ var scatterplot = function () {
                 return isSize ? szscale(sz[i]) : minPointRadius;
             }).attr("fill", function (d, i) {
                 return pointcolor[0];//group[i]];
-            }).attr("stroke", pointstroke).attr("stroke-width", "1").attr("opacity", function (d, i) {
+            }).attr("stroke", pointstroke)
+            .attr("stroke-width", "1")
+            .attr("opacity", function (d, i) {
                 if (((x[i] != null) || xNA.handle) && ((y[i] != null) || yNA.handle)) {
                     return 1;
                 }
@@ -682,7 +683,6 @@ var scatterplot = function () {
         popup.transition().duration(200).style("opacity", 1);
 
         popupText.text(data.indID[idx]);
-        //var bbox = popupText.node().getBBox();
 
         // position text above elem
         popupText.attr("x", +padding).attr("y", +(-2 * (r + padding)));

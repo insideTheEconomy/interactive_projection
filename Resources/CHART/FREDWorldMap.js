@@ -31,8 +31,17 @@ var FREDWorldMap = (function (module) {
     module.init = function (selector, dataDefs, dataWorldMapArg) {
         dataWorldMap = dataWorldMapArg;
 
+        // get the source footnote text
+        var sampleMeta = dataWorldMap.data[dataWorldMap.data.length-1].seriesMeta; // last entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
+
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
     };// <-- End of init
 
     var initData = function () {
@@ -78,14 +87,12 @@ var FREDWorldMap = (function (module) {
         jqSvg = $("#" + FREDChart.chartSvgId);
 
         //Adding legend for our Choropleth
-        colorScale = FREDChart.drawLegend(chartSvg, countryData, unselectedCountryOpacity);
+        colorScale = FREDChart.drawLegend(/*chartSvg, */countryData, unselectedCountryOpacity);
 
         // get calculated width, height of chart area
         var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
         var width = chartAreaStyles.getPropertyValue("width").replace("px", "");
         var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
-        // offset the chart to make room for the legend on the left
-        var offset = $("#" + FREDChart.mapColorLegendId)[0].getBBox().width;
 
         // figure out scaling and translation
         // create a first guess for the projection
@@ -106,9 +113,9 @@ var FREDWorldMap = (function (module) {
             b_e = b[1][0],
             b_height = Math.abs(b_n - b_s),
             b_width = Math.abs(b_e - b_w);
-        var chartWidth = width - offset;
+        var chartWidth = width;
         var s = .95 / Math.max(b_width / chartWidth, (b_height / chartHeight)),
-            t = [offset + (chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartHeight - s * (b[1][1] + b[0][1])) / 2];
+            t = [(chartWidth - s * (b[1][0] + b[0][0])) / 2, (chartHeight - s * (b[1][1] + b[0][1])) / 2];
 
         // Update the projection to use computed scale & translate.
         projection
@@ -273,7 +280,7 @@ var FREDWorldMap = (function (module) {
     var displayValue = function () {
         var val = countryValuesById[countryClicked.id];
         if (isNaN(val))
-            return "undefined";
+            return FREDChart.noValueLabel;
         else
             return +val;
     };

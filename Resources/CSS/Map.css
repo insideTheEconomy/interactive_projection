@@ -1,0 +1,75 @@
+
+/* ------------ map styles -------------*/
+
+text.resetBtn {
+    font-size: 15px;
+    font-family: Arial, sans-serif;
+    font-style: normal;
+    fill: #808080;
+    pointer-events: none;
+}
+
+rect.resetBtn {
+    fill: #E0E0E0;
+    padding: 8px;
+    border: 1px;
+    border-radius: 3px;
+    /*border-style: outset;*/
+}
+
+path.county {
+    stroke: white;
+    stroke-width: 1px;
+}
+
+path.state {
+    stroke: #202020; /* code will darken by 49% when zoomed */
+    stroke-width: 1px; /* code will double when zoomed in */
+    fill: none;
+}
+
+.city {
+    font: 10px sans-serif;
+    font-weight: bold;
+}
+
+rect.countyDataLabel, rect.countryDataLabel {
+    fill: #FFFFE0;
+    padding: 2px;
+    border: 1px;
+    border-radius: 3px;
+    pointer-events: none;
+}
+
+text.countyDataLabel, text.countryDataLabel {
+    text-align: center;
+    font-size: 12px;
+    fill: #000000;
+}
+
+#countyDataLabelName, #countryDataLabelName {
+    font-weight: bold;
+}
+
+#scatterPlotSizeLegend {
+    position: absolute;
+    top: 0;
+    left: 0;
+    margin-top: 100px;
+    margin-right: 20px;
+    width: 150px;
+    font-size: 20px;
+}
+
+#colorLegendBlock{ /* SVG rects for the color blocks */
+    stroke: black;
+    stroke-width: 1;
+}
+
+#colorLegendLabel{ /* SVG text for the legend labels*/
+    font-weight: normal;
+}
+
+#colorLegendUnits{ /* SVG text for the legend units*/
+    font-weight: normal;
+}

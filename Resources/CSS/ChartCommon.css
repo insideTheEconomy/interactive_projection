@@ -15,30 +15,54 @@ text {
     margin: 0px auto;
 }
 
+#mapColorLegend{
+    height: 100%;
+    float: left;
+}
+
 #chartArea {
     position: relative;
-    top: 0px;
+    top: 10px;
     margin: 20px auto;
 }
 
 .usmap #chartArea {
-    width: 1200px;
-    height: 650px;
+    width: 750px;
+    height: 450px;
+    float: right;
+}
+
+.usmap #mapColorLegend{
+    width: 150px;
 }
 
 .worldmap #chartArea {
-    width: 900px;
+    width: 750px;
     height: 500px;
+    float:right;
+}
+
+.worldmap #mapColorLegend{
+    width: 150px;
 }
 
 .scatter #chartArea {
     width: 920px;
-    height: 600px;
+    height: 570px;
+    margin-top: 10px;
+}
+
+.scatter #mapColorLegend{
+    width: 0px;
 }
 
 .timeline #chartArea {
     width: 920px;
     height: 600px;
+}
+
+.timeline #mapColorLegend{
+    width: 0px;
 }
 
 #chartTitle {
@@ -97,7 +121,7 @@ text {
 }
 
 .usmap #dateSlider {
-    margin-top: 20px;
+    margin-top: 30px;
 }
 
 .worldmap #dateSlider {
@@ -112,55 +136,10 @@ text {
     margin-top: 10px;
 }
 
-/* ------------ map styles -------------*/
-
-#resetBtn {
+#sourceFootnote {
+    text-anchor: end;
+    float: right;
     font-size: 12px;
-    font-family: Arial, sans-serif;
-}
-
-path.county {
-    stroke: white;
-    stroke-width: 1px;
-}
-
-path.state {
-    stroke: black;
-    stroke-width: 1px;
-    fill: none;
-}
-
-.city {
-    font: 10px sans-serif;
-    font-weight: bold;
-}
-
-rect.countyDataLabel, rect.countryDataLabel {
-    fill: #FFFFE0;
-    padding: 2px;
-    border: 1px;
-    border-radius: 3px;
-    pointer-events: none;
-}
-
-text.countyDataLabel, text.countryDataLabel {
-    text-align: center;
-    font-size: 12px;
-    fill: #000000;
-}
-
-#countyDataLabelName, #countryDataLabelName {
-    font-weight: bold;
-}
-
-#scatterPlotSizeLegend {
-    position: absolute;
-    top: 0;
-    left: 0;
-    margin-top: 100px;
-    margin-right: 20px;
-    width: 150px;
-    font-size: 20px;
 }
 
 #mapColorLegend {

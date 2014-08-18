@@ -5,7 +5,8 @@
 
 var FREDTimeline = (function (module) {
 
-    var chartAreaFactor = .8; // portion of chart area for the actual scatter area
+    var chartAreaXFactor = .8; // portion of horizontal chart area for the actual scatter area
+    var chartAreaYFactor = .9; // portion of vertical chart area for the actual scatter area
 
     var chartWidth,
         chartHeight;
@@ -24,22 +25,19 @@ var FREDTimeline = (function (module) {
         szlabel: 5
     };
 
-    var monthNames = [ "January", "February", "March", "April", "May", "June",
-        "July", "August", "September", "October", "November", "December" ];
-
-    var maxDataPointsForDots = 50,
-        transitionDuration = 1000;
+//    var maxDataPointsForDots = 50,
+//        transitionDuration = 1000;
 
     var chartSvg = null;
     var jqSvg;
 
-    var yAxisGroup = null;
-    var xAxisGroup = null;
+//    var yAxisGroup = null;
+//    var xAxisGroup = null;
     var dataCirclesGroup = null;
     var dataLinesGroup = null;
 
     var annotationPointRadius = 4;
-    var dataPointRadius = 2;
+//    var dataPointRadius = 2;
     var xScale;
     var yScale;
 
@@ -50,29 +48,54 @@ var FREDTimeline = (function (module) {
     var circles;
 
     var suppliedData;
+    var sampleData;
     var dataDefs;
 
     var plotData;
     var dataAnnotations;
     var valueLabelGroup;
     var valueLine;
+
+    var annotFO;
+    var annotDiv;
+    var annotP;
+    var annotX;
+    var annotY;
+    var curAnnotation;
+    var isAnnotationInitialized;
+
     var usDataId;
 
     module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
         dataDefs = dataDefsArg;
         suppliedData = timelineDataArg;
+        sampleData = suppliedData.line.data[0][0];
 
+        // get the source footnote text
+        var sampleMeta = sampleData[0].seriesMeta; // first entry is most recent
+        var srcFootnote;
+        for(var meta in sampleMeta) {
+            srcFootnote = sampleMeta[meta].source;
+            break;
+        }
+
+        // we are assuming this chart is just for USA data
         for (var i in nationFeatures) {
             var x = nationFeatures[i];
             if (nationFeatures[i] != "undefined" && nationFeatures[i].name === "United States") {
                 usDataId = nationFeatures[i].gid
+                break;
             }
         }
 
         dataAnnotations = suppliedData.line.annotations;
+        valueLabelGroup = null;
+        curAnnotation = null;
+        isAnnotationInitialized = false;
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
-            updateChart, true /*isUpdateOnSlide*/, dataDefs.chart_name, dataDefs.chart_text);
+            updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
 
     };
 
@@ -82,8 +105,8 @@ var FREDTimeline = (function (module) {
 
         // get transformed, as-drawn coordinates of the div
         var divRect = FREDChart.chartAreaDiv.node().getBoundingClientRect();
-        chartWidth = divRect.width * chartAreaFactor;
-        chartHeight = divRect.height * chartAreaFactor;
+        chartWidth = divRect.width * chartAreaXFactor;
+        chartHeight = divRect.height * chartAreaYFactor;
 
         //then draw the shapes
         drawChart();
@@ -106,7 +129,6 @@ var FREDTimeline = (function (module) {
             .attr("height", chartHeight)
             .attr("width", chartWidth);
 
-        var sampleData = suppliedData.line.data[0][0];
         var yLab = sampleData[0].title + " (" + sampleData[0].units + ")";
 
         yMin = plotData.reduce(function (previous, current) {
@@ -136,7 +158,6 @@ var FREDTimeline = (function (module) {
 
         var xAxisGroup = chartGroup.append("g").attr("class", "x axis");
         xAxisGroup.selectAll("empty").data(xticks).enter().append("line")
-            .attr("id", "axisGrid")
             .attr("x1", function (d) {
                 return xScale(d);
             })
@@ -145,17 +166,14 @@ var FREDTimeline = (function (module) {
             })
             .attr("y1", chartMargin.top)
             .attr("y2", chartMargin.top + chartHeight)
-            .attr("fill", "none")
-            .attr("stroke", "white")
-            .attr("stroke-width", 1)
             .style("pointer-events", "none");
         xAxisGroup.selectAll("empty").data(xticks).enter().append("text")
             .attr("x", function (d) {
-                return d.getYear();
+                return xScale(d);
             })
             .attr("y", chartMargin.top + chartHeight + axispos.xlabel)
             .text(function (d) {
-                return formatAxis(xticks)(d);
+                return formatAxis(xticks)(d.getFullYear());
             });
 //        xAxis.append("text").attr("class", "title")
 //            .attr("x", margin.left + width / 2)
@@ -165,7 +183,6 @@ var FREDTimeline = (function (module) {
         var rotate_ylab = rotate_ylab != null ? rotate_ylab : yLab.length > 1;
         var yAxisGroup = chartGroup.append("g").attr("class", "y axis");
         yAxisGroup.selectAll("empty").data(yticks).enter().append("line")
-            .attr("id", "axisGrid")
             .attr("y1", function (d) {
                 return yScale(d);
             })
@@ -174,9 +191,6 @@ var FREDTimeline = (function (module) {
             })
             .attr("x1", chartMargin.left)
             .attr("x2", chartMargin.left + chartWidth)
-            .attr("fill", "none")
-            .attr("stroke", "white")
-            .attr("stroke-width", 1)
             .style("pointer-events", "none");
         yAxisGroup.selectAll("empty").data(yticks).enter().append("text")
             .attr("y", function (d) {
@@ -240,9 +254,7 @@ var FREDTimeline = (function (module) {
             .attr("d", garea(plotData));
 
         // Draw the annotated points
-        if (!dataCirclesGroup) {
-            dataCirclesGroup = chartSvg.append('svg:g');
-        }
+        dataCirclesGroup = chartSvg.append('svg:g');
 
         circles = dataCirclesGroup.selectAll('.data-point')
             .data(dataAnnotations)
@@ -267,12 +279,10 @@ var FREDTimeline = (function (module) {
         // console.log("Date: " + date);
         var dataPoint = {"date": date, "value": interpolateDataValue(date)};
         updateValueTrace(dataPoint);
-        //updateAnnotationLabel(dataPoint);
     };
 
     // a dotted line from the plot line to the x-axis with a value box at the top
     var updateValueTrace = function (dataPoint) {
-        var margin = 10;
         var padding = 2;
 
         var date = dataPoint.date;
@@ -286,8 +296,8 @@ var FREDTimeline = (function (module) {
 
             valueLabelGroup.append("svg:rect")
                 .attr("class", "valueLabel")
-                .attr("rx", "5")
-                .attr("ry", "5");
+                .attr("rx", 5)
+                .attr("ry", 5);
 
             valueLabelGroup.append("svg:text")
                 .attr("class", "valueLabel");
@@ -296,13 +306,21 @@ var FREDTimeline = (function (module) {
                 .attr("class", "valueLine");
         }
 
-        // get offset of the chart div
-        var offset = jqSvg.offset();
+        var nearestAnnotation = getNearestAnnotation(dataPoint);
+
+        if(nearestAnnotation != curAnnotation){
+            curAnnotation = nearestAnnotation;
+            popupAnnotation(curAnnotation, x, y);
+        }
+
+        if(annotDiv) {
+            fadeAnnotation(x);
+        }
+
+//        // get offset of the chart div
+//        var offset = jqSvg.offset();
 
         d3.select("text.valueLabel").text(valueFormat(value));
-//        var textWidthValue = d3.select("#valueLabelValue").node().getBBox().width;
-//        var textHeightValue = d3.select("#valueLabelValue").node().getBBox().height;
-//        var rectWidth = textWidthValue + margin;
 
         // position the popup elements
 
@@ -313,7 +331,7 @@ var FREDTimeline = (function (module) {
             .attr("y2", y);
 
         d3.select("text.valueLabel")
-            .attr("x", x + annotationPointRadius + 2) // just off the right edge of the point
+            .attr("x", x - annotationPointRadius - 2 * padding) // just off the left edge of the point
             .attr("y", y);
 
         // center rectangle on text
@@ -323,53 +341,41 @@ var FREDTimeline = (function (module) {
         d3.select("rect.valueLabel").attr("visibility", "visible");
     };
 
-    var updateAnnotationLabel = function (dataPoint) {
-        var annotatedCircle;
+    var popupAnnotation = function (annotation, x, y) {
+        var padding = 2;
+
+        annotX = xScale(annotation.date);
+        annotY = yScale(interpolateDataValue(annotation.date));
 
         // add a label group if there isn't one yet
-        if (!valueLabelGroup) {
-            valueLabelGroup = chartSvg.append("g");
-
-            valueLabelGroup.append("rect")
-                .attr("class", "annotationLabel")
-                .attr("rx", "5")
-                .attr("ry", "5");
-
-            valueLabelGroup.append("text")
-                .attr("class", "annotationLabel")
-                .attr("id", "annotationLabelValue");
+        if (!isAnnotationInitialized) {
+            var svgRect = chartSvg[0][0].getBoundingClientRect();
+            isAnnotationInitialized = true;
+            annotFO = chartSvg.append("svg:foreignObject")
+                .attr("width", .25 * svgRect.width)
+                .attr("height", svgRect.height) // temporary height limit
+                .attr("class", "annotationLabelFO");
+            annotDiv = annotFO.append("xhtml:div")
+                .attr("class", "timelineAnnotationLabel");
+            annotP = annotDiv.append("xhtml:p")
+                .attr("class", "timelineAnnotationLabel");
         }
 
-        var margin = 10;
-
-        // get transformed, as-drawn coordinates of the county
-        var brect = d3.select(annotatedCircle).node().getBoundingClientRect();
-
-        // get offset of the chart div
-        var offset = chartAreaDiv.offset();
-
-        d3.select("#annotationLabelValue").text(displayValue());
-        var textWidthValue = d3.select("#annotationLabelValue").node().getBBox().width;
-        var textHeightValue = d3.select("#annotationLabelValue").node().getBBox().height;
-        var rectWidth = Math.max(textWidthName, textWidthValue) + margin;
-
-        // position the popup elements
-
-        d3.select("#annotationLabelValue")
-            .attr("x", +((brect.left + (brect.width - textWidthValue) / 2 - offset.left))) // center on the county
-            .attr("y", +(textHeightValue + brect.top + brect.height / 2 - offset.top) + margin);
-
-        // Update the width and height of the rectangle to match the text, with a little padding
-        var rectHeight = textHeightValue + textHeightValue + margin;
-        d3.select("rect.annotationLabel")
-            .attr("width", rectWidth + 5)
-            .attr("height", rectHeight + 5)
-            .attr("x", +(brect.left + (brect.width - rectWidth) / 2 - offset.left) + annotationPointRadius) // left edge just off the
-            .attr("y", +(brect.top + brect.height / 2 - offset.top - margin));
-
-        d3.select("#annotationLabelValue").attr("visibility", "visible");
-        d3.select("rect.annotationLabel").attr("visibility", "visible");
+        // text positioned above annotation circle
+        annotP.html("<i>Milestone: "
+            + FREDChart.getFullFormattedDate(annotation.date) + "</i>"
+            + "<br/><br/><b>" + annotation.title + "</b>"
+            + "<br/><br/>" + annotation.text + "");
+        var divRect = annotDiv[0][0].getBoundingClientRect();
+        console.log("divrect h:"+divRect.height + " w:"+divRect.width);
+        annotFO.attr("x", annotX + padding)
+            .attr("y", annotY - divRect.height - 2 * (annotationPointRadius + padding))
+            .attr("height", divRect.height);
     };
+
+    var fadeAnnotation = function(x){
+        annotDiv.style("opacity", Math.abs(annotX-x) == 0 ? 1 : 1/Math.abs(annotX-x));
+    }
 
 
     // get union of all the dates from the data in string format
@@ -461,6 +467,28 @@ var FREDTimeline = (function (module) {
     var displayValue = function (date) {
         return interpolateDataValue(date)
     };
+
+    var getNearestAnnotation = function(dataPoint){
+//        var curMo = dataPoint.date.getUTCMonth();
+//        var curYr = dataPoint.date.getUTCFullYear();
+        var curDateVal = dataPoint.date.getTime();
+        var nearestVal = Number.MAX_VALUE;
+        var nearestAnnotation = null;
+        for(var i in dataAnnotations){
+            var annotation = dataAnnotations[i];
+//            var annotationMo = annotation.date.getUTCMonth();
+//            var annotationYr = annotation.date.getUTCFullYear();
+//            if( annotationYr == curYr && annotationMo == curMo ){;
+                var annotDateVal = annotation.date.getTime();
+                var dist = Math.abs(curDateVal - annotDateVal);
+                if( dist < nearestVal ){
+                    nearestVal = dist;
+                    nearestAnnotation = annotation;
+//                }
+            }
+        }
+        return nearestAnnotation;
+    }
 
     return module;
 

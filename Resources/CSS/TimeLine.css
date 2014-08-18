@@ -1,32 +1,18 @@
 .timeline .data-line {
-    stroke: green;
-    stroke-width: 2;
+    stroke: darkgreen;
+    stroke-width: 1;
     fill: none;
     stroke-dasharray: 0;
 }
 
 .timeline .area {
-    fill: lightgreen;
+    fill: #EBFFEB;
 }
 
 .timeline path{
     stroke: grey;
-    stroke-width: 2;
-    stroke-dasharray: 0;
-    fill: none;
-}
-
-.timeline text {
-    font-family: Arial;
-    font-size: 12pt;
-    font-weight: normal;
-    fill: white;
-}
-
-.timeline line {
-    stroke: lightorange;
     stroke-width: 1;
-    /* stroke-dasharray: 3 3; */
+    stroke-dasharray: 0;
     fill: none;
 }
 
@@ -45,9 +31,26 @@
 .timeline text.valueLabel {
     font-family: Arial;
     font-size: 12pt;
-    fill: white;
+    fill: black;
+    text-anchor: end;
 }
 
 .timeline rect.valueLabel {
-    fill: blue;
+    fill: lightblue;
+}
+
+p.timelineAnnotationLabel {
+    font-family: Arial;
+    font-size: 10pt !important;
+    color: black;
+    text-anchor: start;
+    padding: 10px;
+    opacity: 1;
+}
+
+div.timelineAnnotationLabel {
+    background-color: lightblue;
+    border: 1px;
+    color: grey;
+    opacity: 1;
 }
