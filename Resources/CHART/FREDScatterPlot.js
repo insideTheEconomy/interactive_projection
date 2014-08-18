@@ -62,7 +62,7 @@ var FREDScatterPlot = (function (module) {
         var sampleMeta = regionData.x[regionData.x.length-1].seriesMeta; // last entry is most recent
         var srcFootnote;
         for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source;
+            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
             break;
         }
 

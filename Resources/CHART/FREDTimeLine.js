@@ -75,7 +75,7 @@ var FREDTimeline = (function (module) {
         var sampleMeta = sampleData[0].seriesMeta; // first entry is most recent
         var srcFootnote;
         for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source;
+            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
             break;
         }
 

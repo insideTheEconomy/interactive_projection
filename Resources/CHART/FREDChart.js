@@ -81,7 +81,7 @@ var FREDChart = (function (module) {
         dateRange = getDateRangeFcn();
         module.timeSlotDate = dateRange[0];
 
-        d3.select("#" + chartTitleId).text(chartTitle+"*");
+        d3.select("#" + chartTitleId).text(chartTitle);
         d3.select("#" + chartDescriptionId).text(chartText);
 
         initializeChartFcn(chartClass); // draw plot
@@ -258,7 +258,7 @@ var FREDChart = (function (module) {
 
     var drawSourceFootnote = function(chartClass, sourceFootnote){
         appendOrReclassElement(chartAreaDiv, "div", sourceFootnoteId, chartClass)
-            .html("(*"+sourceFootnote+")")
+            .html("("+sourceFootnote+")")
             .attr("id",sourceFootnoteId);
     };
 
