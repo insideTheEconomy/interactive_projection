@@ -57,7 +57,7 @@ body {
   height: 1080px;
   */
     margin: 0px !important;
-    background-color: lightskyblue;
+    background-image: url('images/BG.jpg') !important;
     color: white;
 }
 
