@@ -15,5 +15,7 @@ interactive_projection.nw
 */node_modules/
 
 */webkitbuilds/*
+*/cache/
 
 *.crossbar*
+
