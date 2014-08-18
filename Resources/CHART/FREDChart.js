@@ -130,7 +130,7 @@ var FREDChart = (function (module) {
         var fullRange = max - min;
         var tickInterval = Math.max(1, Math.floor(fullRange / (numSliderTicks - 1)));
         appendOrReclassElement(chartAreaDiv, "div", dateSliderId, chartClass);
-        $("#" + dateSliderId).labeledslider({
+        $("#" + dateSliderId).slider({
             min: min,
             max: max,
             value: dateRange.indexOf(module.timeSlotDate), // start at current date
