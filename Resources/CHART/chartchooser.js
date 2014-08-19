@@ -16,16 +16,20 @@ try{
 console.log("config loaded", window.iprojConfig);
 path = window.iprojConfig.dbPath;
 
+
 var ds = new Datasource(path);
 
 ds.setup().then(
     function(defs){
+		
         d3.select("body").append("div").attr("id", FREDChart.wrapperDivId);
 
+		/*
         $("body").plainOverlay({
             fillColor: "green",
             //progress: function() { return $('<img src="images/wait.gif"/>'); }
         });
+		*/
 
         var menu = d3.select("#"+FREDChart.wrapperDivId).append("div").attr("id", FREDChart.menuDivId);
 
@@ -42,7 +46,13 @@ ds.setup().then(
 				$(this).addClass("selected");
 				console.log("Add Selected");
                 console.log(d.chart_type + " " + d.category + " " + i);
-                $("body").plainOverlay("show");
+                //$("body").plainOverlay("show");
+
+				//create a modal dialog using jqueryUI
+				$modal.dialog();
+				//and progressbar
+				
+				
                 console.log("modal show");
                 selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i);
             })
@@ -77,14 +87,15 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
     //var alert = $.fn.jAlert({"message":"test"});
 //    console.log("modal open");
 
-
+	
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
         case "line": // TBD: no data def yet
             var defTimeline = defs[category][+chartIndex]; // line
             ds.get(defTimeline).then(
                 function (dataTimeline) {
-                    $("body").plainOverlay("hide");
+					$modal.dialog("close");
+                    //$("body").plainOverlay("hide");
                     console.log("modal hide");
                     new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, regionMetadata);
                 });
@@ -93,7 +104,8 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
             var defScatter = defs[category][+chartIndex]; // scatter
             ds.get(defScatter).then(
                 function (dataScatter) {
-                    $("body").plainOverlay("hide");
+					$modal.dialog("close");
+                    //$("body").plainOverlay("hide");
                     console.log("modal hide");
                     new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, regionMetadata);
                 });
@@ -102,7 +114,8 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
-                    $("body").plainOverlay("hide");
+					$modal.dialog("close");
+                    //$("body").plainOverlay("hide");
                     console.log("modal hide");
                     new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap);
                 });
@@ -111,7 +124,8 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
-                    $("body").plainOverlay("hide");
+					$modal.dialog("close");
+                    //$("body").plainOverlay("hide");
                     console.log("modal hide");
                     new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap);
                 });
