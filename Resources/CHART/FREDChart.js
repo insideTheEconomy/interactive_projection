@@ -22,8 +22,9 @@ var FREDChart = (function (module) {
     module.noValue = "ND";
     module.noValueLabel = "No Data";
 
-    var chartAreaDiv;
+    module.chartAreaDiv;
     var dateLabelDiv;
+//    var dateSliderLabelDiv;
     var colorLegendDiv;
 
     var updateChartFcn;
@@ -37,6 +38,7 @@ var FREDChart = (function (module) {
     module.chartMainId = "chartMain";
     module.chartAreaId = "chartArea";
     module.chartSvgId = "chartSvg";
+    module.chartSvgDivId = "chartSvgDiv";
     module.chartPanelId = "chartPanel";
     var chartTitleId = "chartTitle";
     var chartDescriptionId = "chartDescription";
@@ -45,6 +47,7 @@ var FREDChart = (function (module) {
     var dateSliderLabelId = "dateSliderLabel";
     module.mapColorLegendId = "mapColorLegend";
     var sourceFootnoteId = "sourceFootnote";
+    var chartLegendWrapperId = "chartLegendWrapper";
     module.resetBtnClass = "resetBtn";
 
     module.scatterClass = "scatter";
@@ -67,32 +70,36 @@ var FREDChart = (function (module) {
 
         var parentElem = d3.select(parentSelector);
         var mainElement = appendOrReclassElement(parentElem, "div", module.chartMainId, chartClass);
-        appendOrReclassElement(mainElement, "div", chartTitleId, null);
-        appendOrReclassElement(mainElement, "div", chartDescriptionId, null);
-        dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, null);
-        chartAreaDiv = replaceElement(mainElement, "div", module.chartAreaId, chartClass);
-        colorLegendDiv = replaceElement(mainElement, "div", module.mapColorLegendId, chartClass);
 
-        module.chartAreaDiv = chartAreaDiv; // export this
+        // main element children
+        appendOrReclassElement(mainElement, "div", chartTitleId, null).text(chartTitle);
+        dateLabelDiv = appendOrReclassElement(mainElement, "div", dateLabelId, null);
+        var chartLegendWrapper = appendOrReclassElement(mainElement, "div", chartLegendWrapperId, chartClass); // needed to maintain order when replacing contents
+        colorLegendDiv = replaceElement(chartLegendWrapper, "div", module.mapColorLegendId, chartClass);
+        module.chartAreaDiv = replaceElement(chartLegendWrapper, "div", module.chartAreaId, chartClass);
+        appendOrReclassElement(mainElement, "div", chartDescriptionId, null).text(chartText);
+        appendOrReclassElement(mainElement, "div", dateSliderId, chartClass);
+        var footnoteDiv = appendOrReclassElement(mainElement, "div", sourceFootnoteId, chartClass)
+            .attr("id",sourceFootnoteId);;
+
+        if(sourceFootnote) {
+            footnoteDiv.html("(" + sourceFootnote + ")");
+        }
 
         // init plot data
         initPlotDataFcn();
 
+        // get dates for the chart
         dateRange = getDateRangeFcn();
-        module.timeSlotDate = dateRange[0];
-
-        d3.select("#" + chartTitleId).text(chartTitle);
-        d3.select("#" + chartDescriptionId).text(chartText);
+        module.timeSlotDate = dateRange[dateRange.length > 2 ? Math.round(dateRange.length / 2) : 0]; // set initial date, more or less to middle
 
         initializeChartFcn(chartClass); // draw plot
 
         if( isMonthSlider ) {
-            drawMonthSlider(chartClass, isUpdateOnSlide);
+            drawMonthSlider(isUpdateOnSlide);
         } else {
-            drawSlider(chartClass, isUpdateOnSlide);
+            drawSlider(isUpdateOnSlide);
         }
-
-        drawSourceFootnote(chartClass, sourceFootnote);
 
         // draw data
         updateChartFcn();
@@ -123,13 +130,12 @@ var FREDChart = (function (module) {
         return elemRef;
     }
 
-    function drawSlider(chartClass, isUpdateOnSlide) {
+    function drawSlider(isUpdateOnSlide) {
         var uiValue = null;
         var min = 0;
         var max = dateRange.length - 1;
         var fullRange = max - min;
         var tickInterval = Math.max(1, Math.floor(fullRange / (numSliderTicks - 1)));
-        appendOrReclassElement(chartAreaDiv, "div", dateSliderId, chartClass);
         $("#" + dateSliderId).slider({
             min: min,
             max: max,
@@ -141,7 +147,7 @@ var FREDChart = (function (module) {
                 if (value != uiValue) {
                     module.timeSlotDate = dateRange[value];
                     dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-                    dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
                     uiValue = value;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
@@ -154,14 +160,13 @@ var FREDChart = (function (module) {
                 }
             }
         });
-        var dateLabelSliderDiv = appendOrReclassElement(chartAreaDiv, "div", dateSliderLabelId, chartClass);
 
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//        dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
 
     // slider that steps by month over a date range, used for the timeline chart
-    function drawMonthSlider(chartClass, isUpdateOnSlide) {
+    function drawMonthSlider(isUpdateOnSlide) {
         var numDates = dateRange.length - 1;
         var startDate = new Date(dateRange[0]);
         var endDate = new Date(dateRange[numDates]);
@@ -178,7 +183,6 @@ var FREDChart = (function (module) {
         var uiValue = null;
         var min = 0;
         var max = totalMonths-1;
-        appendOrReclassElement(chartAreaDiv, "div", dateSliderId, chartClass);
         $("#" + dateSliderId).slider({
             min: min,
             max: max,
@@ -192,7 +196,7 @@ var FREDChart = (function (module) {
                     var date = new Date().setUTCFullYear(sliderYr, sliderYrMo);
                     module.timeSlotDate = date;
                     dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-                    dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
                     uiValue = sliderMo;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
@@ -205,10 +209,8 @@ var FREDChart = (function (module) {
                 }
             }
         });
-        var dateLabelSliderDiv = appendOrReclassElement(chartAreaDiv, "div", dateSliderLabelId, chartClass);
-
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
 
     module.getFormattedDatestring = function (dateString) {
@@ -254,12 +256,6 @@ var FREDChart = (function (module) {
             }
         }
         return labels;
-    };
-
-    var drawSourceFootnote = function(chartClass, sourceFootnote){
-        appendOrReclassElement(chartAreaDiv, "div", sourceFootnoteId, chartClass)
-            .html("("+sourceFootnote+")")
-            .attr("id",sourceFootnoteId);
     };
 
     module.wrapTextLines = function (text) {

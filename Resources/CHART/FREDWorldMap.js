@@ -31,13 +31,8 @@ var FREDWorldMap = (function (module) {
     module.init = function (selector, dataDefs, dataWorldMapArg) {
         dataWorldMap = dataWorldMapArg;
 
-        // get the source footnote text
-        var sampleMeta = dataWorldMap.data[dataWorldMap.data.length-1].seriesMeta; // last entry is most recent
-        var srcFootnote;
-        for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
-            break;
-        }
+        // get the source footnote text, last entry is most recent
+        var srcFootnote = dataWorldMap.data[dataWorldMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
@@ -282,7 +277,7 @@ var FREDWorldMap = (function (module) {
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
-            return FREDChart.formatNumber(val);
+            return +val;
     };
 
     return module;

@@ -59,12 +59,6 @@ var FREDScatterPlot = (function (module) {
     module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata) {
         regionsDataDefs = dataDefsArg;
         regionData = regionDataArg;
-        var sampleMeta = regionData.x[regionData.x.length-1].seriesMeta; // last entry is most recent
-        var srcFootnote;
-        for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
-            break;
-        }
 
         // get feature names and Ids
         regionMetadata.forEach(function (feature, i) {
@@ -78,7 +72,7 @@ var FREDScatterPlot = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            regionsDataDefs.chart_name, regionsDataDefs.chart_text, srcFootnote);
+            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null);
     }
 
 

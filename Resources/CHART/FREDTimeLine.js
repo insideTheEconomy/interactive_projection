@@ -43,7 +43,6 @@ var FREDTimeline = (function (module) {
 
     var xMin, xMax;
     var yMin, yMax;
-    var valueFormat = d3.format(".2f");
 
     var circles;
 
@@ -71,14 +70,6 @@ var FREDTimeline = (function (module) {
         suppliedData = timelineDataArg;
         sampleData = suppliedData.line.data[0][0];
 
-        // get the source footnote text
-        var sampleMeta = sampleData[0].seriesMeta; // first entry is most recent
-        var srcFootnote;
-        for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
-            break;
-        }
-
         // we are assuming this chart is just for USA data
         for (var i in nationFeatures) {
             var x = nationFeatures[i];
@@ -95,7 +86,7 @@ var FREDTimeline = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+            dataDefs.chart_name, dataDefs.chart_text, null);
 
     };
 
@@ -320,7 +311,7 @@ var FREDTimeline = (function (module) {
 //        // get offset of the chart div
 //        var offset = jqSvg.offset();
 
-        d3.select("text.valueLabel").text(valueFormat(value));
+        d3.select("text.valueLabel").text(FREDChart.formatNumber(value));
 
         // position the popup elements
 

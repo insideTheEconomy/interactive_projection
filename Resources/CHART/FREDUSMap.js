@@ -36,12 +36,9 @@ var FREDUSMap = (function (module) {
 
     module.init = function (selector, dataDefs, dataUSMapArg) {
         dataUSMap = dataUSMapArg;
-        var sampleMeta = dataUSMap.data[dataUSMap.data.length-1].seriesMeta; // last entry is most recent
-        var srcFootnote;
-        for(var meta in sampleMeta) {
-            srcFootnote = sampleMeta[meta].source + ", " + sampleMeta[meta].title;
-            break;
-        }
+
+        // get the source footnote text, last entry is most recent
+        var srcFootnote = dataUSMap.data[dataUSMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
@@ -291,7 +288,7 @@ var FREDUSMap = (function (module) {
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
-            return FREDChart.formatNumber(val);
+            return +val;
     };
 
     var onClickState = function (feature) {
