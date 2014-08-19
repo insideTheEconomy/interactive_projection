@@ -82,9 +82,8 @@ var FREDChart = (function (module) {
         var footnoteDiv = appendOrReclassElement(mainElement, "div", sourceFootnoteId, chartClass)
             .attr("id",sourceFootnoteId);;
 
-        if(sourceFootnote) {
-            footnoteDiv.html("(" + sourceFootnote + ")");
-        }
+        // add the source footnote if there is one
+        footnoteDiv.html(sourceFootnote ? "(" + sourceFootnote + ")" : "");
 
         // init plot data
         initPlotDataFcn();

@@ -358,7 +358,6 @@ var FREDTimeline = (function (module) {
             + "<br/><br/><b>" + annotation.title + "</b>"
             + "<br/><br/>" + annotation.text + "");
         var divRect = annotDiv[0][0].getBoundingClientRect();
-        console.log("divrect h:"+divRect.height + " w:"+divRect.width);
         annotFO.attr("x", annotX + padding)
             .attr("y", annotY - divRect.height - 2 * (annotationPointRadius + padding))
             .attr("height", divRect.height);
