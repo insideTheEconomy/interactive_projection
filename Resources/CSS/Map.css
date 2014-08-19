@@ -73,3 +73,7 @@ text.countyDataLabel, text.countryDataLabel {
 #colorLegendUnits{ /* SVG text for the legend units*/
     font-weight: normal;
 }
+
+/* reset button for US map */
+image.resetImage {
+}

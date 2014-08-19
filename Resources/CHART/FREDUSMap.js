@@ -43,8 +43,6 @@ var FREDUSMap = (function (module) {
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
             dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
-
-        FREDChart.setResetFcn(module.reset);
     };
 
     var initData = function () {
@@ -133,6 +131,8 @@ var FREDUSMap = (function (module) {
 
         //then draw the shapes
         drawChart();
+
+        initializeResetButton();
     };
 
     var drawChart = function () {
@@ -177,7 +177,7 @@ var FREDUSMap = (function (module) {
         // size the chart to fit the container
         chartSvg.attr("width", "100%")
             .attr("height", "100%")
-            .on("click", module.reset ); // clicks outside of map land here and hide the popup if there is one;
+            .on("click", module.resetZoom ); // clicks outside of map land here and hide the popup if there is one;
     };
 
     var updateChart = function () {
@@ -293,7 +293,7 @@ var FREDUSMap = (function (module) {
 
     var onClickState = function (feature) {
         if (activeState) {
-            reset();
+            module.resetZoom();
             if (this == null)
                 return;
         }
@@ -328,7 +328,20 @@ var FREDUSMap = (function (module) {
         d3.selectAll("."+FREDChart.resetBtnClass).attr("visibility", "visible");
     };
 
-    module.reset = function () {
+    /** reset button for unzooming maps **/
+    var initializeResetButton = function() {
+
+        var resetGroup = chartSvg.append("g").attr("class", "resetImage");
+        resetGroup.append("image")
+            .attr("class", "resetImage")
+            .attr("xlink:href", "images/resetZoom.svg")
+            .attr({width: "90px", height: "90px"})
+            .on("click", function () {
+                module.resetZoom();
+            });
+    }
+
+    module.resetZoom = function () {
         // unclick county (if there was one)
         countyClicked = null;
         countyFeature = null;

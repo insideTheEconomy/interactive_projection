@@ -364,23 +364,6 @@ var FREDChart = (function (module) {
             .attr("y", yND + lsTextYOffset)
             .text(module.noValueLabel);
 
-        /** reset button for unzooming maps **/
-        var resetRect = legendGroup.append("rect").attr("class", module.resetBtnClass)
-            .attr("visibility", "hidden")
-            .on("click", function(){
-                resetFcn();
-            });
-
-        var resetPadding = 5;
-        var resetText = legendGroup.append("text").attr("class", module.resetBtnClass)
-            .attr("x", marginLeft + resetPadding)
-            .attr("y", yND + lsH + lsYMargin + 5)
-            .attr("visibility", "hidden")
-            .text("Reset");
-
-        // center rectangle on text
-        centerRectOnText(resetRect, resetText, resetPadding);
-
         return colorScale;
     };
 
@@ -439,10 +422,6 @@ var FREDChart = (function (module) {
             .range(module.colors);
 
         return colorScale;
-    };
-
-    module.setResetFcn = function(resetFcnArg){
-        resetFcn = resetFcnArg;
     };
 
     module.log10 = function (x) {
