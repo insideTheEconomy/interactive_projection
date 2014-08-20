@@ -65,8 +65,11 @@ var FREDTimeline = (function (module) {
 
     var usDataId;
 
-    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
+    var rpcSession;
+
+    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isSlave, rpcSessionArg) {
         dataDefs = dataDefsArg;
+        rpcSession = rpcSessionArg;
         suppliedData = timelineDataArg;
         sampleData = suppliedData.line.data[0][0];
 
@@ -86,7 +89,7 @@ var FREDTimeline = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, null);
+            dataDefs.chart_name, dataDefs.chart_text, null, isSlave, rpcSession);
 
     };
 
@@ -102,12 +105,20 @@ var FREDTimeline = (function (module) {
         //then draw the shapes
         drawChart();
 
-        // set up rollovers
-        circles.on("mouseover", function (d) {
-            return d3.select(this).attr("r", 2 * getSize(this));
-        }).on("mouseout", function (d) {
-            return d3.select(this).attr("r", getSize(this));
-        });
+        if(!isSlave) {
+            // set up rollovers
+            circles.on("mouseover", function (d) {
+                d3.select(this).attr("r", 2 * getSize(this));
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.reset", null); // call slave
+            }).on("mouseout", function (d) {
+                d3.select(this).attr("r", getSize(this));
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.reset", null); // call slave
+            });
+        } else {
+            // register slider callback rpc's
+            rpcSession.register(FREDChart.rpcURLPrefix + "timeline.reset", reset);
+        }
+
     };
 
     var drawChart = function () {

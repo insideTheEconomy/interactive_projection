@@ -8,13 +8,14 @@
 var scatterplot = function () {
     var axispos, chart, data,
         dataByInd, group, height, indID, indtip,
-        isPopupShowing, margin, minPointRadius, maxPointRadius,
+        isPopupShowing, isSlave,
+        margin, minPointRadius, maxPointRadius,
         na_value, ngroup, nxticks, nyticks, nszticks,
         pointcolor, pointsSelect, pointstroke,
         popup, popupRect, popupText,
         popupTickH, popupTickLen, popupTickV,
         popupLblH, popupLblV, popupLblRectH, popupLblRectV,
-        rectcolor, rotate_ylab,
+        rectcolor, rotate_ylab, rpcSession,
         selectedElem,
         isSize, sz, szlab, szlegend, szlim, szNA, szscale, szticks, szvar, svg,
         title, titlepos, width,
@@ -307,10 +308,16 @@ var scatterplot = function () {
             popupLblH = tickGroupH.append("svg:text");
             popupLblV = tickGroupV.append("svg:text");
             isPopupShowing = false;
-            svg.on("click", function (d, i) {
-                // clicks outside of scatter points land here and hide the popup if there is one
-                chart.unselectElem();
-            });
+
+            if(isSlave) {
+                svg.on("click", function (d, i) {
+                    // clicks outside of scatter points land here and hide the popup if there is one
+                    chart.unselectElem();
+                    rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", null); // call slave
+                });
+            } else {
+                rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", chart.unselectElem);
+            }
 
             if (xNA.handle) {
                 chartGroup.append("rect").attr("x", margin.left).attr("y", margin.top).attr("height", panelheight).attr("width",
@@ -327,6 +334,20 @@ var scatterplot = function () {
                     panelwidth).attr("fill", "none").attr("stroke", "black").attr("stroke-width", "none");
             }
         });
+    };
+    chart.isSlave = function (value) {
+        if (!arguments.length) {
+            return isSlave;
+        }
+        isSlave = value;
+        return chart;
+    };
+    chart.rpcSession = function (value) {
+        if (!arguments.length) {
+            return rpcSession;
+        }
+        rpcSession = value;
+        return chart;
     };
     chart.width = function (value) {
         if (!arguments.length) {
@@ -625,17 +646,40 @@ var scatterplot = function () {
                 }
                 return 0;
             }).on("click", function (d, i) {
-                chart.selectElem(this, d, i);
-            }).on("mouseover.paneltip", indtip.show).on("mouseout.paneltip", indtip.hide);
+                chart.selectElem(this, d, i); // call slave in helper fcn
+            }).on("mouseover.paneltip", function(){
+                indtip.show();
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", null); // call slave
+            })
+            .on("mouseout.paneltip", function(){
+                indtip.hide();
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", null); // call slave
+            });
+
+        if(isSlave){
+            // register rpc callbacks
+            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", chart.selectElem);
+            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtip.show);
+            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.hide", indtip.hide);
+        }
     };
 
     chart.selectElem = function (elem, d, i) {
-        indtip.hide();
-        chart.unselectElem(); // unselect any previously select elem
-        selectedElem = elem;
-        selectedElem.setAttribute("class", "selected");
-        chart.showPopup(d, i);
-        d3.event.stopPropagation();
+        if(isSlave){
+            indtip.hide();
+            chart.unselectElem(); // unselect any previously select elem
+            selectedElem = elem;
+            selectedElem.setAttribute("class", "selected");
+            chart.showPopup();
+            d3.event.stopPropagation();
+            rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", ["circle.pt#"+elem.attr("id")]); // call slave
+        } else {
+            indtip.hide();
+            chart.unselectElem(); // unselect any previously select elem
+            selectedElem = $(elem[0]); // use first arg for rpc args
+            selectedElem.setAttribute("class", "selected");
+            chart.showPopup();
+        }
     };
 
     chart.unselectElem = function () {
@@ -663,7 +707,7 @@ var scatterplot = function () {
         }
     };
 
-    chart.showPopup = function (d, i) {
+    chart.showPopup = function () {
         // var idx = parseInt(d3.select(selectedElem).attr("id"));
         var idx = selectedElem.getAttribute("id");
         var xVal = data.data[idx][xvar];

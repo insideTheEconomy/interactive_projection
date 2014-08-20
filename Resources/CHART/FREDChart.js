@@ -3,6 +3,8 @@
  */
 var FREDChart = (function (module) {
 
+    module.rpcURLPrefix = "org.fedst.";
+
     module.colors = [
         "#10069f",
         "#183085",
@@ -28,6 +30,9 @@ var FREDChart = (function (module) {
     var colorLegendDiv;
 
     var updateChartFcn;
+
+    var isSlave;
+    var rpcSession;
 
     var dateRange;
 
@@ -55,15 +60,24 @@ var FREDChart = (function (module) {
     module.worldmapClass = "worldmap";
     module.timelineClass = "timeline";
 
+    module.slaveClass = "slave";
+
     var numSliderTicks = 8;
 
     var resetFcn;
 
     module.initChart = function (parentSelector, chartClass,
                                  getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
-                                 isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote) {
+                                 isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote,
+                                 isSlaveArg, rpcSessionArg) {
 
         updateChartFcn = updateChartFcnArg;
+        isSlave = isSlaveArg;
+        rpcSession = rpcSessionArg;
+
+        if(isSlave){
+            chartClass = chartClass + " " + module.slaveClass;
+        }
 
         // hide the reset btn if there is one
         d3.selectAll("."+module.resetBtnClass).attr("visibility", "hidden");
@@ -94,10 +108,16 @@ var FREDChart = (function (module) {
 
         initializeChartFcn(chartClass); // draw plot
 
-        if( isMonthSlider ) {
-            drawMonthSlider(isUpdateOnSlide);
+        // only display slider on master screen
+        if(!isSlave) {
+            if (isMonthSlider) {
+                drawMonthSlider(isUpdateOnSlide);
+            } else {
+                drawSlider(isUpdateOnSlide);
+            }
         } else {
-            drawSlider(isUpdateOnSlide);
+            // register slider rpc callback
+            rpcSession.register(FREDChart.rpcURLPrefix + "common.updateChart", updateChartFcn);
         }
 
         // draw data
@@ -150,12 +170,14 @@ var FREDChart = (function (module) {
                     uiValue = value;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
+                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
                     }
                 }
             },
             stop: function () {
                 if (!isUpdateOnSlide) {
                     updateChartFcn();
+                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
                 }
             }
         });
@@ -199,12 +221,14 @@ var FREDChart = (function (module) {
                     uiValue = sliderMo;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
+                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
                     }
                 }
             },
             stop: function () {
                 if (!isUpdateOnSlide) {
                     updateChartFcn();
+                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
                 }
             }
         });

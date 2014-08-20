@@ -28,15 +28,18 @@ var FREDWorldMap = (function (module) {
     var jqSvg;
     var chartGroup;
 
-    module.init = function (selector, dataDefs, dataWorldMapArg) {
+    var rpcSession;
+
+    module.init = function (selector, dataDefs, dataWorldMapArg, isSlave, rpcSessionArg) {
         dataWorldMap = dataWorldMapArg;
+        rpcSession = rpcSessionArg;
 
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataWorldMap.data[dataWorldMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isSlave, rpcSession);
     };// <-- End of init
 
     var initData = function () {
@@ -121,7 +124,13 @@ var FREDWorldMap = (function (module) {
         //then draw the shapes
         drawChart();
 
-        chartSvg.on("click", reset ); // clicks outside of map land here and hide the popup if there is one
+        if(!isSlave) {
+            chartSvg.on("click", reset); // clicks outside of map land here and hide the popup if there is one
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+        } else {
+            // register slider callback rpc's
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", reset);
+        }
     }
 
     var drawChart = function () {
@@ -143,10 +152,16 @@ var FREDWorldMap = (function (module) {
                     }
                 },
                 "opacity": unselectedCountryOpacity
-            })
+            }).on("click", onClickCountry)
+                .attr("d", pathMap); //draw the paths;
+
+        if(!isSlave) {
             // counties are clickable when state opacity is 0
-            .on("click", onClickCountry)
-            .attr("d", pathMap); //draw the paths
+            mapRegions
+        } else {
+            // register slider callback rpc's
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", onClickCountry);
+        }
     }
 
     var updateChart = function () {
@@ -183,10 +198,17 @@ var FREDWorldMap = (function (module) {
     }
 
     var onClickCountry = function (d) {
-        countryClicked = d;
-        countryFeature = this;
-        d3.event.stopPropagation();
-        updateCountryDataLabel();
+        if(!isSlave) {
+            countryClicked = d;
+            countryFeature = this;
+            d3.event.stopPropagation();
+            updateCountryDataLabel();
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", [countryClicked.id, countryFeature]); // call slave
+        } else {
+            countryClicked = $("path.country#"+d[0]); // d[0] is the country id
+            countryFeature = d[1];
+            updateCountryDataLabel();
+        }
     }
 
     var updateCountryDataLabel = function () {

@@ -56,9 +56,12 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata) {
+    var rpcSession;
+
+    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isSlave, rpcSessionArg) {
         regionsDataDefs = dataDefsArg;
         regionData = regionDataArg;
+        rpcSession = rpcSessionArg;
 
         // get feature names and Ids
         regionMetadata.forEach(function (feature, i) {
@@ -72,7 +75,7 @@ var FREDScatterPlot = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null);
+            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isSlave, rpcSession);
     }
 
 
@@ -99,13 +102,20 @@ var FREDScatterPlot = (function (module) {
         //then draw the shapes
         drawChart();
 
-        // set up rollovers
-        chart.pointsSelect().on("mouseover", function (d) {
-            return d3.select(this).attr("r", 2 * getSize(this));
-        }).on("mouseout", function (d) {
-            return d3.select(this).attr("r", getSize(this));
-        });
-    }
+        if(!isSlave) {
+            // set up rollovers
+            circles.on("mouseover", function (d) {
+                d3.select(this).attr("r", 2 * getSize(this));
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.reset", null); // call slave
+            }).on("mouseout", function (d) {
+                d3.select(this).attr("r", getSize(this));
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.reset", null); // call slave
+            });
+        } else {
+            // register slider callback rpc's
+            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.reset", reset);
+        }
+    };
 
     var getSize = function (marker) {
         if(isSize) {
@@ -139,7 +149,7 @@ var FREDScatterPlot = (function (module) {
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos);
+            .axispos(axispos).titlepos(titlepos).isSlave(isSlave), rpcSession(rpcSession);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 

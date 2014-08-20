@@ -20,7 +20,7 @@ var FREDUSMap = (function (module) {
     var colorScale; // color quantize scale
     var pathMap; // path and projection
     var countyData;
-    var activeState = null;
+    var activeStatePath = null;
 
     var scale;
     var translate;
@@ -31,18 +31,21 @@ var FREDUSMap = (function (module) {
 
     var path = d3.geo.path();
 
-    var countyClicked = null;
+    var countyPathClicked = null;
     var countyFeature = null;
 
-    module.init = function (selector, dataDefs, dataUSMapArg) {
+    var rpcSession;
+
+    module.init = function (selector, dataDefs, dataUSMapArg, isSlave, rpcSessionArg) {
         dataUSMap = dataUSMapArg;
+        rpcSession = rpcSession;
 
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataUSMap.data[dataUSMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isSlave, rpcSession);
     };
 
     var initData = function () {
@@ -143,6 +146,7 @@ var FREDUSMap = (function (module) {
         mapRegions = chartSvg.append("g");
         mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
             .attr("class", "county")
+            .attr("id", function(d){ return d.id;})
             .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": function (d) {
@@ -163,6 +167,7 @@ var FREDUSMap = (function (module) {
         // state outlines on top
         mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
             .attr("class", "state")
+            .attr("id", function(d){ return d.id;})
             .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": stateFillColor,
@@ -171,13 +176,27 @@ var FREDUSMap = (function (module) {
             .on("click", onClickState)
             .attr("d", pathMap); //draw the paths
 
+
         strokeWidthUnzoomed = parseFloat(mapRegions.select("path.state").style("stroke-width").replace("px",""));
         strokeUnzoomed = d3.rgb(mapRegions.select("path.state").style("stroke"));
 
         // size the chart to fit the container
         chartSvg.attr("width", "100%")
-            .attr("height", "100%")
-            .on("click", module.resetZoom ); // clicks outside of map land here and hide the popup if there is one;
+            .attr("height", "100%");
+
+        chartSvg.on("click", function () {
+            module.resetZoom
+            // clicks outside of map land here and hide the popup if there is one
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+        });
+
+        if (isSlave) {
+            // register reset callback rpc
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", module.resetZoom);
+            // register click callback rpc's
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCounty", onClickCounty);
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickState", onClickState);
+        }
     };
 
     var updateChart = function () {
@@ -197,7 +216,7 @@ var FREDUSMap = (function (module) {
                     }
                 },
                 "opacity": function (d) {
-                    if (d === countyClicked) {
+                    if (d === countyPathClicked) {
                         return selectedCountyOpacity;
                     }
                     else {
@@ -210,18 +229,25 @@ var FREDUSMap = (function (module) {
         mapRegions.data(mapStateFeatures).selectAll("path.state")
             .attr("d", pathMap);
 
-        if(countyClicked) {
+        if(countyPathClicked) {
             d3.select("#countyDataLabelValue").text(displayValue());
         }
     };
 
     var onClickCounty = function (d) {
-        countyClicked = d;
-        countyFeature = this;
-        updateCountyDataLabel();
+        if(!isSlave) {
+            countyPathClicked = d;
+            countyFeature = this;
 
-        // prevent click from triggering reset in svg
-        d3.event.stopPropagation();
+            // prevent click from triggering reset in svg
+            d3.event.stopPropagation();
+            updateCountyDataLabel();
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickCounty", [countyPathClicked.id, countyFeature]); // call slave
+        } else {
+            countyPathClicked = $("path.country#"+d[0]); // d[0] is the country id
+            countyFeature = d[1];
+            updateCountyDataLabel();
+        }
     };
 
     var updateCountyDataLabel = function () {
@@ -251,7 +277,7 @@ var FREDUSMap = (function (module) {
         // get offset of the chart div
         var offset = jqSvg.offset();
 
-        d3.select("#countyDataLabelName").text(countyNameById[countyClicked.id]);
+        d3.select("#countyDataLabelName").text(countyNameById[countyPathClicked.id]);
         var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
         var textHeightName = d3.select("#countyDataLabelName").node().getBBox().height;
 
@@ -284,7 +310,7 @@ var FREDUSMap = (function (module) {
     };
 
     var displayValue = function () {
-        var val = countyValuesById[countyClicked.id];
+        var val = countyValuesById[countyPathClicked.id];
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
@@ -292,12 +318,19 @@ var FREDUSMap = (function (module) {
     };
 
     var onClickState = function (feature) {
-        if (activeState) {
+        if (activeStatePath) {
             module.resetZoom();
             if (this == null)
                 return;
         }
-        activeState = d3.select(this).classed("active", true)
+
+        var elemId = this.id;
+        if (isSlave) { // slight hack to reuse fcn arg for rpc call
+            elemId = feature[0]; // use arg to pass id
+            feature = getFeature(elemId);
+        }
+
+        activeStatePath = d3.select("path.state#"+feature.id).classed("active", true)
             .style("fill", "none"); // make counties clickable
 
         // zoom to the state
@@ -343,7 +376,7 @@ var FREDUSMap = (function (module) {
 
     module.resetZoom = function () {
         // unclick county (if there was one)
-        countyClicked = null;
+        countyPathClicked = null;
         countyFeature = null;
 
         // hide the reset btn
@@ -355,9 +388,9 @@ var FREDUSMap = (function (module) {
         d3.select("rect.countyDataLabel").attr("visibility", "hidden");
 
         //
-        activeState.classed("active", false)
+        activeStatePath.classed("active", false)
             .style("fill", stateFillColor);
-        activeState = null;
+        activeStatePath = null;
 
         // unzoom/unpan
         mapRegions.transition()
