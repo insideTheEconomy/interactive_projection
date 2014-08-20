@@ -184,12 +184,13 @@
 	background-image:url('images/header_arrow.png');
 	width:64px !important;
 	height:64px !important;
-	margin-top:-558px !important;
+	margin-top: -16px !important;
 }
 .ui-accordion .ui-accordion-content {
 	padding: 1em 2.2em;
 	border-top: 0;
 	overflow: auto;
+	width: 77%;
 }
 .ui-autocomplete {
 	position: absolute;
@@ -973,7 +974,7 @@ body .ui-tooltip {
 .ui-icon-triangle-1-ne { background-position: -16px -16px; }
 .ui-icon-triangle-1-e { background-position: -0px -0px; }
 .ui-icon-triangle-1-se { background-position: 0px 0px; }
-.ui-icon-triangle-1-s { left:0em !important; margin-top:-565px !important; background-position: 0px 0px; background-image: url("images/header_arrow_down.png") !important; }
+.ui-icon-triangle-1-s { left:0em !important; margin-top:0px !important; background-position: 0px 0px; background-image: url("images/header_arrow_down.png") !important; }
 .ui-icon-triangle-1-sw { background-position: -80px -16px; }
 .ui-icon-triangle-1-w { background-position: -96px -16px; }
 .ui-icon-triangle-1-nw { background-position: -112px -16px; }

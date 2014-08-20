@@ -22,18 +22,21 @@ text {
 
 #chartArea {
     position: relative;
-    top: 10px;
     margin: 20px auto;
 }
 
 .usmap #chartArea {
-    width: 750px;
-    height: 450px;
+    width: 950px;
+    height: 650px;
     float: right;
+	left:-125px;
+	top: -10px;
 }
 
 .usmap #mapColorLegend{
     width: 150px;
+	margin-left: 50px;
+	margin-top: 50px;
 }
 
 .worldmap #chartArea {
@@ -87,7 +90,7 @@ text {
 	font-weight: normal;
 	font-family: sub-title;
 	padding: 130px;
-	top: 575px;
+	top: 630px;
 }
 
 #dateLabel {
@@ -121,15 +124,29 @@ text {
 }
 
 .usmap #dateSlider {
-    margin-top: 30px;
+    position:absolute;
+	top: 850px;
+	width: 80%;
+	margin-left: 10%;
+	border: 1px solid white;
 }
 
 .worldmap #dateSlider {
     margin-top: 0px;
+	position:absolute;
+	top: 850px;
+	width: 80%;
+	margin-left: 10%;
+	border: 1px solid white;
 }
 
 .scatter #dateSlider {
     margin-top: 5px;
+	position:absolute;
+	top: 850px;
+	width: 80%;
+	margin-left: 10%;
+	border: 1px solid white;
 }
 
 .timeline #dateSlider {
@@ -140,6 +157,10 @@ text {
     text-anchor: end;
     float: right;
     font-size: 12px;
+	margin-top: 55px;
+	position: absolute;
+	width: 100%;
+	text-align: center;
 }
 
 #mapColorLegend {
