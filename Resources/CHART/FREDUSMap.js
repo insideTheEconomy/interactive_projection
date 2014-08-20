@@ -346,7 +346,7 @@ var FREDUSMap = (function (module) {
                 return;
         }
 
-        var elemId = this.id;
+        var elemId = this.getAttribute("id");
 
         activeStatePath = d3.select("path.state#"+feature.id).classed("active", true)
             .style("fill", "none"); // make counties clickable

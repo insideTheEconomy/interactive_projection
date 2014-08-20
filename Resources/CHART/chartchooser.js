@@ -19,6 +19,9 @@ path = window.iprojConfig.dbPath;
 
 var ds = new Datasource(path);
 
+if(!('contains' in String.prototype))
+    String.prototype.contains = function(str, startIndex) { return -1 !== String.prototype.indexOf.call(this, str, startIndex); };
+
 ds.setup().then(
     function (defs) {
 
@@ -37,8 +40,8 @@ ds.setup().then(
         );
 
         connection.onopen = function (rpcSession) {
-            var isMaster = true;//$("body").attr("class").contains("master");
-			console.log("Connection Open");
+            console.log("Connection Open");
+            var isMaster = $("body").attr("class").contains("master");
             if (isMaster) {
                 startMaster(defs, rpcSession);
             } else {

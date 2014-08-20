@@ -293,6 +293,7 @@ var scatterplot = function () {
             }
 
             indtip = d3.tip().attr("class", "d3-tip " + FREDChart.scatterClass).html(function (d, i) {
+                console.log("region "+i+" name:"+data.indID[i]+" name[0]:"+data.indID[0]);
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
             svg.call(indtip);
@@ -672,7 +673,7 @@ var scatterplot = function () {
             selectedElem.setAttribute("class", "selected");
             chart.showPopup();
             d3.event.stopPropagation();
-            rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", ["circle.pt#"+elem.attr("id")]); // call slave
+            rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", ["circle.pt#"+selectedElem.getAttribute("id")]); // call slave
         } else { // slave
             indtip.hide();
             chart.unselectElem(); // unselect any previously select elem

@@ -107,12 +107,13 @@ var FREDScatterPlot = (function (module) {
 
         if(isMaster) {
             // set up rollovers
-            circles.on("mouseover", function (d) {
-                resizePt(2);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [2]); // call slave
+            chart.pointsSelect().on("mouseover", function (d) {
+                resizePt(d3.select(this), 2);
+                console.log("this:"+this);
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", ["circle.pt#"+this.getAttribute("id"), 2]); // call slave
             }).on("mouseout", function (d) {
-                resizePt(1);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [1]); // call slave
+                resizePt(d3.select(this), 1);
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", ["circle.pt#"+this.getAttribute("id"), 1]); // call slave
             });
         } else {
             // register slider callback rpc's
@@ -120,9 +121,12 @@ var FREDScatterPlot = (function (module) {
         }
     };
 
-    var resizePt = function(multiplier){
-        if(!isMaster) multiplier = multiplier[0];
-        d3.select(this).attr("r", multiplier * getSize(this));
+    var resizePt = function(elem, multiplier){
+        if(!isMaster) { // rpc call passes all args in first arg array
+            elem = d3.select(elem[0]);
+            multiplier = elem[1];
+        }
+        elem.attr("r", multiplier * getSize(this));
     }
 
     var getSize = function (marker) {
