@@ -170,14 +170,14 @@ var FREDChart = (function (module) {
                     uiValue = value;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
-                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
+                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                     }
                 }
             },
             stop: function () {
                 if (!isUpdateOnSlide) {
                     updateChartFcn();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
+                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                 }
             }
         });
@@ -221,14 +221,14 @@ var FREDChart = (function (module) {
                     uiValue = sliderMo;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
-                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
+                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                     }
                 }
             },
             stop: function () {
                 if (!isUpdateOnSlide) {
                     updateChartFcn();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart", null); // call slave
+                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                 }
             }
         });

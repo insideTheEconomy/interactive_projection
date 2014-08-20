@@ -313,7 +313,7 @@ var scatterplot = function () {
                 svg.on("click", function (d, i) {
                     // clicks outside of scatter points land here and hide the popup if there is one
                     chart.unselectElem();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", null); // call slave
+                    rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem"); // call slave
                 });
             } else {
                 rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", chart.unselectElem);
@@ -649,11 +649,11 @@ var scatterplot = function () {
                 chart.selectElem(this); // call slave in helper fcn
             }).on("mouseover.paneltip", function(){
                 indtip.show();
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", null); // call slave
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show"); // call slave
             })
             .on("mouseout.paneltip", function(){
                 indtip.hide();
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", null); // call slave
+                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide"); // call slave
             });
 
         if(!isMaster){

@@ -37,7 +37,7 @@ ds.setup().then(
         );
 
         connection.onopen = function (rpcSession) {
-            var isMaster = $("body").attr("class").contains("master");
+            var isMaster = true;//$("body").attr("class").contains("master");
 			console.log("Connection Open");
             if (isMaster) {
                 startMaster(defs, rpcSession);

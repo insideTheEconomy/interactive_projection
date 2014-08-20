@@ -202,7 +202,7 @@ var FREDUSMap = (function (module) {
         chartSvg.on("click", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom", null); // call slave
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
         });
 
         if (!isMaster) {

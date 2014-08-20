@@ -157,7 +157,7 @@ var FREDScatterPlot = (function (module) {
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos).isMaster(isMaster), rpcSession(rpcSession);
+            .axispos(axispos).titlepos(titlepos).isMaster(isMaster).rpcSession(rpcSession);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 

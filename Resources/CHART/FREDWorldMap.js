@@ -130,7 +130,7 @@ var FREDWorldMap = (function (module) {
         if (isMaster) {
             chartSvg.on("click", function () { // clicks outside of map land here and hide the popup if there is one
                 reset();
-                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset"); // call slave
             });
         } else {
             // register slider callback rpc's
