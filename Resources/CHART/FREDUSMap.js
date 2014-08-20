@@ -161,8 +161,13 @@ var FREDUSMap = (function (module) {
                 "opacity": unselectedCountyOpacity
             })
             // counties are clickable when state opacity is 0
-            .on("click", onClickCounty)
-            .attr("d", pathMap); //draw the paths
+            .on("click", function(d) {
+                if (!isSlave) {
+                    onClickCounty(d);
+                } else {
+                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", [d]);
+                }
+            }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
         mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
@@ -173,7 +178,14 @@ var FREDUSMap = (function (module) {
                 "fill": stateFillColor,
                 "fill-opacity": stateFillOpacity
             })
-            .on("click", onClickState)
+            .on("click", function(d){
+                countyPathClicked = d;
+                countyFeature = this;
+                onClickState();
+
+                var args = [countyPathClicked.attr("id"), countyFeature.name];//TBT
+                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", args);
+            })
             .attr("d", pathMap); //draw the paths
 
 
@@ -187,15 +199,15 @@ var FREDUSMap = (function (module) {
         chartSvg.on("click", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom", null); // call slave
         });
 
         if (isSlave) {
             // register reset callback rpc
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", module.resetZoom);
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
             // register click callback rpc's
             rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCounty", onClickCounty);
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickState", onClickState);
+            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", onClickStateSlave);
         }
     };
 
@@ -234,20 +246,16 @@ var FREDUSMap = (function (module) {
         }
     };
 
-    var onClickCounty = function (d) {
-        if(!isSlave) {
-            countyPathClicked = d;
-            countyFeature = this;
+    var onClickCountySlave = function(args) {
+        countyPathClicked = $("path.country#"+args[0]); // d[0] is the country id
+        countyFeature = getCountyFeature(args[1]);
+        updateCountyDataLabel();
+    }
 
-            // prevent click from triggering reset in svg
-            d3.event.stopPropagation();
-            updateCountyDataLabel();
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickCounty", [countyPathClicked.id, countyFeature]); // call slave
-        } else {
-            countyPathClicked = $("path.country#"+d[0]); // d[0] is the country id
-            countyFeature = d[1];
-            updateCountyDataLabel();
-        }
+    var onClickCounty = function () {
+        // prevent click from triggering reset in svg
+        d3.event.stopPropagation();
+        updateCountyDataLabel();
     };
 
     var updateCountyDataLabel = function () {
@@ -317,6 +325,17 @@ var FREDUSMap = (function (module) {
             return +val;
     };
 
+    var onClickStateSlave = function(args){
+        //TBT
+        var featureId = args[0]; // use arg to pass id
+        for(var feature in mapStateFeatures){
+            if(featureId == feature.id){
+                break;
+            }
+        }
+        onClickState(feature);
+    }
+
     var onClickState = function (feature) {
         if (activeStatePath) {
             module.resetZoom();
@@ -325,10 +344,6 @@ var FREDUSMap = (function (module) {
         }
 
         var elemId = this.id;
-        if (isSlave) { // slight hack to reuse fcn arg for rpc call
-            elemId = feature[0]; // use arg to pass id
-            feature = getFeature(elemId);
-        }
 
         activeStatePath = d3.select("path.state#"+feature.id).classed("active", true)
             .style("fill", "none"); // make counties clickable

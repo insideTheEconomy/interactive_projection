@@ -37,7 +37,7 @@ ds.setup().then(
         );
 
         connection.onopen = function (rpcSession) {
-            var isSlave = $("body").attr("class") === "slave";
+            var isSlave = $("body").attr("class").contains("slave");
 			console.log("Connection Open");
             if (isSlave) {
                 startSlave(defs, rpcSession);
@@ -116,7 +116,7 @@ var startMaster = function (defs, rpcSession) {
 };
 
 var startSlave = function(defs, rpcSession){
-        // register selection call
+    // register selection call
     rpcSession.register(FREDChart.rpcURLPrefix + "selectChart", function (args) {
         var d = args[0];
         var chartIndex = args[1];
@@ -125,12 +125,6 @@ var startSlave = function(defs, rpcSession){
 }
 
 var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex, isSlave, rpcSession) {
-    // turn on wait screen
-    //$.blockUI();//{ message: '<img src="images/wait.gif" />' });
-    //var alert = $.fn.jAlert({"message":"test"});
-//    console.log("modal open");
-
-	
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
         case "line": // TBD: no data def yet

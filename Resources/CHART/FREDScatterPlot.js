@@ -105,17 +105,22 @@ var FREDScatterPlot = (function (module) {
         if(!isSlave) {
             // set up rollovers
             circles.on("mouseover", function (d) {
-                d3.select(this).attr("r", 2 * getSize(this));
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.reset", null); // call slave
+                resizePt(2);
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [2]); // call slave
             }).on("mouseout", function (d) {
-                d3.select(this).attr("r", getSize(this));
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.reset", null); // call slave
+                resizePt(1);
+                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [1]); // call slave
             });
         } else {
             // register slider callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.reset", reset);
+            rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
         }
     };
+
+    var resizePt = function(multiplier){
+        if(isSlave) multiplier = multiplier[0];
+        d3.select(this).attr("r", multiplier * getSize(this));
+    }
 
     var getSize = function (marker) {
         if(isSize) {

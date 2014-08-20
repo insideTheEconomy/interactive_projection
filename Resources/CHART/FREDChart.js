@@ -3,7 +3,7 @@
  */
 var FREDChart = (function (module) {
 
-    module.rpcURLPrefix = "org.fedst.";
+    module.rpcURLPrefix = "org.iproj.";
 
     module.colors = [
         "#10069f",

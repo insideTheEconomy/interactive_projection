@@ -125,8 +125,13 @@ var FREDWorldMap = (function (module) {
         drawChart();
 
         if(!isSlave) {
-            chartSvg.on("click", reset); // clicks outside of map land here and hide the popup if there is one
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+            chartSvg.on("click", function(){ // clicks outside of map land here and hide the popup if there is one
+                if(!isSlave){
+                    reset();
+                } else {
+                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
+                }
+            });
         } else {
             // register slider callback rpc's
             rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", reset);
@@ -156,9 +161,6 @@ var FREDWorldMap = (function (module) {
                 .attr("d", pathMap); //draw the paths;
 
         if(!isSlave) {
-            // counties are clickable when state opacity is 0
-            mapRegions
-        } else {
             // register slider callback rpc's
             rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", onClickCountry);
         }
