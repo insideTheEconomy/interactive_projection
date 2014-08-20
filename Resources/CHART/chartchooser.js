@@ -38,13 +38,15 @@ ds.setup().then(
 
         connection.onopen = function (rpcSession) {
             var isSlave = $("body").attr("class") === "slave";
-
+			console.log("Connection Open");
             if (isSlave) {
                 startSlave(defs, rpcSession);
             } else {
                 startMaster(defs, rpcSession);
             }
         }
+
+		connection.open();
     });
 
 var startMaster = function (defs, rpcSession) {

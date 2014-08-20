@@ -23,6 +23,7 @@
     "grunt": "^0.4.5"
   },
   "dependencies": {
+    "autobahn": "^0.9.4",
     "fast-csv": "^0.4.2",
     "when": "^3.4.3"
   }
