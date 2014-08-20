@@ -8,7 +8,7 @@
 var scatterplot = function () {
     var axispos, chart, data,
         dataByInd, group, height, indID, indtip,
-        isPopupShowing, isSlave,
+        isPopupShowing, isMaster,
         margin, minPointRadius, maxPointRadius,
         na_value, ngroup, nxticks, nyticks, nszticks,
         pointcolor, pointsSelect, pointstroke,
@@ -309,7 +309,7 @@ var scatterplot = function () {
             popupLblV = tickGroupV.append("svg:text");
             isPopupShowing = false;
 
-            if(isSlave) {
+            if(isMaster) {
                 svg.on("click", function (d, i) {
                     // clicks outside of scatter points land here and hide the popup if there is one
                     chart.unselectElem();
@@ -335,11 +335,11 @@ var scatterplot = function () {
             }
         });
     };
-    chart.isSlave = function (value) {
+    chart.isMaster = function (value) {
         if (!arguments.length) {
-            return isSlave;
+            return isMaster;
         }
-        isSlave = value;
+        isMaster = value;
         return chart;
     };
     chart.rpcSession = function (value) {
@@ -645,8 +645,8 @@ var scatterplot = function () {
                     return 1;
                 }
                 return 0;
-            }).on("click", function (d, i) {
-                chart.selectElem(this, d, i); // call slave in helper fcn
+            }).on("click", function () {
+                chart.selectElem(this); // call slave in helper fcn
             }).on("mouseover.paneltip", function(){
                 indtip.show();
                 rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", null); // call slave
@@ -656,7 +656,7 @@ var scatterplot = function () {
                 rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", null); // call slave
             });
 
-        if(isSlave){
+        if(!isMaster){
             // register rpc callbacks
             rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", chart.selectElem);
             rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtip.show);
@@ -664,8 +664,8 @@ var scatterplot = function () {
         }
     };
 
-    chart.selectElem = function (elem, d, i) {
-        if(isSlave){
+    chart.selectElem = function (elem) {
+        if(isMaster){
             indtip.hide();
             chart.unselectElem(); // unselect any previously select elem
             selectedElem = elem;
@@ -673,7 +673,7 @@ var scatterplot = function () {
             chart.showPopup();
             d3.event.stopPropagation();
             rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", ["circle.pt#"+elem.attr("id")]); // call slave
-        } else {
+        } else { // slave
             indtip.hide();
             chart.unselectElem(); // unselect any previously select elem
             selectedElem = $(elem[0]); // use first arg for rpc args

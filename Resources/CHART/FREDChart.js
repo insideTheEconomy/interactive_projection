@@ -31,7 +31,7 @@ var FREDChart = (function (module) {
 
     var updateChartFcn;
 
-    var isSlave;
+    var isMaster;
     var rpcSession;
 
     var dateRange;
@@ -69,13 +69,13 @@ var FREDChart = (function (module) {
     module.initChart = function (parentSelector, chartClass,
                                  getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
                                  isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote,
-                                 isSlaveArg, rpcSessionArg) {
+                                 isMasterArg, rpcSessionArg) {
 
         updateChartFcn = updateChartFcnArg;
-        isSlave = isSlaveArg;
+        isMaster = isMasterArg;
         rpcSession = rpcSessionArg;
 
-        if(isSlave){
+        if(!isMaster){
             chartClass = chartClass + " " + module.slaveClass;
         }
 
@@ -109,7 +109,7 @@ var FREDChart = (function (module) {
         initializeChartFcn(chartClass); // draw plot
 
         // only display slider on master screen
-        if(!isSlave) {
+        if(isMaster) {
             if (isMonthSlider) {
                 drawMonthSlider(isUpdateOnSlide);
             } else {

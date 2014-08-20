@@ -36,16 +36,19 @@ var FREDUSMap = (function (module) {
 
     var rpcSession;
 
-    module.init = function (selector, dataDefs, dataUSMapArg, isSlave, rpcSessionArg) {
+    var isMaster;
+
+    module.init = function (selector, dataDefs, dataUSMapArg, isMasterArg, rpcSessionArg) {
         dataUSMap = dataUSMapArg;
-        rpcSession = rpcSession;
+        rpcSession = rpcSessionArg;
+        isMaster = isMasterArg;
 
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataUSMap.data[dataUSMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isSlave, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster, rpcSession);
     };
 
     var initData = function () {
@@ -162,7 +165,7 @@ var FREDUSMap = (function (module) {
             })
             // counties are clickable when state opacity is 0
             .on("click", function(d) {
-                if (!isSlave) {
+                if (isMaster) {
                     onClickCounty(d);
                 } else {
                     rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", [d]);
@@ -202,7 +205,7 @@ var FREDUSMap = (function (module) {
             rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom", null); // call slave
         });
 
-        if (isSlave) {
+        if (!isMaster) {
             // register reset callback rpc
             rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
             // register click callback rpc's

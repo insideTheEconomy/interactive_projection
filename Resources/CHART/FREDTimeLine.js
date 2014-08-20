@@ -67,9 +67,12 @@ var FREDTimeline = (function (module) {
 
     var rpcSession;
 
-    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isSlave, rpcSessionArg) {
+    var isMaster;
+
+    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isMasterArg, rpcSessionArg) {
         dataDefs = dataDefsArg;
         rpcSession = rpcSessionArg;
+        isMaster = isMasterArg;
         suppliedData = timelineDataArg;
         sampleData = suppliedData.line.data[0][0];
 
@@ -89,7 +92,7 @@ var FREDTimeline = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, null, isSlave, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, null, isMaster, rpcSession);
 
     };
 
@@ -105,7 +108,7 @@ var FREDTimeline = (function (module) {
         //then draw the shapes
         drawChart();
 
-        if(!isSlave) {
+        if(isMaster) {
             // set up rollovers
             circles.on("mouseover", function (d) {
                 resizePt(2);
@@ -122,7 +125,7 @@ var FREDTimeline = (function (module) {
     };
 
     var resizePt = function(multiplier){
-        if(isSlave) multiplier = multiplier[0];
+        if(!isMaster) multiplier = multiplier[0];
         d3.select(this).attr("r", multiplier * getSize(this));
     }
 

@@ -30,16 +30,19 @@ var FREDWorldMap = (function (module) {
 
     var rpcSession;
 
-    module.init = function (selector, dataDefs, dataWorldMapArg, isSlave, rpcSessionArg) {
+    var isMaster;
+
+    module.init = function (selector, dataDefs, dataWorldMapArg, isMasterArg, rpcSessionArg) {
         dataWorldMap = dataWorldMapArg;
         rpcSession = rpcSessionArg;
+        isMaster = isMasterArg;
 
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataWorldMap.data[dataWorldMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isSlave, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster, rpcSession);
     };// <-- End of init
 
     var initData = function () {
@@ -124,13 +127,10 @@ var FREDWorldMap = (function (module) {
         //then draw the shapes
         drawChart();
 
-        if(!isSlave) {
-            chartSvg.on("click", function(){ // clicks outside of map land here and hide the popup if there is one
-                if(!isSlave){
-                    reset();
-                } else {
-                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
-                }
+        if (isMaster) {
+            chartSvg.on("click", function () { // clicks outside of map land here and hide the popup if there is one
+                reset();
+                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset", null); // call slave
             });
         } else {
             // register slider callback rpc's
@@ -160,7 +160,7 @@ var FREDWorldMap = (function (module) {
             }).on("click", onClickCountry)
                 .attr("d", pathMap); //draw the paths;
 
-        if(!isSlave) {
+        if(!isMaster) {
             // register slider callback rpc's
             rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", onClickCountry);
         }
@@ -200,7 +200,7 @@ var FREDWorldMap = (function (module) {
     }
 
     var onClickCountry = function (d) {
-        if(!isSlave) {
+        if(isMaster) {
             countryClicked = d;
             countryFeature = this;
             d3.event.stopPropagation();

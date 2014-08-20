@@ -58,10 +58,13 @@ var FREDScatterPlot = (function (module) {
 
     var rpcSession;
 
-    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isSlave, rpcSessionArg) {
+    var isMaster;
+
+    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isMasterArg, rpcSessionArg) {
         regionsDataDefs = dataDefsArg;
         regionData = regionDataArg;
         rpcSession = rpcSessionArg;
+        isMaster = isMasterArg;
 
         // get feature names and Ids
         regionMetadata.forEach(function (feature, i) {
@@ -75,7 +78,7 @@ var FREDScatterPlot = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isSlave, rpcSession);
+            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isMaster, rpcSession);
     }
 
 
@@ -102,7 +105,7 @@ var FREDScatterPlot = (function (module) {
         //then draw the shapes
         drawChart();
 
-        if(!isSlave) {
+        if(isMaster) {
             // set up rollovers
             circles.on("mouseover", function (d) {
                 resizePt(2);
@@ -118,7 +121,7 @@ var FREDScatterPlot = (function (module) {
     };
 
     var resizePt = function(multiplier){
-        if(isSlave) multiplier = multiplier[0];
+        if(!isMaster) multiplier = multiplier[0];
         d3.select(this).attr("r", multiplier * getSize(this));
     }
 
@@ -154,7 +157,7 @@ var FREDScatterPlot = (function (module) {
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos).isSlave(isSlave), rpcSession(rpcSession);
+            .axispos(axispos).titlepos(titlepos).isMaster(isMaster), rpcSession(rpcSession);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 

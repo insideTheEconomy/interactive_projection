@@ -37,12 +37,12 @@ ds.setup().then(
         );
 
         connection.onopen = function (rpcSession) {
-            var isSlave = $("body").attr("class").contains("slave");
+            var isMaster = $("body").attr("class").contains("master");
 			console.log("Connection Open");
-            if (isSlave) {
-                startSlave(defs, rpcSession);
-            } else {
+            if (isMaster) {
                 startMaster(defs, rpcSession);
+            } else {
+                startSlave(defs, rpcSession);
             }
         }
 
@@ -85,7 +85,7 @@ var startMaster = function (defs, rpcSession) {
 
 
             console.log("modal show");
-            selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i, false, rpcSession);
+            selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i, true, rpcSession);
 
             rpcSession.call(FREDChart.rpcURLPrefix + "selectChart", [defs]); // call slave
         })
@@ -120,11 +120,11 @@ var startSlave = function(defs, rpcSession){
     rpcSession.register(FREDChart.rpcURLPrefix + "selectChart", function (args) {
         var d = args[0];
         var chartIndex = args[1];
-        selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, chartIndex, true, rpcSession);
+        selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, chartIndex, false, rpcSession);
     });
 }
 
-var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex, isSlave, rpcSession) {
+var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex, isMaster, rpcSession) {
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
         case "line": // TBD: no data def yet
@@ -133,7 +133,7 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
                 function (dataTimeline) {
 					$modal.dialog("close");
                     console.log("modal hide");
-                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, regionMetadata, isSlave, rpcSession);
+                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, regionMetadata, isMaster, rpcSession);
                 });
             break;
         case "scatter":
@@ -142,7 +142,7 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
                 function (dataScatter) {
 					$modal.dialog("close");
                     console.log("modal hide");
-                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, regionMetadata, isSlave, rpcSession);
+                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, regionMetadata, isMaster, rpcSession);
                 });
             break;
         case "usmap":
@@ -151,7 +151,7 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
                 function (dataUSMap) {
 					$modal.dialog("close");
                     console.log("modal hide");
-                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap, isSlave, rpcSession);
+                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap, isMaster, rpcSession);
                 });
             break;
         case "worldmap":
@@ -160,7 +160,7 @@ var selectChart = function(chartElemSelector, defs, chartType, regionType, categ
                 function (dataWorldMap) {
 					$modal.dialog("close");
                     console.log("modal hide");
-                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap, isSlave, rpcSession);
+                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap, isMaster, rpcSession);
                 });
             break;
         default:
