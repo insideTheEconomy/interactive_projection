@@ -293,7 +293,6 @@ var scatterplot = function () {
             }
 
             indtip = d3.tip().attr("class", "d3-tip " + FREDChart.scatterClass).html(function (d, i) {
-                console.log("region "+i+" name:"+data.indID[i]+" name[0]:"+data.indID[0]);
                 return data.indID[i];
             }).direction("e").offset([0, 10]);
             svg.call(indtip);
@@ -646,24 +645,33 @@ var scatterplot = function () {
                     return 1;
                 }
                 return 0;
-            }).on("click", function () {
-                chart.selectElem(this); // call slave in helper fcn
-            }).on("mouseover.paneltip", function(){
-                indtip.show();
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show"); // call slave
+//            }).on("click", function () {
+//                chart.selectElem(this); // call slave in helper fcn
+            }).on("mouseover.paneltip", function(d,i){
+                chart.selectElem(this);
+//                indtip.show(d,i);
+//                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", [d, i]); // call slave
             })
-            .on("mouseout.paneltip", function(){
-                indtip.hide();
-                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide"); // call slave
-            });
+//            .on("mouseout.paneltip", function(d,i){
+//                indtip.hide(d,i);
+//                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", [d, i]); // call slave
+//            });
 
         if(!isMaster){
             // register rpc callbacks
             rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", chart.selectElem);
-            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtip.show);
-            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.hide", indtip.hide);
+//            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtipSlaveShow);
+//            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.hide", indtipSlaveHide);
         }
     };
+
+//    var indtipSlaveShow = function(args){
+//        indtip.show(args[0], args[1]);
+//    }
+//
+//    var indtipSlaveHide = function(args){
+//        indtip.hide();
+//    }
 
     chart.selectElem = function (elem) {
         if(isMaster){

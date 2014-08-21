@@ -31,8 +31,8 @@ var FREDUSMap = (function (module) {
 
     var path = d3.geo.path();
 
-    var countyPathClicked = null;
-    var countyFeature = null;
+    var countyFeatureSelected = null;
+    var countyPathSelected = null;
 
     var rpcSession;
 
@@ -149,7 +149,7 @@ var FREDUSMap = (function (module) {
         mapRegions = chartSvg.append("g");
         mapRegions.selectAll("path.county").data(mapCountyFeatures).enter().append("path")
             .attr("class", "county")
-            .attr("id", function(d){ return d.id;})
+            .attr("id", function(d){ return "county"+d.id;})
             .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": function (d) {
@@ -164,29 +164,28 @@ var FREDUSMap = (function (module) {
                 "opacity": unselectedCountyOpacity
             })
             // counties are clickable when state opacity is 0
-            .on("click", function(d) {
-                if (isMaster) {
-                    onClickCounty(d);
-                } else {
-                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", [d]);
-                }
+            .on("click", function(countyFeature) {
+                    countyFeatureSelected = countyFeature;
+                    countyPathSelected = this;
+                    onClickCounty();
+
+                    var args = [countyFeatureSelected.name, countyPathSelected.attr("id")];//TBT
+                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", args);
             }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
         mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
             .attr("class", "state")
-            .attr("id", function(d){ return d.id;})
+            .attr("id", function(d){ return "state"+d.id;})
             .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
                 "fill": stateFillColor,
                 "fill-opacity": stateFillOpacity
             })
-            .on("click", function(d){
-                countyPathClicked = d;
-                countyFeature = this;
-                onClickState();
+            .on("click", function(stateFeature){
+                onClickState(stateFeature);
 
-                var args = [countyPathClicked.attr("id"), countyFeature.name];//TBT
+                var args = [stateFeature.name];//TBT
                 rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", args);
             })
             .attr("d", pathMap); //draw the paths
@@ -231,7 +230,7 @@ var FREDUSMap = (function (module) {
                     }
                 },
                 "opacity": function (d) {
-                    if (d === countyPathClicked) {
+                    if (d === countyFeatureSelected) {
                         return selectedCountyOpacity;
                     }
                     else {
@@ -244,14 +243,14 @@ var FREDUSMap = (function (module) {
         mapRegions.data(mapStateFeatures).selectAll("path.state")
             .attr("d", pathMap);
 
-        if(countyPathClicked) {
+        if(countyFeatureSelected) {
             d3.select("#countyDataLabelValue").text(displayValue());
         }
     };
 
     var onClickCountySlave = function(args) {
-        countyPathClicked = $("path.country#"+args[0]); // d[0] is the country id
-        countyFeature = getCountyFeature(args[1]);
+        countyFeatureSelected = getCountyFeature(args[0]); // args[0] is the feature name
+        countyPathSelected = ("path#county"+args[1]); // args[1] is the path id
         updateCountyDataLabel();
     }
 
@@ -283,12 +282,12 @@ var FREDUSMap = (function (module) {
         var margin = 10;
 
         // get transformed, as-drawn coordinates of the county
-        var bRect = d3.select(countyFeature).node().getBoundingClientRect();
+        var bRect = d3.select(countyPathSelected).node().getBoundingClientRect();
 
         // get offset of the chart div
         var offset = jqSvg.offset();
 
-        d3.select("#countyDataLabelName").text(countyNameById[countyPathClicked.id]);
+        d3.select("#countyDataLabelName").text(countyNameById[countyFeatureSelected.id]);
         var textWidthName = d3.select("#countyDataLabelName").node().getBBox().width;
         var textHeightName = d3.select("#countyDataLabelName").node().getBBox().height;
 
@@ -321,7 +320,7 @@ var FREDUSMap = (function (module) {
     };
 
     var displayValue = function () {
-        var val = countyValuesById[countyPathClicked.id];
+        var val = countyValuesById[countyFeatureSelected.id];
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
@@ -329,7 +328,6 @@ var FREDUSMap = (function (module) {
     };
 
     var onClickStateSlave = function(args){
-        //TBT
         var featureId = args[0]; // use arg to pass id
         for(var feature in mapStateFeatures){
             if(featureId == feature.id){
@@ -346,9 +344,7 @@ var FREDUSMap = (function (module) {
                 return;
         }
 
-        var elemId = this.getAttribute("id");
-
-        activeStatePath = d3.select("path.state#"+feature.id).classed("active", true)
+        activeStatePath = d3.select("path#state"+feature.id).classed("active", true)
             .style("fill", "none"); // make counties clickable
 
         // zoom to the state
@@ -394,8 +390,8 @@ var FREDUSMap = (function (module) {
 
     module.resetZoom = function () {
         // unclick county (if there was one)
-        countyPathClicked = null;
-        countyFeature = null;
+        countyFeatureSelected = null;
+        countyPathSelected = null;
 
         // hide the reset btn
         d3.selectAll("."+FREDChart.resetBtnClass).attr("visibility", "hidden");

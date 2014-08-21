@@ -157,7 +157,7 @@ var FREDWorldMap = (function (module) {
                     }
                 },
                 "opacity": unselectedCountryOpacity
-            }).on("click", onClickCountry)
+            }).on("mouseover", onClickCountry)
                 .attr("d", pathMap); //draw the paths;
 
         if(!isMaster) {
