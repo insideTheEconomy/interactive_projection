@@ -164,7 +164,7 @@ var FREDUSMap = (function (module) {
                 "opacity": unselectedCountyOpacity
             })
             // counties are clickable when state opacity is 0
-            .on("click", function(countyFeature) {
+            .on("mouseover", function(countyFeature) {
                     countyFeatureSelected = countyFeature;
                     countyPathSelected = this;
                     onClickCounty();
@@ -182,7 +182,7 @@ var FREDUSMap = (function (module) {
                 "fill": stateFillColor,
                 "fill-opacity": stateFillOpacity
             })
-            .on("click", function(stateFeature){
+            .on("mouseover", function(stateFeature){
                 onClickState(stateFeature);
 
                 var args = [stateFeature.name];//TBT
@@ -198,7 +198,7 @@ var FREDUSMap = (function (module) {
         chartSvg.attr("width", "100%")
             .attr("height", "100%");
 
-        chartSvg.on("click", function () {
+        chartSvg.on("mouseover", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
             rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
@@ -383,7 +383,7 @@ var FREDUSMap = (function (module) {
             .attr("class", "resetImage")
             .attr("xlink:href", "images/resetZoom.svg")
             .attr({width: "90px", height: "90px"})
-            .on("click", function () {
+            .on("mouseover", function () {
                 module.resetZoom();
             });
     }
