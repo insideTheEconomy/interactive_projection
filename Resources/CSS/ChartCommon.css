@@ -28,8 +28,8 @@ text {
 .usmap #chartArea {
     width: 950px;
     height: 650px;
-    float: right;
-	left:-125px;
+    float: left;
+	/*left:-125px;*/
 	top: -10px;
 }
 
@@ -40,13 +40,15 @@ text {
 }
 
 .worldmap #chartArea {
-    width: 750px;
-    height: 500px;
-    float:right;
+    width: 850px;
+    height: 650px;
+    /*float: right;*/
 }
 
 .worldmap #mapColorLegend{
     width: 150px;
+    margin-left: 50px;
+    margin-top: 50px;
 }
 
 .scatter #chartArea {
