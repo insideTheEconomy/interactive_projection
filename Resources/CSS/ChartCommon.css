@@ -15,64 +15,64 @@ text {
     margin: 0px auto;
 }
 
+#chartLegendWrapper {
+    width: 100%;
+    margin: 10px;
+}
+
 #mapColorLegend{
-    height: 100%;
+    width: 150px;
     float: left;
+    padding: 50px 10px 0px 40px;
 }
 
 #chartArea {
-    position: relative;
-    margin: 20px auto;
+    width: 70%;
+    padding: 10px;
+    margin: 0px auto;
 }
 
 .usmap #chartArea {
-    width: 950px;
+    /*width: 950px;*/
     height: 650px;
-    float: left;
 	/*left:-125px;*/
-	top: -10px;
+	/*top: -10px;*/
 }
 
 .usmap #mapColorLegend{
-    width: 150px;
-	margin-left: 50px;
-	margin-top: 50px;
+	/*margin-left: 50px;
+	margin-top: 50px;*/
 }
 
 .worldmap #chartArea {
-    width: 850px;
+    /*width: 850px;*/
     height: 650px;
-    /*float: right;*/
 }
 
 .worldmap #mapColorLegend{
-    width: 150px;
-    margin-left: 50px;
-    margin-top: 50px;
+    /*margin-left: 50px;
+    margin-top: 50px;*/
 }
 
 .scatter #chartArea {
-    width: 920px;
-    height: 570px;
-    margin-top: 10px;
+    /*width: 920px;*/
+    height: 610px;
 }
 
 .scatter #mapColorLegend{
-    width: 0px;
 }
 
 .timeline #chartArea {
-    width: 920px;
+    /*width: 920px;*/
     height: 600px;
 }
 
 .timeline #mapColorLegend{
-    width: 0px;
 }
 
 #chartTitle {
-    position: absolute;
-	top: -16px;
+    /*position: absolute;*/
+    margin: 10px;
 	left: 0px;
 	text-align: center;
 	vertical-align: middle;
@@ -84,39 +84,36 @@ text {
 }
 
 #chartDescription {
-    position: absolute;
-	float: left;
+    /*position: absolute;
+	float: left;*/
 	width: 80%;
 	text-align: left;
-	font-size: 28px;
+	font-size: 20px;
 	font-weight: normal;
 	font-family: sub-title;
-	padding: 130px;
-	top: 630px;
+    margin-left: 150px;
+	/*top: 730px;*/
 }
 
 #dateLabel {
-    position: absolute;
-	width: 85%;
+    /*position: absolute;*/
+	width: 100%;
 	float: right;
 	text-align: right;
 	vertical-align: baseline;
 	font-size: 25px;
 	font-weight: normal;
 	font-family: medium;
-	margin-top: 35px;
+	/*margin-top: 35px;*/
+    margin-right: 150px;
 }
 
 #dateSlider {
-    margin: 0px auto; /* center */
-    width: 100%;
+    margin: 10px auto; /* center */
+    width: 80%;
+    border: 1px solid white;
 }
 
-#chartSvg {
-	margin-top: 75px;
-}
-
-/* sliderDateLabel is in the chartArea */
 #dateSliderLabel {
     margin-top: 10px;
     margin-left: auto;
@@ -126,47 +123,42 @@ text {
 }
 
 .usmap #dateSlider {
-    position:absolute;
+    /*position:absolute;
 	top: 850px;
 	width: 80%;
-	margin-left: 10%;
-	border: 1px solid white;
+	margin-left: 10%;*/
 }
 
 .worldmap #dateSlider {
-    margin-top: 0px;
+    /*margin-top: 0px;
 	position:absolute;
 	top: 850px;
 	width: 80%;
 	margin-left: 10%;
-	border: 1px solid white;
+	border: 1px solid white;*/
 }
 
 .scatter #dateSlider {
-    margin-top: 5px;
+    /*margin-top: 5px;
 	position:absolute;
 	top: 850px;
 	width: 80%;
 	margin-left: 10%;
-	border: 1px solid white;
+	border: 1px solid white;*/
 }
 
 .timeline #dateSlider {
-    margin-top: 10px;
+    /*margin-top: 10px;*/
 }
 
 #sourceFootnote {
-    text-anchor: end;
-    float: right;
+    /*text-anchor: end;
+    float: right;*/
     font-size: 12px;
-	margin-top: 55px;
-	position: absolute;
-	width: 100%;
+	/*margin-top: 55px;
+	position: absolute;*/
+	width: 80%;
 	text-align: center;
-}
-
-#mapColorLegend {
-    width: 150px;
 }
 
 #colorLegendBlock{ /* SVG rects for the color blocks */

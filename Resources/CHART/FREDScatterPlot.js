@@ -12,18 +12,18 @@ var FREDScatterPlot = (function (module) {
     var minPointRadius = 3;
     var maxPointRadius = 20;
 
-    var isSize = false; // turns on and off size data display
+    var isSize = false; // turns on and off size data display (hard coded right here)
     var szlegend = {
         width: Math.max(2 * maxPointRadius + 50, 150),
         height: 0,
         padding: 5,
-        offset: 10,
+        offset: 100,
         fill: "grey"
     };
     var chartMargin = {
         left: 100,
         top: 0,
-        right: 10 + szlegend.width,
+        right: isSize ? 10 + szlegend.width : 0,
         bottom: 0,
         inner: 5
     };

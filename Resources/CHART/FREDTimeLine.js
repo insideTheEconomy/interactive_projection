@@ -12,8 +12,8 @@ var FREDTimeline = (function (module) {
         chartHeight;
     var chartMargin = {
         left: 100,
-        top: 40,
-        bottom: 40,
+        top: 0,
+        bottom: 0,
         inner: 5
     };
     var axispos = {
