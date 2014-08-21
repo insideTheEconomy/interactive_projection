@@ -34,13 +34,10 @@ var FREDUSMap = (function (module) {
     var countyFeatureSelected = null;
     var countyPathSelected = null;
 
-    var rpcSession;
-
     var isMaster;
 
-    module.init = function (selector, dataDefs, dataUSMapArg, isMasterArg, rpcSessionArg) {
+    module.init = function (selector, dataDefs, dataUSMapArg, isMasterArg) {
         dataUSMap = dataUSMapArg;
-        rpcSession = rpcSessionArg;
         isMaster = isMasterArg;
 
         // get the source footnote text, last entry is most recent
@@ -167,10 +164,10 @@ var FREDUSMap = (function (module) {
             .on("mouseover", function(countyFeature) {
                     countyFeatureSelected = countyFeature;
                     countyPathSelected = this;
-                    onClickCounty();
+                    onSelectCounty();
 
-                    var args = [countyFeatureSelected.name, countyPathSelected.attr("id")];//TBT
-                    rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", args);
+                    var args = new Array(countyFeatureSelected.id, countyPathSelected.getAttribute("id"));//TBT
+                            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", args);
             }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
@@ -183,10 +180,10 @@ var FREDUSMap = (function (module) {
                 "fill-opacity": stateFillOpacity
             })
             .on("mouseover", function(stateFeature){
-                onClickState(stateFeature);
+                onSelectState(stateFeature);
 
-                var args = [stateFeature.name];//TBT
-                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", args);
+                var args = new Array(stateFeature.properties.name);//TBT
+                            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", args);
             })
             .attr("d", pathMap); //draw the paths
 
@@ -201,15 +198,15 @@ var FREDUSMap = (function (module) {
         chartSvg.on("mouseover", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
+            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
         });
 
         if (!isMaster) {
             // register reset callback rpc
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
             // register click callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCounty", onClickCounty);
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickStateSlave", onClickStateSlave);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onSelectCounty", onSelectCounty);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", onSelectStateSlave);
         }
     };
 
@@ -248,13 +245,22 @@ var FREDUSMap = (function (module) {
         }
     };
 
-    var onClickCountySlave = function(args) {
-        countyFeatureSelected = getCountyFeature(args[0]); // args[0] is the feature name
+    var onSelectCountySlave = function(args) {
+        countyFeatureSelected = getCountyFeature(args[0]); // args[0] is the feature Id
         countyPathSelected = ("path#county"+args[1]); // args[1] is the path id
         updateCountyDataLabel();
-    }
+    };
 
-    var onClickCounty = function () {
+    var getCountyFeature = function( featureId ){
+        for(var feature in mapCountyFeatures){
+            if(feature.id == featureId){
+                return feature;
+            }
+        }
+        return null;
+    };
+
+    var onSelectCounty = function () {
         // prevent click from triggering reset in svg
         d3.event.stopPropagation();
         updateCountyDataLabel();
@@ -327,17 +333,20 @@ var FREDUSMap = (function (module) {
             return +val;
     };
 
-    var onClickStateSlave = function(args){
-        var featureId = args[0]; // use arg to pass id
+    var onSelectStateSlave = function(args){
+        onSelectState(getStateFeature(args[0])); // args[0] is feature id
+    };
+
+    var getStateFeature = function( featureId ){
         for(var feature in mapStateFeatures){
-            if(featureId == feature.id){
-                break;
+            if(feature.id === featureId){
+                return feature;
             }
         }
-        onClickState(feature);
-    }
+        return null;
+    };
 
-    var onClickState = function (feature) {
+    var onSelectState = function (feature) {
         if (activeStatePath) {
             module.resetZoom();
             if (this == null)

@@ -56,14 +56,11 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    var rpcSession;
-
     var isMaster;
 
-    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isMasterArg, rpcSessionArg) {
+    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isMasterArg) {
         regionsDataDefs = dataDefsArg;
         regionData = regionDataArg;
-        rpcSession = rpcSessionArg;
         isMaster = isMasterArg;
 
         // get feature names and Ids
@@ -109,15 +106,18 @@ var FREDScatterPlot = (function (module) {
             // set up rollovers
             chart.pointsSelect().on("mouseover", function (d) {
                 resizePt(d3.select(this), 2);
-                console.log("this:"+this);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", ["circle.pt#"+this.getAttribute("id"), 2]); // call slave
+
+                var args = new Array("circle.pt#"+this.getAttribute("id"), 2);
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
             }).on("mouseout", function (d) {
                 resizePt(d3.select(this), 1);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", ["circle.pt#"+this.getAttribute("id"), 1]); // call slave
+
+                var args = new Array("circle.pt#"+this.getAttribute("id"), 1);
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
             });
         } else {
             // register slider callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
         }
     };
 
@@ -161,7 +161,7 @@ var FREDScatterPlot = (function (module) {
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos).isMaster(isMaster).rpcSession(rpcSession);
+            .axispos(axispos).titlepos(titlepos).isMaster(isMaster);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 

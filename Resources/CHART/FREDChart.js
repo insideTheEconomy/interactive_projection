@@ -32,7 +32,7 @@ var FREDChart = (function (module) {
     var updateChartFcn;
 
     var isMaster;
-    var rpcSession;
+    module.rpcSession = null;
 
     var dateRange;
 
@@ -69,11 +69,10 @@ var FREDChart = (function (module) {
     module.initChart = function (parentSelector, chartClass,
                                  getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
                                  isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote,
-                                 isMasterArg, rpcSessionArg) {
+                                 isMasterArg) {
 
         updateChartFcn = updateChartFcnArg;
         isMaster = isMasterArg;
-        rpcSession = rpcSessionArg;
 
         if(!isMaster){
             chartClass = chartClass + " " + module.slaveClass;
@@ -116,8 +115,9 @@ var FREDChart = (function (module) {
                 drawSlider(isUpdateOnSlide);
             }
         } else {
-            // register slider rpc callback
-            rpcSession.register(FREDChart.rpcURLPrefix + "common.updateChart", updateChartFcn);
+            // register slider rpc callbacks
+            module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderSlide", sliderSlide);
+            module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderStop", sliderStop);
         }
 
         // draw data
@@ -162,28 +162,39 @@ var FREDChart = (function (module) {
             animate: "fast", // animate sliding
             tickLabels: getSliderLabels(tickInterval),
             slide: function (event, ui) {
-                var value = Math.round(ui.value);
-                if (value != uiValue) {
-                    module.timeSlotDate = dateRange[value];
-                    dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-                    uiValue = value;
-                    if (isUpdateOnSlide) {
-                        updateChartFcn();
-                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
-                    }
-                }
+                sliderSlide(Math.round(ui.value));
             },
-            stop: function () {
-                if (!isUpdateOnSlide) {
-                    updateChartFcn();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
-                }
+            stop: function (event, ui) {
+                sliderStop(Math.round(ui.value));
             }
         });
 
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //        dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+    }
+
+    function sliderSlide(value){
+        if (value != uiValue) {
+            module.timeSlotDate = dateRange[value];
+            dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+            uiValue = value;
+            if (isUpdateOnSlide) {
+                updateChartFcn();
+                if(isMaster) {
+                    module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderUpdate", [uiValue]); // call slave
+                }
+            }
+        }
+    }
+
+    function sliderStop(value){
+        if (!isUpdateOnSlide) {
+            updateChartFcn();
+            if(isMaster) {
+                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop", [value]); // call slave
+            }
+        }
     }
 
     // slider that steps by month over a date range, used for the timeline chart
@@ -221,14 +232,14 @@ var FREDChart = (function (module) {
                     uiValue = sliderMo;
                     if (isUpdateOnSlide) {
                         updateChartFcn();
-                        rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
+                        module.rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                     }
                 }
             },
             stop: function () {
                 if (!isUpdateOnSlide) {
                     updateChartFcn();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
+                    module.rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
                 }
             }
         });

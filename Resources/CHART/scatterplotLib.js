@@ -15,7 +15,7 @@ var scatterplot = function () {
         popup, popupRect, popupText,
         popupTickH, popupTickLen, popupTickV,
         popupLblH, popupLblV, popupLblRectH, popupLblRectV,
-        rectcolor, rotate_ylab, rpcSession,
+        rectcolor, rotate_ylab,
         selectedElem,
         isSize, sz, szlab, szlegend, szlim, szNA, szscale, szticks, szvar, svg,
         title, titlepos, width,
@@ -313,10 +313,10 @@ var scatterplot = function () {
                 svg.on("click", function (d, i) {
                     // clicks outside of scatter points land here and hide the popup if there is one
                     chart.unselectElem();
-                    rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem"); // call slave
+                    FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem"); // call slave
                 });
             } else {
-                rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", chart.unselectElem);
+                FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.unselectElem", chart.unselectElem);
             }
 
             if (xNA.handle) {
@@ -340,13 +340,6 @@ var scatterplot = function () {
             return isMaster;
         }
         isMaster = value;
-        return chart;
-    };
-    chart.rpcSession = function (value) {
-        if (!arguments.length) {
-            return rpcSession;
-        }
-        rpcSession = value;
         return chart;
     };
     chart.width = function (value) {
@@ -650,18 +643,18 @@ var scatterplot = function () {
             }).on("mouseover.paneltip", function(d,i){
                 chart.selectElem(this);
 //                indtip.show(d,i);
-//                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", [d, i]); // call slave
+//                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.show", [d, i]); // call slave
             })
 //            .on("mouseout.paneltip", function(d,i){
 //                indtip.hide(d,i);
-//                rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", [d, i]); // call slave
+//                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "scatter.indtip.hide", [d, i]); // call slave
 //            });
 
         if(!isMaster){
             // register rpc callbacks
-            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", chart.selectElem);
-//            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtipSlaveShow);
-//            rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.hide", indtipSlaveHide);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", chart.selectElem);
+//            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.show", indtipSlaveShow);
+//            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "scatter.indtip.hide", indtipSlaveHide);
         }
     };
 
@@ -681,7 +674,9 @@ var scatterplot = function () {
             selectedElem.setAttribute("class", "selected");
             chart.showPopup();
             d3.event.stopPropagation();
-            rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", ["circle.pt#"+selectedElem.getAttribute("id")]); // call slave
+
+            var args = ["circle.pt#"+selectedElem.getAttribute("id")];
+            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "scatter.chart.selectElem", args); // call slave
         } else { // slave
             indtip.hide();
             chart.unselectElem(); // unselect any previously select elem

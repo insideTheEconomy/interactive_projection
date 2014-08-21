@@ -21,20 +21,17 @@ var FREDWorldMap = (function (module) {
 
     var path = d3.geo.path();
 
-    var countryClicked = null;
-    var countryFeature = null;
+    var countryFeatureSelected = null;
+    var countryPathSelected = null;
 
     var chartSvg;
     var jqSvg;
     var chartGroup;
 
-    var rpcSession;
-
     var isMaster;
 
-    module.init = function (selector, dataDefs, dataWorldMapArg, isMasterArg, rpcSessionArg) {
+    module.init = function (selector, dataDefs, dataWorldMapArg, isMasterArg) {
         dataWorldMap = dataWorldMapArg;
-        rpcSession = rpcSessionArg;
         isMaster = isMasterArg;
 
         // get the source footnote text, last entry is most recent
@@ -130,11 +127,11 @@ var FREDWorldMap = (function (module) {
         if (isMaster) {
             chartSvg.on("click", function () { // clicks outside of map land here and hide the popup if there is one
                 reset();
-                rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset"); // call slave
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.reset"); // call slave
             });
         } else {
             // register slider callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", reset);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.reset", reset);
         }
     }
 
@@ -146,6 +143,9 @@ var FREDWorldMap = (function (module) {
         mapRegions = chartGroup.append("g");
         mapRegions.selectAll("path.country").data(mapCountryFeatures).enter().append("path")
             .attr("class", "country")
+            .attr("id", function(d,i){
+                "country"+ d.id;
+            })
             .style({
                 "fill": function (d) {
                     //apply fill from colorScale, or nanColor if NAN
@@ -157,12 +157,12 @@ var FREDWorldMap = (function (module) {
                     }
                 },
                 "opacity": unselectedCountryOpacity
-            }).on("mouseover", onClickCountry)
+            }).on("mouseover", onSelectCountry)
                 .attr("d", pathMap); //draw the paths;
 
         if(!isMaster) {
             // register slider callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", onClickCountry);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onSelectCountrySlave", onSelectCountrySlave);
         }
     }
 
@@ -183,7 +183,7 @@ var FREDWorldMap = (function (module) {
                     }
                 },
                 "opacity": function (d) {
-                    if (d === countryClicked) {
+                    if (d === countryFeatureSelected) {
                         return selectedCountryOpacity;
                     }
                     else {
@@ -194,24 +194,35 @@ var FREDWorldMap = (function (module) {
             .attr("d", pathMap);
 
         // update the popup value text if it's popped up
-        if(countryClicked) {
+        if(countryFeatureSelected) {
             d3.select("#countryDataLabelValue").text(displayValue())
         }
     }
 
-    var onClickCountry = function (d) {
-        if(isMaster) {
-            countryClicked = d;
-            countryFeature = this;
-            d3.event.stopPropagation();
-            updateCountryDataLabel();
-            rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onClickCountry", [countryClicked.id, countryFeature]); // call slave
-        } else {
-            countryClicked = $("path.country#"+d[0]); // d[0] is the country id
-            countryFeature = d[1];
-            updateCountryDataLabel();
-        }
+    var onSelectCountry = function (d) {
+        countryFeatureSelected = d;
+        countryPathSelected = this;
+        d3.event.stopPropagation();
+        updateCountryDataLabel();
+
+        var args = new Array(countryFeatureSelected.id, countryPathSelected.getAttributes("id"));
+        FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onSelectCountrySlave", args); // call slave
     }
+
+    var onSelectCountrySlave = function(args){
+        countryFeatureSelected = getCountryFeature(featureId); // d[0] is the country id
+        countryPathSelected = d[1];
+        updateCountryDataLabel();
+    }
+
+    var getCountryFeature = function( featureId ){
+        for(var feature in mapCountryFeatures){
+            if(feature.id === featureId){
+                return feature;
+            }
+        }
+        return null;
+    };
 
     var updateCountryDataLabel = function () {
         // add a label group if there isn't one yet
@@ -235,12 +246,12 @@ var FREDWorldMap = (function (module) {
         var margin = 5;
 
         // get transformed, as-drawn coordinates of the country
-        var brect = d3.select(countryFeature).node().getBoundingClientRect();
+        var brect = d3.select(countryPathSelected).node().getBoundingClientRect();
         var featureWidth = brect.width;
         var featureHeight = brect.height;
         var featureLeft = brect.left;
         var featureTop = brect.top;
-        if( countryNameById[countryClicked.id] == "United States"){
+        if( countryNameById[countryFeatureSelected.id] == "United States"){
             // manually tweak for distributed location of USA (alaska in west, hawaii in east)
             featureWidth = .5 * featureWidth; // back towards to the left edge
             featureHeight = 1.1 * featureHeight; // a little further down from the top
@@ -253,7 +264,7 @@ var FREDWorldMap = (function (module) {
         // get offset of the chart div
         var offset = jqSvg.offset();
 
-        d3.select("#countryDataLabelName").text(countryNameById[countryClicked.id]);
+        d3.select("#countryDataLabelName").text(countryNameById[countryFeatureSelected.id]);
         var textWidthName = d3.select("#countryDataLabelName").node().getBBox().width;
         var textHeightName = d3.select("#countryDataLabelName").node().getBBox().height;
 
@@ -293,11 +304,11 @@ var FREDWorldMap = (function (module) {
         d3.select("#countryDataLabelName").attr("visibility", "hidden");
         d3.select("#countryDataLabelValue").attr("visibility", "hidden");
         d3.select("rect.countryDataLabel").attr("visibility", "hidden");
-        countryClicked = null;
+        countryFeatureSelected = null;
     };
 
     var displayValue = function () {
-        var val = countryValuesById[countryClicked.id];
+        var val = countryValuesById[countryFeatureSelected.id];
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else

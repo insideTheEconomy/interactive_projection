@@ -65,13 +65,10 @@ var FREDTimeline = (function (module) {
 
     var usDataId;
 
-    var rpcSession;
-
     var isMaster;
 
-    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isMasterArg, rpcSessionArg) {
+    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isMasterArg) {
         dataDefs = dataDefsArg;
-        rpcSession = rpcSessionArg;
         isMaster = isMasterArg;
         suppliedData = timelineDataArg;
         sampleData = suppliedData.line.data[0][0];
@@ -112,14 +109,18 @@ var FREDTimeline = (function (module) {
             // set up rollovers
             circles.on("mouseover", function (d) {
                 resizePt(2);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [2]); // call slave
+
+                var args = new Array(2);
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
             }).on("mouseout", function (d) {
                 resizePt(1);
-                rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", [1]); // call slave
+
+                var args = new Array(1);
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
             });
         } else {
             // register slider callback rpc's
-            rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
         }
 
     };
@@ -371,14 +372,18 @@ var FREDTimeline = (function (module) {
                 .attr("class", "timelineAnnotationLabel");
         }
 
-        // text positioned above annotation circle
         annotP.html("<i>Milestone: "
             + FREDChart.getFullFormattedDate(annotation.date) + "</i>"
             + "<br/><br/><b>" + annotation.title + "</b>"
             + "<br/><br/>" + annotation.text + "");
-        var divRect = annotDiv[0][0].getBoundingClientRect();
+
+        //// text positioned above annotation circle
+        //var divRect = annotDiv[0][0].getBoundingClientRect();
+        //annotFO.attr("x", annotX + padding)
+        //    .attr("y", annotY - divRect.height - 2 * (annotationPointRadius + padding))
+        //    .ttr("height", divRect.height);
         annotFO.attr("x", annotX + padding)
-            .attr("y", annotY - divRect.height - 2 * (annotationPointRadius + padding))
+            .attr("y", annotY)
             .attr("height", divRect.height);
     };
 

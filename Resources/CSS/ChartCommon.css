@@ -28,7 +28,6 @@ text {
 
 #chartArea {
     width: 70%;
-    padding: 10px;
     margin: 0px auto;
 }
 
@@ -109,7 +108,7 @@ text {
 }
 
 #dateSlider {
-    margin: 10px auto; /* center */
+    margin: 20px auto; /* center */
     width: 80%;
     border: 1px solid white;
 }

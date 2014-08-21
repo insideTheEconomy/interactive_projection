@@ -4,23 +4,29 @@
 
 window.iprojConfig;
 
-configFile = process.env.HOME+"/exhibit/iproj.json";
+configFile = process.env.HOME + "/exhibit/iproj.json";
 
-try{
-	//user config
-	window.iprojConfig = require(configFile);
-}catch(e){
-	//defaults
-	window.iprojConfig = require("./iproj.json")
+try {
+    //user config
+    window.iprojConfig = require(configFile);
+} catch (e) {
+    //defaults
+    window.iprojConfig = require("./iproj.json")
 }
 console.log("config loaded", window.iprojConfig);
 path = window.iprojConfig.dbPath;
 
+var gui = require('nw.gui');
 
 var ds = new Datasource(path);
 
-if(!('contains' in String.prototype))
-    String.prototype.contains = function(str, startIndex) { return -1 !== String.prototype.indexOf.call(this, str, startIndex); };
+if (!('contains' in String.prototype)) {
+    String.prototype.contains = function (str, startIndex) {
+        return -1 !== String.prototype.indexOf.call(this, str, startIndex);
+    };
+}
+
+var chartElemSelector = "#" + FREDChart.chartDivId;
 
 ds.setup().then(
     function (defs) {
@@ -35,24 +41,27 @@ ds.setup().then(
 
         // Set up WAMP connection to router
         var connection = new autobahn.Connection({
-                url: 'ws://localhost:9000/ws',
-                realm: 'iproj'}
+                                                     url: 'ws://localhost:9000/ws',
+                                                     realm: 'iproj'
+                                                 }
         );
 
         connection.onopen = function (rpcSession) {
+            FREDChart.rpcSession = rpcSession;
             console.log("Connection Open");
-            var isMaster = $("body").attr("class").contains("master");
+            var isMaster = $("body").attr("class").contains("master") &&
+                gui.App.argv[0] != "-slave";
             if (isMaster) {
-                startMaster(defs, rpcSession);
+                startMaster(defs);
             } else {
-                startSlave(defs, rpcSession);
+                startSlave(defs);
             }
         }
 
-		connection.open();
+        connection.open();
     });
 
-var startMaster = function (defs, rpcSession) {
+var startMaster = function (defs) {
     d3.select("body").append("div").attr("id", FREDChart.wrapperDivId);
 
     /*
@@ -62,10 +71,10 @@ var startMaster = function (defs, rpcSession) {
      });
      */
 
-    var menu = d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.menuDivId);
+    var menu = d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id",
+                                                                          FREDChart.menuDivId);
 
     d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.chartDivId);
-    var chartElemSelector = "#" + FREDChart.chartDivId;
 
     var cat = menu.selectAll("div").data(Object.keys(defs)).enter().append("h3").text(function (d) {
         return d
@@ -73,29 +82,27 @@ var startMaster = function (defs, rpcSession) {
 
     cat.append("div").attr("class", "accord-items")
         .selectAll("p").data(function (d) {
-            return defs[d]
-        }).enter()
+                                 return defs[d]
+                             }).enter()
         .insert("p")
         .on("click", function (d, i) {
-            $("p").removeClass("selected");
-            $(this).addClass("selected");
-            console.log("Add Selected");
-            console.log(d.chart_type + " " + d.category + " " + i);
+                $("p").removeClass("selected");
+                $(this).addClass("selected");
+                console.log("Add Selected");
+                console.log(d.chart_type + " " + d.category + " " + i);
 
-            //create a modal dialog using jqueryUI
-            $modal.dialog();
-            //and progressbar
+                //create a modal dialog using jqueryUI
+                $modal.dialog();
+                //and progressbar
+                console.log("modal show");
 
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "selectChart", [i], d); // call slave first to register calls
 
-            console.log("modal show");
-            selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, i, true, rpcSession);
-
-            rpcSession.call(FREDChart.rpcURLPrefix + "selectChart", [defs]); // call slave
-        })
+                selectChart(defs, d, i, true);
+            })
         .text(function (d) {
-            return d.chart_name
-        });
-
+                  return d.chart_name
+              });
 
     var items = $(".accord-items").detach();
     var headers = $("h3");
@@ -104,66 +111,77 @@ var startMaster = function (defs, rpcSession) {
         $(headers[i]).after(items[i]);
     });
 
-
 //        $( "p" ).on( "click", function() {
 //            $("p").removeClass("selected");
 //            $(this).addClass("selected");
 //            console.log($(this).prop("__data__")); //this is the definition, to pass to db.js function
 //        });
 
-
     $("#accordion").accordion({
-        heightStyle: "content",
-        collapsible: true
-    });
+                                  heightStyle: "content",
+                                  collapsible: true
+                              });
 };
 
-var startSlave = function(defs, rpcSession){
+var startSlave = function (defs) {
     // register selection call
-    rpcSession.register(FREDChart.rpcURLPrefix + "selectChart", function (args) {
-        var d = args[0];
-        var chartIndex = args[1];
-        selectChart(chartElemSelector, defs, d.chart_type, d.region_type, d.category, chartIndex, false, rpcSession);
-    });
+    FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "selectChart", function (args, kwargs) {
+        var chartIndex = args[0];
+        var d = kwargs;
+        selectChart(defs, d, chartIndex, false);
+    }).then(
+        function (registration) {
+            console.log(registration);
+        },
+        function (error) {
+            console.log(error.error+": \""+error.args[0]+"\"");;
+        }
+    );
 }
 
-var selectChart = function(chartElemSelector, defs, chartType, regionType, category, chartIndex, isMaster, rpcSession) {
+var selectChart = function (defs, d, chartIndex, isMaster) {
+    var chartType = d.chartType;
+    var regionType = d.regionType;
+    var category = d.category;
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
-        case "line": // TBD: no data def yet
+        case "line":
             var defTimeline = defs[category][+chartIndex]; // line
             ds.get(defTimeline).then(
                 function (dataTimeline) {
-					$modal.dialog("close");
+                    $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline, regionMetadata, isMaster, rpcSession);
+                    new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline,
+                                          regionMetadata, isMaster);
                 });
             break;
         case "scatter":
             var defScatter = defs[category][+chartIndex]; // scatter
             ds.get(defScatter).then(
                 function (dataScatter) {
-					$modal.dialog("close");
+                    $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter, regionMetadata, isMaster, rpcSession);
+                    new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter,
+                                             regionMetadata, isMaster);
                 });
             break;
         case "usmap":
             var defUSMap = defs[category][+chartIndex]; // usmap
             ds.get(defUSMap).then(
                 function (dataUSMap) {
-					$modal.dialog("close");
+                    $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap, isMaster, rpcSession);
+                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap, isMaster);
                 });
             break;
         case "worldmap":
             var defWorldMap = defs[category][+chartIndex]; // worldmap
             ds.get(defWorldMap).then(
                 function (dataWorldMap) {
-					$modal.dialog("close");
+                    $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap, isMaster, rpcSession);
+                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap,
+                                          isMaster);
                 });
             break;
         default:
