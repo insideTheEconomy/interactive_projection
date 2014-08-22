@@ -1,5 +1,5 @@
 #chartPanel {
-    fill: lemonchiffon;
+    fill: rgba(0,0,0,0.7);
     opacity: 1;
     stroke: black;
     stroke-width: 1;
@@ -32,12 +32,14 @@
 }
 
 .scatter .x.axis text.title, .timeline .x.axis text.title {
-    fill: slateblue;
+    fill: white;
+	font-family:'medium';
 }
 
 .scatter .y.axis text.title, .timeline .y.axis text.title {
     text-anchor: middle;
-    fill: slateblue;
+    fill: white;
+	font-family:'medium';
 }
 
 .axis line {
@@ -47,8 +49,8 @@
 }
 
 .scatter .pt {
-    fill: darkred;
-    stroke: blue;
+    fill: #AD1AAC;
+    stroke: #A4DBE8;
     opacity: 1;
 }
 

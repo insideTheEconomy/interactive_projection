@@ -1,12 +1,12 @@
 .timeline .data-line {
-    stroke: darkgreen;
-    stroke-width: 1;
+    stroke: #A4DBE8;
+    stroke-width: 1.5;
     fill: none;
     stroke-dasharray: 0;
 }
 
 .timeline .area {
-    fill: #EBFFEB;
+    fill: rgba(16, 6, 159, 0.25);
 }
 
 .timeline path{
@@ -17,13 +17,13 @@
 }
 
 .timeline .data-point {
-    stroke: steelblue;
-    stroke-width: 2;
-    fill: white;
+    stroke: #A4DBE8;
+	stroke-width: 1.5;
+	fill: #AD1AAC;
 }
 
 .timeline line.valueLine {
-    stroke: blue;
+    stroke: #AD1AAC;
     stroke-width: 3;
     stroke-dasharray: 5;
 }
