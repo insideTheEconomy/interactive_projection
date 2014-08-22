@@ -61,16 +61,15 @@ ds.setup().then(
             d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.chartDivId);
 
             if (FREDChart.isMaster) {
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "test",["OK","YES"]).then(
-                    function(arg){console.log("call worked", arg);},
-                    function(error){console.log("call failed", error);}
-                );
+                //FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "test",["OK","YES"]).then(
+                //    function(arg){console.log("call worked", arg);},
+                //    function(error){console.log("call failed", error);}
+                //);
                 startMaster(menu, defs);
             } else {
-                FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "test",function(args){
-                    console.log(args[0],args[1]);
-                    return "CALLED";
-                });
+                //FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "test",function(args){
+                //    console.log(args[0],args[1]);
+                //});
                 startSlave(defs);
             }
         }
@@ -93,7 +92,8 @@ var startMaster = function (menu, defs) {
 
     cat.append("div").attr("class", "accord-items")
         .selectAll("p").data(function (d) {
-                                 return defs[d]
+                                     var cat = defs[d];
+                                 return cat;
                              }).enter()
         .insert("p")
         .on("click", function (d, i) {
@@ -107,7 +107,18 @@ var startMaster = function (menu, defs) {
                 //and progressbar
                 console.log("modal show");
 
-                var args = [i, d];
+                // inelegant hack
+                // recreate the category string because it is corrupted by rpc
+                // is it an issue with the db value??
+                var hackCategory = "";
+                var category = new String(d.category);
+                    for(var j=0; j<category.length; j++){
+                        var ch = category.charAt(j);
+                        hackCategory = hackCategory + ch;
+                    }
+
+                var args = [i, d.chart_type, d.region_type, hackCategory];
+                //console.log(args[1], typeof args[1], args[3], typeof args[3], args[3].valueOf());
                 FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "selectChartSlave", args); // call slave first to register calls
                 selectChart(defs, args);
             })
@@ -150,10 +161,10 @@ var startSlave = function (defs) {
 
 var selectChart = function (defs, args) {
     var chartIndex = args[0];
-    var d = args[1];
-    var chartType = d.chart_type;
-    var regionType = d.region_type;
-    var category = d.category;
+    var chartType = args[1];
+    var regionType = args[2];
+    var category = args[3];
+    //console.log(args[1], typeof args[1], args[3], typeof args[3], args[3].valueOf());
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
         case "line":

@@ -163,10 +163,11 @@ var FREDUSMap = (function (module) {
                     countyPathSelected = this;
                     onSelectCounty();
 
-                    var args = new Array(countyFeatureSelected.id,
-                                         countyPathSelected.getAttribute("id"));//TBT
+                    var args = new Array(countyFeatureSelected.id);//TBT
                     FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
-                                              "worldmap.onSelectStateSlave", args);
+                                              "usmap.onSelectCountySlave", args).then(
+                        FREDChart.rpcSession.log()
+                    );
                 }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
@@ -183,9 +184,11 @@ var FREDUSMap = (function (module) {
             .on("click", function (stateFeature) {
                     onSelectState(stateFeature);
 
-                    var args = new Array(stateFeature.properties.name);//TBT
+                    var args = new Array(stateFeature.id);//TBT
                     FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
-                                              "worldmap.onSelectStateSlave", args);
+                                              "usmap.onSelectStateSlave", args).then(
+                        FREDChart.rpcSession.log()
+                    );
                 })
             .attr("d", pathMap); //draw the paths
 
@@ -197,18 +200,26 @@ var FREDUSMap = (function (module) {
         chartSvg.attr("width", "100%")
             .attr("height", "100%");
 
-        chartSvg.on("mouseover", function () {
+        chartSvg.on("click", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
-            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
+            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "usmap.resetZoom").then(
+                FREDChart.rpcSession.log()
+            ); // call slave
         });
 
         if (!FREDChart.isMaster) {
             // register reset callback rpc
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.resetZoom", module.resetZoom).then(
+                FREDChart.rpcSession.log()
+            );
             // register click callback rpc's
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onSelectCounty", onSelectCounty);
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", onSelectStateSlave);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectCountySlave", onSelectCountySlave).then(
+                FREDChart.rpcSession.log()
+            );
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectStateSlave", onSelectStateSlave).then(
+                FREDChart.rpcSession.log()
+            );
         }
     };
 
@@ -249,7 +260,7 @@ var FREDUSMap = (function (module) {
 
     var onSelectCountySlave = function(args) {
         countyFeatureSelected = FREDChart.findFeatureById(mapCountyFeatures, args[0]); // args[0] is the feature Id
-        countyPathSelected = ("path#county"+args[1]); // args[1] is the path id
+        countyPathSelected = ("path#county"+args[0]); // args[1] is the path id
         updateCountyDataLabel();
     };
 
@@ -374,9 +385,9 @@ var FREDUSMap = (function (module) {
         var resetGroup = chartSvg.append("g").attr("class", "resetImage");
         resetGroup.append("image")
             .attr("class", "resetImage")
-            .attr("xlink:href", "images/resetZoom.svg")
+            .attr("xlink:href", "CSS/images/resetZoom.svg")
             .attr({width: "90px", height: "90px"})
-            .on("mouseover", function () {
+            .on("click", function () {
                 module.resetZoom();
             });
     }

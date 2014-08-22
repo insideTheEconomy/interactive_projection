@@ -76,4 +76,5 @@ text.countyDataLabel, text.countryDataLabel {
 
 /* reset button for US map */
 image.resetImage {
+    stroke: white;
 }
