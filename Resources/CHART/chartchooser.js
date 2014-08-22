@@ -50,17 +50,17 @@ ds.setup().then(
             FREDChart.rpcSession = rpcSession;
             console.log("Connection Open");
             var menu;
-            var isMaster = $("body").attr("class").contains("master") &&
+            FREDChart.isMaster = $("body").attr("class").contains("master") &&
                 gui.App.argv[0] != "-slave";
 
             // basic page configuration
             d3.select("body").append("div").attr("id", FREDChart.wrapperDivId);
-            if (isMaster) {
+            if (FREDChart.isMaster) {
                 menu = d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.menuDivId);
             }
             d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.chartDivId);
-            
-            if (isMaster) {
+
+            if (FREDChart.isMaster) {
                 FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "test",["OK","YES"]).then(
                     function(arg){console.log("call worked", arg);},
                     function(error){console.log("call failed", error);}
@@ -107,16 +107,9 @@ var startMaster = function (menu, defs) {
                 //and progressbar
                 console.log("modal show");
 
-                var args = [i,i];
-                console.log("!args:" + (!args) + " || args instanceof Array:" +
-                            (args instanceof Array));
-                    var uri = FREDChart.rpcURLPrefix + "selectChart";
-
-
-
-                FREDChart.rpcSession.call(uri, args, d); // call slave first to register calls
-
-                selectChart(defs, d, i, true);
+                var args = [i, d];
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "selectChartSlave", args); // call slave first to register calls
+                selectChart(defs, args);
             })
         .text(function (d) {
                   return d.chart_name
@@ -143,10 +136,8 @@ var startMaster = function (menu, defs) {
 
 var startSlave = function (defs) {
     // register selection call
-    FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "selectChart", function (args, kwargs) {
-        var chartIndex = args[0];
-        var d = kwargs;
-        selectChart(defs, d, chartIndex, false);
+    FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "selectChartSlave", function (args) {
+        selectChart(defs, args);
     }).then(
         function (registration) {
             console.log(registration);
@@ -157,7 +148,9 @@ var startSlave = function (defs) {
     );
 }
 
-var selectChart = function (defs, d, chartIndex, isMaster) {
+var selectChart = function (defs, args) {
+    var chartIndex = args[0];
+    var d = args[1];
     var chartType = d.chart_type;
     var regionType = d.region_type;
     var category = d.category;
@@ -170,7 +163,7 @@ var selectChart = function (defs, d, chartIndex, isMaster) {
                     $modal.dialog("close");
                     console.log("modal hide");
                     new FREDTimeline.init(chartElemSelector, defTimeline, dataTimeline,
-                                          regionMetadata, isMaster);
+                                          regionMetadata);
                 });
             break;
         case "scatter":
@@ -180,7 +173,7 @@ var selectChart = function (defs, d, chartIndex, isMaster) {
                     $modal.dialog("close");
                     console.log("modal hide");
                     new FREDScatterPlot.init(chartElemSelector, defScatter, dataScatter.scatter,
-                                             regionMetadata, isMaster);
+                                             regionMetadata);
                 });
             break;
         case "usmap":
@@ -189,7 +182,7 @@ var selectChart = function (defs, d, chartIndex, isMaster) {
                 function (dataUSMap) {
                     $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap, isMaster);
+                    new FREDUSMap.init(chartElemSelector, defUSMap, dataUSMap.usmap);
                 });
             break;
         case "worldmap":
@@ -198,8 +191,7 @@ var selectChart = function (defs, d, chartIndex, isMaster) {
                 function (dataWorldMap) {
                     $modal.dialog("close");
                     console.log("modal hide");
-                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap,
-                                          isMaster);
+                    new FREDWorldMap.init(chartElemSelector, defWorldMap, dataWorldMap.worldmap);
                 });
             break;
         default:

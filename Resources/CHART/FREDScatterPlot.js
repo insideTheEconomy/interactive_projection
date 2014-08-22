@@ -56,12 +56,9 @@ var FREDScatterPlot = (function (module) {
 
     var colorScale;
 
-    var isMaster;
-
-    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata, isMasterArg) {
+    module.init = function (selector, dataDefsArg, regionDataArg, regionMetadata) {
         regionsDataDefs = dataDefsArg;
         regionData = regionDataArg;
-        isMaster = isMasterArg;
 
         // get feature names and Ids
         regionMetadata.forEach(function (feature, i) {
@@ -75,7 +72,7 @@ var FREDScatterPlot = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isMaster);
+            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null);
     }
 
 
@@ -102,27 +99,27 @@ var FREDScatterPlot = (function (module) {
         //then draw the shapes
         drawChart();
 
-        if(isMaster) {
-            // set up rollovers
-            chart.pointsSelect().on("mouseover", function (d) {
-                resizePt(d3.select(this), 2);
-
-                var args = new Array("circle.pt#"+this.getAttribute("id"), 2);
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
-            }).on("mouseout", function (d) {
-                resizePt(d3.select(this), 1);
-
-                var args = new Array("circle.pt#"+this.getAttribute("id"), 1);
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
-            });
-        } else {
-            // register slider callback rpc's
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
-        }
+        //if(isMaster) {
+        //    // set up rollovers
+        //    chart.pointsSelect().on("mouseover", function (d) {
+        //        resizePt(d3.select(this), 2);
+        //
+        //        var args = new Array("circle.pt#"+this.getAttribute("id"), 2);
+        //        FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
+        //    }).on("mouseout", function (d) {
+        //        resizePt(d3.select(this), 1);
+        //
+        //        var args = new Array("circle.pt#"+this.getAttribute("id"), 1);
+        //        FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
+        //    });
+        //} else {
+        //    // register slider callback rpc's
+        //    FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
+        //}
     };
 
     var resizePt = function(elem, multiplier){
-        if(!isMaster) { // rpc call passes all args in first arg array
+        if(!FREDChart.isMaster) { // rpc call passes all args in first arg array
             elem = d3.select(elem[0]);
             multiplier = elem[1];
         }
@@ -161,7 +158,7 @@ var FREDScatterPlot = (function (module) {
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
             .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
-            .axispos(axispos).titlepos(titlepos).isMaster(isMaster);
+            .axispos(axispos).titlepos(titlepos);
 
         FREDChart.chartAreaDiv.datum(scatterPlotData).call(chart);
 

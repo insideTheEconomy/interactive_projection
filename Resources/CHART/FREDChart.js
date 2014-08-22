@@ -31,7 +31,7 @@ var FREDChart = (function (module) {
 
     var updateChartFcn;
 
-    var isMaster;
+    module.isMaster;
     module.rpcSession = null;
 
     var dateRange;
@@ -64,17 +64,17 @@ var FREDChart = (function (module) {
 
     var numSliderTicks = 8;
 
-    var resetFcn;
+    var uiSliderValue;
+    var isUpdateOnSlide;
 
     module.initChart = function (parentSelector, chartClass,
                                  getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
-                                 isUpdateOnSlide, isMonthSlider, chartTitle, chartText, sourceFootnote,
-                                 isMasterArg) {
+                                 isUpdateOnSlideArg, isMonthSlider, chartTitle, chartText, sourceFootnote) {
 
         updateChartFcn = updateChartFcnArg;
-        isMaster = isMasterArg;
+        isUpdateOnSlide = isUpdateOnSlideArg;
 
-        if(!isMaster){
+        if(!module.isMaster){
             chartClass = chartClass + " " + module.slaveClass;
         }
 
@@ -91,7 +91,9 @@ var FREDChart = (function (module) {
         colorLegendDiv = replaceElement(chartLegendWrapper, "div", module.mapColorLegendId, chartClass);
         module.chartAreaDiv = replaceElement(chartLegendWrapper, "div", module.chartAreaId, chartClass);
         appendOrReclassElement(mainElement, "div", chartDescriptionId, null).text(chartText);
-        appendOrReclassElement(mainElement, "div", dateSliderId, chartClass);
+        if(module.isMaster){
+            appendOrReclassElement(mainElement, "div", dateSliderId, chartClass);
+        }
         var footnoteDiv = appendOrReclassElement(mainElement, "div", sourceFootnoteId, chartClass)
             .attr("id",sourceFootnoteId);;
 
@@ -108,11 +110,11 @@ var FREDChart = (function (module) {
         initializeChartFcn(chartClass); // draw plot
 
         // only display slider on master screen
-        if(isMaster) {
+        if(module.isMaster) {
             if (isMonthSlider) {
-                drawMonthSlider(isUpdateOnSlide);
+                drawMonthSlider();
             } else {
-                drawSlider(isUpdateOnSlide);
+                drawSlider();
             }
         } else {
             // register slider rpc callbacks
@@ -149,7 +151,7 @@ var FREDChart = (function (module) {
         return elemRef;
     }
 
-    function drawSlider(isUpdateOnSlide) {
+    function drawSlider() {
         var uiValue = null;
         var min = 0;
         var max = dateRange.length - 1;
@@ -162,10 +164,13 @@ var FREDChart = (function (module) {
             animate: "fast", // animate sliding
             tickLabels: getSliderLabels(tickInterval),
             slide: function (event, ui) {
-                sliderSlide(Math.round(ui.value));
+                var args = [Math.round(ui.value)];
+                sliderSlide(args);
+                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderSlide", args); // call slave
             },
             stop: function (event, ui) {
-                sliderStop(Math.round(ui.value));
+                sliderStop();
+                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop"); // call slave
             }
         });
 
@@ -173,32 +178,27 @@ var FREDChart = (function (module) {
 //        dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
 
-    function sliderSlide(value){
-        if (value != uiValue) {
+    function sliderSlide(args){
+        var value = args[0];
+        if (value != uiSliderValue) {
             module.timeSlotDate = dateRange[value];
             dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-            uiValue = value;
+            uiSliderValue = value;
             if (isUpdateOnSlide) {
                 updateChartFcn();
-                if(isMaster) {
-                    module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderUpdate", [uiValue]); // call slave
-                }
             }
         }
     }
 
-    function sliderStop(value){
+    function sliderStop(){
         if (!isUpdateOnSlide) {
             updateChartFcn();
-            if(isMaster) {
-                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop", [value]); // call slave
-            }
         }
     }
 
     // slider that steps by month over a date range, used for the timeline chart
-    function drawMonthSlider(isUpdateOnSlide) {
+    function drawMonthSlider() {
         var numDates = dateRange.length - 1;
         var startDate = new Date(dateRange[0]);
         var endDate = new Date(dateRange[numDates]);
@@ -225,26 +225,31 @@ var FREDChart = (function (module) {
                 var sliderYr = startDateYr + Math.floor((sliderMo + startDateMo)/12);
                 var sliderYrMo = (sliderMo + startDateMo) % 12;
                 if( sliderMo != uiValue ) {
-                    var date = new Date().setUTCFullYear(sliderYr, sliderYrMo);
-                    module.timeSlotDate = date;
-                    dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
-                    uiValue = sliderMo;
-                    if (isUpdateOnSlide) {
-                        updateChartFcn();
-                        module.rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
-                    }
+                    var args = [sliderYr, sliderYrMo];
+                    sliderMonthSlide(args);
+                    module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderMonthSlide", args); // call slave
                 }
             },
             stop: function () {
-                if (!isUpdateOnSlide) {
-                    updateChartFcn();
-                    module.rpcSession.call(FREDChart.rpcURLPrefix + "common.updateChart"); // call slave
-                }
+                sliderStop();
+                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop"); // call slave
             }
         });
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+    }
+
+    function sliderMonthSlide( args ){
+        var sliderYr = args[0];
+        var sliderYrMo = args[1];
+        var date = new Date().setUTCFullYear(sliderYr, sliderYrMo);
+        module.timeSlotDate = date;
+        dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+//                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
+        uiSliderValue = sliderMo;
+        if (isUpdateOnSlide) {
+            updateChartFcn();
+        }
     }
 
     module.getFormattedDatestring = function (dateString) {
@@ -467,6 +472,16 @@ var FREDChart = (function (module) {
         // return number.toFixed(2);
         return Math.floor(number) === number ? number : module.log10(number) > 4 ? number.toFixed() : number.toFixed(2);
     }
+
+
+    module.findFeatureById = function( features, featureId ){
+        for(var i=0; i<features.length; i++){
+            if(features[i].id === featureId){
+                return features[i];
+            }
+        }
+        return null;
+    };
 
     return module;
 }(FREDChart || {}));

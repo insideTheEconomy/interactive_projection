@@ -65,9 +65,9 @@ var FREDTimeline = (function (module) {
 
     var usDataId;
 
-    var isMaster;
+    var selectedCircle = null;
 
-    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures, isMasterArg) {
+    module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
         dataDefs = dataDefsArg;
         isMaster = isMasterArg;
         suppliedData = timelineDataArg;
@@ -105,23 +105,23 @@ var FREDTimeline = (function (module) {
         //then draw the shapes
         drawChart();
 
-        if(isMaster) {
-            // set up rollovers
-            circles.on("mouseover", function (d) {
-                resizePt(2);
-
-                var args = new Array(2);
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
-            }).on("mouseout", function (d) {
-                resizePt(1);
-
-                var args = new Array(1);
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
-            });
-        } else {
-            // register slider callback rpc's
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
-        }
+        //if(isMaster) {
+        //    // set up rollovers
+        //    circles.on("click", function (d) {
+        //        resizePt(2);
+        //
+        //        var args = new Array(2);
+        //        FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
+        //    }).on("mouseout", function (d) {
+        //        resizePt(1);
+        //
+        //        var args = new Array(1);
+        //        FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "timeline.resizePt", args); // call slave
+        //    });
+        //} else {
+        //    // register slider callback rpc's
+        //    FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "timeline.resizePt", resizePt);
+        //}
 
     };
 
@@ -382,6 +382,9 @@ var FREDTimeline = (function (module) {
         //annotFO.attr("x", annotX + padding)
         //    .attr("y", annotY - divRect.height - 2 * (annotationPointRadius + padding))
         //    .ttr("height", divRect.height);
+
+        // text hangs below annotation circle
+        var divRect = annotDiv[0][0].getBoundingClientRect();
         annotFO.attr("x", annotX + padding)
             .attr("y", annotY)
             .attr("height", divRect.height);

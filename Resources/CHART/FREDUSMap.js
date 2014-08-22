@@ -34,18 +34,15 @@ var FREDUSMap = (function (module) {
     var countyFeatureSelected = null;
     var countyPathSelected = null;
 
-    var isMaster;
-
-    module.init = function (selector, dataDefs, dataUSMapArg, isMasterArg) {
+    module.init = function (selector, dataDefs, dataUSMapArg) {
         dataUSMap = dataUSMapArg;
-        isMaster = isMasterArg;
 
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataUSMap.data[dataUSMap.data.length-1].title;
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
     };
 
     var initData = function () {
@@ -161,30 +158,35 @@ var FREDUSMap = (function (module) {
                 "opacity": unselectedCountyOpacity
             })
             // counties are clickable when state opacity is 0
-            .on("mouseover", function(countyFeature) {
+            .on("click", function (countyFeature) {
                     countyFeatureSelected = countyFeature;
                     countyPathSelected = this;
                     onSelectCounty();
 
-                    var args = new Array(countyFeatureSelected.id, countyPathSelected.getAttribute("id"));//TBT
-                            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", args);
-            }).attr("d", pathMap); //draw the paths
+                    var args = new Array(countyFeatureSelected.id,
+                                         countyPathSelected.getAttribute("id"));//TBT
+                    FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
+                                              "worldmap.onSelectStateSlave", args);
+                }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
         mapRegions.selectAll("path.state").data(mapStateFeatures).enter().append("path")
             .attr("class", "state")
-            .attr("id", function(d){ return "state"+d.id;})
+            .attr("id", function (d) {
+                      return "state" + d.id;
+                  })
             .attr("vector-effect", "non-scaling-stroke") // prevent boundaries from scaling
             .style({
-                "fill": stateFillColor,
-                "fill-opacity": stateFillOpacity
-            })
-            .on("mouseover", function(stateFeature){
-                onSelectState(stateFeature);
+                       "fill": stateFillColor,
+                       "fill-opacity": stateFillOpacity
+                   })
+            .on("click", function (stateFeature) {
+                    onSelectState(stateFeature);
 
-                var args = new Array(stateFeature.properties.name);//TBT
-                            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.onSelectStateSlave", args);
-            })
+                    var args = new Array(stateFeature.properties.name);//TBT
+                    FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
+                                              "worldmap.onSelectStateSlave", args);
+                })
             .attr("d", pathMap); //draw the paths
 
 
@@ -201,7 +203,7 @@ var FREDUSMap = (function (module) {
             FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "worldmap.resetZoom"); // call slave
         });
 
-        if (!isMaster) {
+        if (!FREDChart.isMaster) {
             // register reset callback rpc
             FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "worldmap.resetZoom", module.resetZoom);
             // register click callback rpc's
@@ -246,18 +248,9 @@ var FREDUSMap = (function (module) {
     };
 
     var onSelectCountySlave = function(args) {
-        countyFeatureSelected = getCountyFeature(args[0]); // args[0] is the feature Id
+        countyFeatureSelected = FREDChart.findFeatureById(mapCountyFeatures, args[0]); // args[0] is the feature Id
         countyPathSelected = ("path#county"+args[1]); // args[1] is the path id
         updateCountyDataLabel();
-    };
-
-    var getCountyFeature = function( featureId ){
-        for(var feature in mapCountyFeatures){
-            if(feature.id == featureId){
-                return feature;
-            }
-        }
-        return null;
     };
 
     var onSelectCounty = function () {
@@ -334,16 +327,7 @@ var FREDUSMap = (function (module) {
     };
 
     var onSelectStateSlave = function(args){
-        onSelectState(getStateFeature(args[0])); // args[0] is feature id
-    };
-
-    var getStateFeature = function( featureId ){
-        for(var feature in mapStateFeatures){
-            if(feature.id === featureId){
-                return feature;
-            }
-        }
-        return null;
+        onSelectState(FREDChart.findFeatureById(mapStateFeatures, args[0])); // args[0] is feature id
     };
 
     var onSelectState = function (feature) {
