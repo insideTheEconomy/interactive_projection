@@ -39,7 +39,7 @@ var FREDWorldMap = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.worldmapClass, getDateRange, initData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster);
     };// <-- End of init
 
     var initData = function () {
@@ -88,7 +88,8 @@ var FREDWorldMap = (function (module) {
         colorScale = FREDChart.drawLegend(/*chartSvg, */countryData, unselectedCountryOpacity);
 
         // get calculated width, height of chart area
-        var chartAreaStyles = window.getComputedStyle(document.getElementById(FREDChart.chartAreaId), null);
+        var chartAreaDiv = document.getElementById(FREDChart.chartAreaId);
+        var chartAreaStyles = window.getComputedStyle(chartAreaDiv, null);
         var width = chartAreaStyles.getPropertyValue("width").replace("px", "");
         var chartHeight = chartAreaStyles.getPropertyValue("height").replace("px", "");
 

@@ -89,7 +89,7 @@ var FREDTimeline = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, null, isMaster, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, null, isMaster);
 
     };
 

@@ -41,7 +41,7 @@ ds.setup().then(
 
         // Set up WAMP connection to router
         var connection = new autobahn.Connection({
-                                                     url: 'ws://localhost:9000/ws',
+                                                     url: 'ws://localhost:8080/ws',
                                                      realm: 'iproj'
                                                  }
         );
@@ -49,11 +49,28 @@ ds.setup().then(
         connection.onopen = function (rpcSession) {
             FREDChart.rpcSession = rpcSession;
             console.log("Connection Open");
+            var menu;
             var isMaster = $("body").attr("class").contains("master") &&
                 gui.App.argv[0] != "-slave";
+
+            // basic page configuration
+            d3.select("body").append("div").attr("id", FREDChart.wrapperDivId);
             if (isMaster) {
-                startMaster(defs);
+                menu = d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.menuDivId);
+            }
+            d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.chartDivId);
+            
+            if (isMaster) {
+                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "test",["OK","YES"]).then(
+                    function(arg){console.log("call worked", arg);},
+                    function(error){console.log("call failed", error);}
+                );
+                startMaster(menu, defs);
             } else {
+                FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "test",function(args){
+                    console.log(args[0],args[1]);
+                    return "CALLED";
+                });
                 startSlave(defs);
             }
         }
@@ -61,8 +78,7 @@ ds.setup().then(
         connection.open();
     });
 
-var startMaster = function (defs) {
-    d3.select("body").append("div").attr("id", FREDChart.wrapperDivId);
+var startMaster = function (menu, defs) {
 
     /*
      $("body").plainOverlay({
@@ -70,11 +86,6 @@ var startMaster = function (defs) {
      //progress: function() { return $('<img src="images/wait.gif"/>'); }
      });
      */
-
-    var menu = d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id",
-                                                                          FREDChart.menuDivId);
-
-    d3.select("#" + FREDChart.wrapperDivId).append("div").attr("id", FREDChart.chartDivId);
 
     var cat = menu.selectAll("div").data(Object.keys(defs)).enter().append("h3").text(function (d) {
         return d
@@ -96,7 +107,14 @@ var startMaster = function (defs) {
                 //and progressbar
                 console.log("modal show");
 
-                FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "selectChart", [i], d); // call slave first to register calls
+                var args = [i,i];
+                console.log("!args:" + (!args) + " || args instanceof Array:" +
+                            (args instanceof Array));
+                    var uri = FREDChart.rpcURLPrefix + "selectChart";
+
+
+
+                FREDChart.rpcSession.call(uri, args, d); // call slave first to register calls
 
                 selectChart(defs, d, i, true);
             })
@@ -140,8 +158,8 @@ var startSlave = function (defs) {
 }
 
 var selectChart = function (defs, d, chartIndex, isMaster) {
-    var chartType = d.chartType;
-    var regionType = d.regionType;
+    var chartType = d.chart_type;
+    var regionType = d.region_type;
     var category = d.category;
     var regionMetadata = ds.placeKey[regionType];
     switch (chartType) {
@@ -186,6 +204,6 @@ var selectChart = function (defs, d, chartIndex, isMaster) {
             break;
         default:
             $modal.dialog("close");
-            console.log("Error: unknown chart type" + def.chart_type);
+            console.log("Error: unknown chart type" + chartType);
     }
 }

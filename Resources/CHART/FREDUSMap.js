@@ -45,7 +45,7 @@ var FREDUSMap = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster, rpcSession);
+            dataDefs.chart_name, dataDefs.chart_text, srcFootnote, isMaster);
     };
 
     var initData = function () {

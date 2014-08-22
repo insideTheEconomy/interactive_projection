@@ -75,7 +75,7 @@ var FREDScatterPlot = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.scatterClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, false /* isMonthSlider */,
-            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isMaster, rpcSession);
+            regionsDataDefs.chart_name, regionsDataDefs.chart_text, null, isMaster);
     }
 
 

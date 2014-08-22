@@ -8,12 +8,13 @@ try {
 
 // Set up WAMP connection to router
 var connection = new autobahn.Connection({
-   url: 'ws://localhost:9000/ws',
+   url: 'ws://localhost:8080/ws',
    realm: 'iproj'}
 );
 
 // Set up 'onopen' handler
 connection.onopen = function (session) {
+	console.log("onopen");
    setInterval(function() {
       session.call('org.iproj.rpc_call').then(
          // RPC success callback
