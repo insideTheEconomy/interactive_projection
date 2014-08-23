@@ -73,6 +73,13 @@ body, #colorLegendBackground {
     float: right;
 }
 
+.slave #chart {
+    height: 100%;
+    width: 100%;
+    margin-right: 50px;
+    margin-top: 50px;
+}
+
 #accordion {
     height: 100%;
     width: 20%;

@@ -16,14 +16,30 @@ text {
 }
 
 #chartLegendWrapper {
+    position: relative;
     width: 100%;
     margin: 10px;
+}
+
+.slave .usmap #chartLegendWrapper {
+    left: 100px;
+}
+
+.slave .worldmap #chartLegendWrapper {
+    left: 150px;
 }
 
 #mapColorLegend{
     width: 150px;
     float: left;
     padding: 50px 10px 0px 40px;
+}
+
+.slave #mapColorLegend{
+    width: 150px;
+    float: left;
+    padding: 50px 10px 0px 40px;
+    margin-left: 50px;
 }
 
 #chartArea {
@@ -35,6 +51,11 @@ text {
     height: 650px;
 }
 
+.slave .usmap #chartArea {
+    width: 70%;
+    height: 800px;
+}
+
 .usmap #mapColorLegend{
 	/*margin-left: 50px;
 	margin-top: 50px;*/
@@ -42,6 +63,16 @@ text {
 
 .worldmap #chartArea {
     height: 650px;
+}
+
+.slave .worldmap #chartArea {
+    position: relative;
+    width: 75%;
+    height: 800px;
+}
+
+.slave .worldmap #mapColorLegend{
+    margin-left: 20px;
 }
 
 .worldmap #mapColorLegend{
@@ -53,11 +84,23 @@ text {
     height: 610px;
 }
 
+.slave .scatter #chartArea {
+    width: 50%;
+    height: 700px;
+    padding-bottom: 50px
+}
+
 .scatter #mapColorLegend{
 }
 
 .timeline #chartArea {
     height: 600px;
+}
+
+.slave .timeline #chartArea {
+    width: 80%;
+    height: 700px;
+    padding-bottom: 50px
 }
 
 .timeline #mapColorLegend{
