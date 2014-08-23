@@ -156,7 +156,7 @@ var FREDScatterPlot = (function (module) {
             .xvar(xDataIndex).xlab(xLab).xlim(xLim).xNA(NA[xDataIndex])
             .yvar(yDataIndex).ylab(yLab).ylim(yLim).yNA(NA[yDataIndex]).rotate_ylab(true)
             .isSize(isSize).szvar(szDataIndex).szlab(szLab).szlim(szLim).szNA(NA[szDataIndex]).szlegend(szlegend).nszticks(nszticks)
-            .minPointRadius(minPointRadius).maxPointRadius(maxPointRadius)
+            .minPointRadius(isSize ? minPointRadius : defaultSz).maxPointRadius(maxPointRadius)
             .height(chartHeight).width(chartWidth).margin(chartMargin)
             .axispos(axispos).titlepos(titlepos);
 
