@@ -69,7 +69,6 @@ var FREDTimeline = (function (module) {
 
     module.init = function (selector, dataDefsArg, timelineDataArg, nationFeatures) {
         dataDefs = dataDefsArg;
-        isMaster = isMasterArg;
         suppliedData = timelineDataArg;
         sampleData = suppliedData.line.data[0][0];
 
@@ -89,7 +88,7 @@ var FREDTimeline = (function (module) {
 
         FREDChart.initChart(selector, FREDChart.timelineClass, getDateRange, initPlotData, initializeChart,
             updateChart, true /*isUpdateOnSlide*/, true /* isMonthSlider */,
-            dataDefs.chart_name, dataDefs.chart_text, null, isMaster);
+            dataDefs.chart_name, dataDefs.chart_text, null);
 
     };
 
@@ -105,7 +104,7 @@ var FREDTimeline = (function (module) {
         //then draw the shapes
         drawChart();
 
-        //if(isMaster) {
+        //if(FREDChart.isMaster) {
         //    // set up rollovers
         //    circles.on("click", function (d) {
         //        resizePt(2);
@@ -126,7 +125,7 @@ var FREDTimeline = (function (module) {
     };
 
     var resizePt = function(multiplier){
-        if(!isMaster) multiplier = multiplier[0];
+        if(!FREDChart.isMaster) multiplier = multiplier[0];
         d3.select(this).attr("r", multiplier * getSize(this));
     }
 
@@ -392,7 +391,7 @@ var FREDTimeline = (function (module) {
 
     var fadeAnnotation = function(x){
         annotDiv.style("opacity", Math.abs(annotX-x) == 0 ? 1 : 1/Math.abs(annotX-x));
-    }
+    };
 
 
     // get union of all the dates from the data in string format
@@ -478,7 +477,7 @@ var FREDTimeline = (function (module) {
             }
 
         }
-        throw "date out of range, (" + date.toGMTString() + "), in interpolateDataValue.";
+        throw "date out of range, (" + date.valueOf() + " " + date.toGMTString() + "), in interpolateDataValue.";
     };
 
     var displayValue = function (date) {
