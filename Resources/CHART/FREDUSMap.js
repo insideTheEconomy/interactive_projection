@@ -165,9 +165,7 @@ var FREDUSMap = (function (module) {
 
                     var args = new Array(countyFeatureSelected.id);//TBT
                     FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
-                                              "usmap.onSelectCountySlave", args).then(
-                        FREDChart.rpcSession.log()
-                    );
+                                              "usmap.onSelectCountySlave", args);
                 }).attr("d", pathMap); //draw the paths
 
         // state outlines on top
@@ -186,9 +184,7 @@ var FREDUSMap = (function (module) {
 
                     var args = new Array(stateFeature.id);//TBT
                     FREDChart.rpcSession.call(FREDChart.rpcURLPrefix +
-                                              "usmap.onSelectStateSlave", args).then(
-                        FREDChart.rpcSession.log()
-                    );
+                                              "usmap.onSelectStateSlave", args);
                 })
             .attr("d", pathMap); //draw the paths
 
@@ -203,23 +199,15 @@ var FREDUSMap = (function (module) {
         chartSvg.on("click", function () {
             module.resetZoom
             // clicks outside of map land here and hide the popup if there is one
-            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "usmap.resetZoom").then(
-                FREDChart.rpcSession.log()
-            ); // call slave
+            FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "usmap.resetZoom"); // call slave
         });
 
         if (!FREDChart.isMaster) {
             // register reset callback rpc
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.resetZoom", module.resetZoom).then(
-                FREDChart.rpcSession.log()
-            );
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.resetZoom", module.resetZoom);
             // register click callback rpc's
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectCountySlave", onSelectCountySlave).then(
-                FREDChart.rpcSession.log()
-            );
-            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectStateSlave", onSelectStateSlave).then(
-                FREDChart.rpcSession.log()
-            );
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectCountySlave", onSelectCountySlave);
+            FREDChart.rpcSession.register(FREDChart.rpcURLPrefix + "usmap.onSelectStateSlave", onSelectStateSlave);
         }
     };
 
