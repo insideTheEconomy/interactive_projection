@@ -32,10 +32,7 @@ text {
 }
 
 .usmap #chartArea {
-    /*width: 950px;*/
     height: 650px;
-	/*left:-125px;*/
-	/*top: -10px;*/
 }
 
 .usmap #mapColorLegend{
@@ -44,7 +41,6 @@ text {
 }
 
 .worldmap #chartArea {
-    /*width: 850px;*/
     height: 650px;
 }
 
@@ -54,7 +50,6 @@ text {
 }
 
 .scatter #chartArea {
-    /*width: 920px;*/
     height: 610px;
 }
 
@@ -62,7 +57,6 @@ text {
 }
 
 .timeline #chartArea {
-    /*width: 920px;*/
     height: 600px;
 }
 
