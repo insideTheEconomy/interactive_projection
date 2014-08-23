@@ -119,6 +119,7 @@ var FREDChart = (function (module) {
         } else {
             // register slider rpc callbacks
             module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderSlide", sliderSlide);
+            module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderMonthSlide", sliderMonthSlide);
             module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderStop", sliderStop);
         }
 
@@ -212,7 +213,6 @@ var FREDChart = (function (module) {
         var totalMonths = 12 * (endDateYr - startDateYr + 1) - startDateMo - (11 - endDateMo);
         var curMo = 12 * (curDateYr - startDateYr + 1) - startDateMo - (11 - curDateMo);
 
-        var uiValue = null;
         var min = 0;
         var max = totalMonths-1;
         $("#" + dateSliderId).slider({
@@ -224,8 +224,8 @@ var FREDChart = (function (module) {
                 var sliderMo = ui.value;
                 var sliderYr = startDateYr + Math.floor((sliderMo + startDateMo)/12);
                 var sliderYrMo = (sliderMo + startDateMo) % 12;
-                if( sliderMo != uiValue ) {
-                    var args = [sliderYr, sliderYrMo];
+                if( sliderMo != uiSliderValue ) {
+                    var args = [sliderMo, sliderYr, sliderYrMo];
                     sliderMonthSlide(args);
                     module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderMonthSlide", args); // call slave
                 }
@@ -240,8 +240,9 @@ var FREDChart = (function (module) {
     }
 
     function sliderMonthSlide( args ){
-        var sliderYr = args[0];
-        var sliderYrMo = args[1];
+        var sliderMo = args[0];
+        var sliderYr = args[1];
+        var sliderYrMo = args[2];
         var date = new Date().setUTCFullYear(sliderYr, sliderYrMo);
         module.timeSlotDate = date;
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
