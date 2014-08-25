@@ -1,0 +1,5 @@
+{
+"url" : "ws://tpserver.local:8080/ws",
+"kiosk" : true,
+"hideMouse" : true
+}
