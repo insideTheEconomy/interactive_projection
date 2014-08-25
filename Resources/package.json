@@ -9,10 +9,10 @@
   ],
   "window": {
     "title": "Interactive Projection",
-    "toolbar": true,
-    "frame": true,
-    "width": 1200,
-    "height": 800
+    "toolbar": false,
+    "frame": false,
+    "width": 1920,
+    "height": 1080
   },
   "webkit": {
     "plugin": true,
