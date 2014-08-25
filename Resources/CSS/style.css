@@ -43,6 +43,9 @@
   -ms-user-select: none;
   user-select: none;
 }
+
+
+
 body {
   overflow: hidden;
   width: 1920px;
@@ -51,6 +54,12 @@ body {
   background-color: black;
   color: white;
 }
+
+body.slave{
+	width: 1280px;
+	height: 800px;
+}
+
 #accordion {
   height: 100%;
   width: 23%;
