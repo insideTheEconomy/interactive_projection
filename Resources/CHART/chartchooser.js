@@ -14,8 +14,8 @@ try {
     window.iprojConfig = require("./iproj.json")
 }
 console.log("config loaded", window.iprojConfig);
-path = window.iprojConfig.dbPath;
-
+var path = window.iprojConfig.dbPath;
+var autobahn_url = window.iprojConfig.autobahn_server;
 var gui = require('nw.gui');
 
 var ds = new Datasource(path);
@@ -41,7 +41,7 @@ ds.setup().then(
 
         // Set up WAMP connection to router
         var connection = new autobahn.Connection({
-                                                     url: 'ws://localhost:8080/ws',
+                                                     url: 'ws://'+autobahn_url+':8080/ws',
                                                      realm: 'iproj'
                                                  }
         );

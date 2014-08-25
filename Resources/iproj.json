@@ -1,4 +1,5 @@
 {
-	"dbPath" : "/Users/scott/Projects/projection.db"
+	"dbPath" : "/Users/scott/Projects/projection.db",
+	"autobahn_server" : "localhost"
 
 }
