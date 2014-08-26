@@ -23,23 +23,34 @@ text {
 
 .slave .usmap #chartLegendWrapper {
     left: 100px;
+	top: -50px;
 }
 
 .slave .worldmap #chartLegendWrapper {
-    left: 150px;
+   	left: 85px;
+	top: -75px;
+}
+
+.slave .timeline #chartLegendWrapper {
+	top: -55px;
+	left: 75px;
+}
+
+.slave .scatter #chartLegendWrapper {
+	top:-15px;
+	left:50px;
 }
 
 #mapColorLegend{
     width: 150px;
     float: left;
-    padding: 50px 10px 0px 40px;
+    padding: 50px 10px 0px 00px;
 }
 
 .slave #mapColorLegend{
     width: 150px;
     float: left;
-    padding: 50px 10px 0px 40px;
-    margin-left: 50px;
+    padding: 50px 0px 0px 0px;
 }
 
 #chartArea {
@@ -72,7 +83,7 @@ text {
 }
 
 .slave .worldmap #mapColorLegend{
-    margin-left: 20px;
+    margin-left: 0px;
 }
 
 .worldmap #mapColorLegend{
@@ -85,9 +96,9 @@ text {
 }
 
 .slave .scatter #chartArea {
-    width: 50%;
+    width: 70%;
     height: 700px;
-    padding-bottom: 50px
+    /*padding-bottom: 50px*/
 }
 
 .scatter #mapColorLegend{
@@ -99,8 +110,8 @@ text {
 
 .slave .timeline #chartArea {
     width: 80%;
-    height: 700px;
-    padding-bottom: 50px
+	height: 600px;
+	/*padding-bottom: 75px;*/
 }
 
 .timeline #mapColorLegend{
@@ -119,6 +130,25 @@ text {
 	color: #A4DBE8;
 }
 
+.slave #chartTitle {
+	margin-top:-30px;
+	margin-bottom:15px;
+}
+
+.slave .scatter #chartTitle {
+	margin-left:75px;
+}
+
+.slave .worldmap #chartTitle {
+	margin-left:40px;
+}
+
+.slave .usmap #chartTitle {
+	margin-top:-25px;
+	margin-bottom:50px;
+	margin-left:70px;
+}
+
 #chartDescription {
     /*position: absolute;
 	float: left;*/
@@ -128,7 +158,13 @@ text {
 	font-weight: normal;
 	font-family: sub-title;
     margin-left: 150px;
+	margin-top: 40px;
 	/*top: 730px;*/
+}
+
+.slave .timeline #chartDescription {
+	margin-top: -55px;
+	margin-left: 185px;
 }
 
 #dateLabel {
@@ -217,3 +253,11 @@ text {
 }
 
 /* ------------ end map styles -------------*/
+
+
+
+.slave resetImage{
+	height: 0;
+	width: 0;
+}
+
