@@ -103,7 +103,7 @@ var startMaster = function (menu, defs) {
                 console.log(d.chart_type + " " + d.category + " " + i);
 
                 //create a modal dialog using jqueryUI
-                $modal.dialog();
+                $modal.dialog("open");
                 //and progressbar
                 console.log("modal show");
 

@@ -1,5 +1,5 @@
 interactive_projection.nResources/.idea
-
+Resources/node_modules/*
 Resources/.idea/*
 
 *.nw

@@ -44,17 +44,17 @@
 	<div id="modal">
 		<img src="IMG/LoadingTransparent.gif" width="250" height="150" alt="LoadingTransparent">
 	</div>
+	
 	<script>
 		var $modal;
 		$(function(){
 			$modal = $("#modal");
 			$modal.dialog({
-				title: "Loading...", modal:false, resizeable: false, draggable: false,
+				title: "Loading...", modal:true, resizeable: false, draggable: false, autoOpen:false,
 				open: function(event, ui) {
 					$(".ui-dialog-titlebar-close").hide();
 				}
 			});
-			$modal.dialog("close");
 		})
 	</script>
 	
