@@ -42,17 +42,22 @@
 	<span style="font-family:'medium'; color:white; position: absolute; top: 110px; left: 80px; font-size: 24px;">Select a data series to explore.</span>
 	<div style="position: absolute;	width: 1350px; height: 950px; background-color: rgba(0,0,0,0.6); left: 525px; top: 25px;"></div>
 	<div id="modal">
-		<img src="IMG/LoadingTransparent.gif" width="250" height="150" alt="LoadingTransparent">
+		<img class="loading" src="IMG/LoadingTransparent.gif" width="250" height="150" alt="LoadingTransparent">
 	</div>
 	
 	<script>
+	
+	
 		var $modal;
 		$(function(){
+			
+			
 			$modal = $("#modal");
 			$modal.dialog({
 				title: "Loading...", modal:true, resizeable: false, draggable: false, autoOpen:false,
 				open: function(event, ui) {
 					$(".ui-dialog-titlebar-close").hide();
+					$("#modal .loading").attr("src", "IMG/LoadingTransparent.gif");
 				}
 			});
 		})

@@ -1,4 +1,4 @@
-Resources/node_modules/autobahn/*
+*/node_modules/*
 Resources/.idea/*
 
 *.nw
