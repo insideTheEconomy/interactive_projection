@@ -92,7 +92,9 @@ var FREDChart = (function (module) {
         module.chartAreaDiv = replaceElement(chartLegendWrapper, "div", module.chartAreaId, chartClass);
         appendOrReclassElement(mainElement, "div", chartDescriptionId, null).text(chartText);
         if(module.isMaster){
+			$("#dateSlider").slider("destroy");
             appendOrReclassElement(mainElement, "div", dateSliderId, chartClass);
+			
         }
         var footnoteDiv = appendOrReclassElement(mainElement, "div", sourceFootnoteId, chartClass)
             .attr("id",sourceFootnoteId);;
@@ -108,9 +110,9 @@ var FREDChart = (function (module) {
         module.timeSlotDate = dateRange[dateRange.length > 2 ? Math.round(dateRange.length / 2) : 0]; // set initial date, more or less to middle
 
         initializeChartFcn(chartClass); // draw plot
-
         // only display slider on master screen
         if(module.isMaster) {
+
             if (isMonthSlider) {
                 drawMonthSlider();
             } else {
@@ -153,6 +155,7 @@ var FREDChart = (function (module) {
     }
 
     function drawSlider() {
+		console.log("CALL DRAWSLIDER");
         var uiValue = null;
         var min = 0;
         var max = dateRange.length - 1;
