@@ -1,5 +1,5 @@
 {
-  "main": "interactiveProjectionsSlave.html",
+  "main": "interactiveProjectionsMaster.html",
   "name": "interActiveProjection",
   "description": "FRED Data Display",
   "version": "0.1.0",
@@ -11,8 +11,8 @@
     "title": "Interactive Projection",
     "toolbar": false,
     "frame": false,
-    "width": 1280,
-    "height": 800
+    "width": 1920,
+    "height": 1080
   },
   "webkit": {
     "plugin": true,
