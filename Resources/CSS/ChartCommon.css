@@ -64,7 +64,7 @@ text {
 
 .slave .usmap #chartArea {
     width: 70%;
-    height: 800px;
+    height: 575px;
 }
 
 .usmap #mapColorLegend{
@@ -79,7 +79,8 @@ text {
 .slave .worldmap #chartArea {
     position: relative;
     width: 75%;
-    height: 800px;
+    height: 540px;
+	margin-top:60px;
 }
 
 .slave .worldmap #mapColorLegend{
@@ -97,7 +98,8 @@ text {
 
 .slave .scatter #chartArea {
     width: 70%;
-    height: 700px;
+    height: 550px;
+	margin-top:25px;
     /*padding-bottom: 50px*/
 }
 
@@ -162,23 +164,54 @@ text {
 	/*top: 730px;*/
 }
 
+.slave .scatter #chartDescription {
+	margin-top:-0px;
+}
+
 .slave .timeline #chartDescription {
-	margin-top: -55px;
+	margin-top: -45px;
 	margin-left: 185px;
 }
 
+.slave .usmap #chartDescription {
+	margin-top:-50px;
+}
+
+.slave .worldmap #chartDescription {
+	margin-top:-50px;
+}
+
 #dateLabel {
-    /*position: absolute;*/
+    position: absolute;
 	width: 100%;
 	float: right;
-	text-align: right;
+	text-align: left;
 	vertical-align: baseline;
 	font-size: 25px;
 	font-weight: normal;
 	font-family: medium;
-	/*margin-top: 35px;*/
-    margin-right: 150px;
 }
+
+.usmap #dateLabel {
+	left:100px;
+	top:600px;
+}
+
+.timeline #dateLabel {
+	left:880px;
+	top:25px;
+}
+
+.worldmap #dateLabel {
+	left:65px;
+	top:590px;
+}
+
+.scatter #dateLabel {
+	left:1020px;
+	top:25px;
+}
+
 
 #dateSlider {
     margin: 20px auto; /* center */
