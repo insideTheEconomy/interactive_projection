@@ -51,6 +51,8 @@ var FREDWorldMap = (function (module) {
 
         mapCountries = dataWorldMap.map[0];
         mapCountryFeatures = mapCountries.features;
+
+        countryDataLabel = null;
     }
 
     var updateTimeslotValues = function () {
