@@ -322,7 +322,7 @@ var FREDUSMap = (function (module) {
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
-            return +val;
+            return FREDChart.formatNumber(val);
     };
 
     var onSelectStateSlave = function(args){

@@ -330,9 +330,9 @@ var FREDChart = (function (module) {
         });
 
         // set labels for the legend color bar
-        var legendLabels = [ "< " + domainElems[1].toFixed(1) ]; // initial element
+        var legendLabels = [ "< " + FREDChart.formatNumber(domainElems[1]) ]; // initial element
         for (var i = 1; i < domainElems.length; i++) {
-            legendLabels[i] = +domainElems[i].toFixed(1) + "+";
+            legendLabels[i] = FREDChart.formatNumber(domainElems[i]) + "+";
         }
 
         // reverse order so we draw bar from highest value (top) first to lowest (bottom) last
@@ -474,7 +474,10 @@ var FREDChart = (function (module) {
 
     module.formatNumber = function(number){
         // return number.toFixed(2);
-        return Math.floor(number) === number ? number : module.log10(number) > 4 ? number.toFixed() : number.toFixed(2);
+        var log10Num = module.log10(number);
+        var formattedNumber = Math.floor(number) === number ? number : log10Num > 2 ? number.toFixed() : log10Num ? number.toFixed(2) : number.toFixed(1);
+        formattedNumber = formattedNumber.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ","); // add commas
+        return formattedNumber;
     }
 
 
