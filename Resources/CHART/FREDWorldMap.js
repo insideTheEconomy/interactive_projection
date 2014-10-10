@@ -300,7 +300,8 @@ var FREDWorldMap = (function (module) {
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
-            return +val;
+			return FREDChart.formatNumber(+val);
+          //  return +val;
     };
 
     return module;

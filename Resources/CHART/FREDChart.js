@@ -67,10 +67,15 @@ var FREDChart = (function (module) {
     var uiSliderValue;
     var isUpdateOnSlide;
 
+	var timeOut;
+	var idleTime = 30;
+	var userIdle = 0;
+	var isIdle = true;
+
     module.initChart = function (parentSelector, chartClass,
                                  getDateRangeFcn, initPlotDataFcn, initializeChartFcn, updateChartFcnArg,
                                  isUpdateOnSlideArg, isMonthSlider, chartTitle, chartText, sourceFootnote) {
-
+		
         updateChartFcn = updateChartFcnArg;
         isUpdateOnSlide = isUpdateOnSlideArg;
 
@@ -123,6 +128,8 @@ var FREDChart = (function (module) {
             module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderSlide", sliderSlide);
             module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderMonthSlide", sliderMonthSlide);
             module.rpcSession.register(FREDChart.rpcURLPrefix + "common.sliderStop", sliderStop);
+
+			resetTimer();
         }
 
         // draw data
@@ -130,6 +137,37 @@ var FREDChart = (function (module) {
 
         d3.select("body").style("cursor", "auto");
     };
+
+
+
+	
+	function resetTimer(){
+		console.log("Timer Reset");
+		userIdle = 0;
+		isIdle = false;
+		idleTimeout();
+		clearInterval(timeOut);
+		timeOut = setInterval(checkIdle, 1000);
+	}
+	
+	function checkIdle(){
+	
+		userIdle += 1;
+		//console.log("TICK", userIdle);
+		if(userIdle == idleTime){
+			console.log("User is Idle");
+			clearInterval(timeOut);
+			isIdle = true;
+			idleTimeout();
+		}
+		
+	}
+	
+	function idleTimeout(){
+
+		$("#attract").toggleClass("inactive", !isIdle);
+	}
+	
 
     function appendOrReclassElement(parentElem, element, id, elemClass) {
         var elemRef = parentElem.select(element + "#" + id);
@@ -153,12 +191,16 @@ var FREDChart = (function (module) {
         }
         return elemRef;
     }
-
+	var slideScale;
+	
     function drawSlider() {
 		console.log("CALL DRAWSLIDER");
         var uiValue = null;
         var min = 0;
         var max = dateRange.length - 1;
+
+		
+
         var fullRange = max - min;
         var tickInterval = Math.max(1, Math.floor(fullRange / (numSliderTicks - 1)));
         $("#" + dateSliderId).slider({
@@ -167,9 +209,12 @@ var FREDChart = (function (module) {
             value: dateRange.indexOf(module.timeSlotDate), // start at current date
             animate: "fast", // animate sliding
             tickLabels: getSliderLabels(tickInterval),
+			start: function(event,ui){
+				sliderStart(ui);
+			},
             slide: function (event, ui) {
                 var args = [Math.round(ui.value)];
-                sliderSlide(args);
+                sliderSlide(args, ui);
                 module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderSlide", args); // call slave
             },
             stop: function (event, ui) {
@@ -178,14 +223,29 @@ var FREDChart = (function (module) {
             }
         });
 
+		//define slider range from slider position
+		var sliderOff = $("#" + dateSliderId).offset();
+		var sliderW = $("#" + dateSliderId).width();
+
+		slideScale = d3.scale.linear()
+			.range([sliderOff.left,sliderOff.left+sliderW])
+			.domain([min,max])
+			
+		
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //        dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
     }
-
-    function sliderSlide(args){
+	
+	
+	
+    function sliderSlide(args, ui){
+		
         var value = args[0];
+		var timeSlotDate;
+		
         if (value != uiSliderValue) {
-            module.timeSlotDate = dateRange[value];
+            timeSlotDate = dateRange[value];
+			module.timeSlotDate = timeSlotDate;
             dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //                    dateSliderLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
             uiSliderValue = value;
@@ -193,12 +253,32 @@ var FREDChart = (function (module) {
                 updateChartFcn();
             }
         }
+		
+		var aTime = timeSlotDate.split("-");
+		var date = [aTime[1],aTime[2],aTime[0].slice(2)].join("/");
+		$(".tooltip").toggleClass("rect",true).css({
+			"left": slideScale(ui.value),
+			"top": $(ui.handle).offset().top
+		}).html( date  )
     }
 
     function sliderStop(){
+		if(!module.isMaster){ resetTimer() };
+		$(".tooltip").animate({
+			opacity: 0
+		})
         if (!isUpdateOnSlide) {
             updateChartFcn();
         }
+    }
+
+	function sliderStart(ui){
+		$(".tooltip").css({
+			"left": slideScale(ui.value),
+			"top": $(ui.handle).offset().top
+		}).animate({
+			opacity: 1
+		})
     }
 
     // slider that steps by month over a date range, used for the timeline chart
@@ -234,9 +314,12 @@ var FREDChart = (function (module) {
                 }
             },
             stop: function () {
-                sliderStop();
-                module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop"); // call slave
-            }
+                sliderStop();	
+				module.rpcSession.call(FREDChart.rpcURLPrefix + "common.sliderStop"); // call slave
+            },
+			start: function (ev, ui) {
+				sliderStart(ui);
+			}
         });
         dateLabelDiv.html(module.getFormattedDatestring(module.timeSlotDate));
 //        dateLabelSliderDiv.html(module.getFormattedDatestring(module.timeSlotDate));

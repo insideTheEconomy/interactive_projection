@@ -1,5 +1,5 @@
 {
-  "main": "interactiveProjectionsMaster.html",
+  "main": "interactiveProjectionsSlave.html",
   "name": "interActiveProjection",
   "description": "FRED Data Display",
   "version": "0.1.0",

@@ -19,7 +19,7 @@ var autobahn_url = window.iprojConfig.autobahn_server;
 var gui = require('nw.gui');
 
 var ds = new Datasource(path);
-
+var connection;
 if (!('contains' in String.prototype)) {
     String.prototype.contains = function (str, startIndex) {
         return -1 !== String.prototype.indexOf.call(this, str, startIndex);
@@ -40,7 +40,7 @@ ds.setup().then(
         }
 
         // Set up WAMP connection to router
-        var connection = new autobahn.Connection({
+        connection = new autobahn.Connection({
                                                      url: 'ws://'+autobahn_url+':8080/ws',
                                                      realm: 'iproj'
                                                  }

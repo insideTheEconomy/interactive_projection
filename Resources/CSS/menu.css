@@ -61,6 +61,10 @@ body {
     color: white;
 }
 
+body.slave{
+	 background-image: url('images/BG_slave.jpg') !important;
+}
+
 body, #colorLegendBackground {
     background-color: lightskyblue;
 }
