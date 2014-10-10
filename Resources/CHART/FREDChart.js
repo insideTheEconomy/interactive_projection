@@ -266,11 +266,11 @@ var FREDChart = (function (module) {
 
     var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
     module.getFormattedDate = function (date) {
-        return months[date.getUTCMonth()] + " " + date.getUTCFullYear();
+        return months[date.getUTCMonth()] + "<br/>" + date.getUTCFullYear();
     };
 
     module.getFullFormattedDate = function (date) {
-        return months[date.getUTCMonth()] + " " + date.getUTCDate() + ", " + date.getUTCFullYear();
+        return months[date.getUTCMonth()] + "<br/>" + date.getUTCDate() + ", " + date.getUTCFullYear();
     };
 
     var getSliderLabels = function (tickInterval) {
