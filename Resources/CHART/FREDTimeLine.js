@@ -362,19 +362,20 @@ var FREDTimeline = (function (module) {
             var svgRect = chartSvg[0][0].getBoundingClientRect();
             isAnnotationInitialized = true;
             annotFO = chartSvg.append("svg:foreignObject")
-                .attr("width", .25 * svgRect.width)
+                //.attr("width", .25 * svgRect.width)
+				.attr("width", 280)
                 .attr("height", svgRect.height) // temporary height limit
                 .attr("class", "annotationLabelFO");
             annotDiv = annotFO.append("xhtml:div")
                 .attr("class", "timelineAnnotationLabel");
-            annotP = annotDiv.append("xhtml:p")
-                .attr("class", "timelineAnnotationLabel");
+            /*annotP = annotDiv.append("xhtml:span")
+                .attr("class", "timelineAnnotationLabel");*/
         }
 
-        annotP.html("<i>Milestone: "
-            + FREDChart.getFullFormattedDate(annotation.date) + "</i>"
-            + "<br/><br/><b>" + annotation.title + "</b>"
-            + "<br/><br/>" + annotation.text + "");
+        annotDiv.html("<p>Milestone: "
+            + FREDChart.getFullFormattedDate(annotation.date) + "</p>"
+            + "<h1>" + annotation.title + "</h1>"
+            + "<p>" + annotation.text + "</p>");
 
         //// text positioned above annotation circle
         //var divRect = annotDiv[0][0].getBoundingClientRect();

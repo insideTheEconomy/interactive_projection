@@ -1,10 +1,41 @@
+@font-face {
+  font-family: 'label';
+  src: url('../FONTS/GothamRnd-Book.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'bold';
+  src: url('../FONTS/GothamRnd-Bold.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'sub-title';
+  src: url('../FONTS/gothamrnd-light-webfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'medium';
+  src: url('../FONTS/GothamRnd-Medium.otf') format('opentype');
+  font-weight: normal;
+  font-style: normal;
+}
+@font-face {
+  font-family: 'title';
+  src: url('../FONTS/linotype_-_universltpro-ultracondensed-webfont.svg#univers_lt_pro59ultraCn') format('svg');
+  font-weight: normal;
+  font-style: normal;
+}
+
 /*------------ common styles ------------*/
 body {
     font-family: sans-serif;
 }
 
 text {
-    font-family: sans-serif;
+    font-family: "sub-title";
     font-size: 11pt;
 }
 
@@ -22,12 +53,12 @@ text {
 }
 
 .slave .usmap #chartLegendWrapper {
-    left: 100px;
+    left: 135px;
 	top: -50px;
 }
 
 .slave .worldmap #chartLegendWrapper {
-   	left: 85px;
+   	left: 170px;
 	top: -75px;
 }
 
@@ -142,13 +173,13 @@ text {
 }
 
 .slave .worldmap #chartTitle {
-	margin-left:40px;
+	margin-left:200px;
 }
 
 .slave .usmap #chartTitle {
 	margin-top:-25px;
 	margin-bottom:50px;
-	margin-left:70px;
+	margin-left:150px;
 }
 
 #chartDescription {
@@ -166,19 +197,26 @@ text {
 
 .slave .scatter #chartDescription {
 	margin-top:-0px;
+	margin-left:325px;
+	width:60%;
 }
 
 .slave .timeline #chartDescription {
 	margin-top: -45px;
-	margin-left: 185px;
+	margin-left: 350px;
+	width:60%;
 }
 
 .slave .usmap #chartDescription {
 	margin-top:-50px;
+	width:60%;
+	margin-left:410px;
 }
 
 .slave .worldmap #chartDescription {
 	margin-top:-50px;
+	width:60%;
+	margin-left:475px;
 }
 
 #dateLabel {
@@ -193,25 +231,52 @@ text {
 }
 
 .usmap #dateLabel {
-	left:100px;
-	top:600px;
+	left:15px;
+	top:650px;
+	font-size:32px;
 }
 
 .timeline #dateLabel {
-	left:880px;
-	top:25px;
+	left:15px;
+	top:650px;
+	font-size:32px;
 }
 
 .worldmap #dateLabel {
-	left:65px;
-	top:590px;
+	left:15px;
+	top:650px;
+	font-size:32px;
 }
 
 .scatter #dateLabel {
-	left:1020px;
-	top:25px;
+	left:15px;
+	top:650px;
+	font-size:32px;
 }
 
+.slave .timeline #dateLabel {
+	left:90px;
+	top:640px;
+	font-size:42px;
+}
+
+.slave .usmap #dateLabel {
+	left:140px;
+	top:650px;
+	font-size:42px;
+}
+
+.slave .worldmap #dateLabel {
+	font-size:42px;
+	left:170px;
+	top:625px;
+}
+
+.slave .scatter #dateLabel {
+	left:120px;
+	top:635px;
+	font-size:42px;
+}
 
 #dateSlider {
     margin: 20px auto; /* center */
@@ -264,6 +329,14 @@ text {
 	position: absolute;*/
 	width: 80%;
 	text-align: center;
+}
+
+.slave .usmap #sourceFootnote {
+	margin-left:275px;
+}
+
+.slave .worldmap #sourceFootnote {
+	margin-left:230px;
 }
 
 #colorLegendBlock{ /* SVG rects for the color blocks */

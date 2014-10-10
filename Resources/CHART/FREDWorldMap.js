@@ -51,6 +51,8 @@ var FREDWorldMap = (function (module) {
 
         mapCountries = dataWorldMap.map[0];
         mapCountryFeatures = mapCountries.features;
+
+        countryDataLabel = null;
     }
 
     var updateTimeslotValues = function () {
@@ -300,8 +302,8 @@ var FREDWorldMap = (function (module) {
         if (isNaN(val))
             return FREDChart.noValueLabel;
         else
-			return FREDChart.formatNumber(+val);
-          //  return +val;
+            return FREDChart.formatNumber(val);
+
     };
 
     return module;

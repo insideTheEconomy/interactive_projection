@@ -1,21 +1,6 @@
 
 /* ------------ map styles -------------*/
 
-text.resetBtn {
-    font-size: 15px;
-    font-family: Arial, sans-serif;
-    font-style: normal;
-    fill: #808080;
-    pointer-events: none;
-}
-
-rect.resetBtn {
-    fill: #E0E0E0;
-    padding: 8px;
-    border: 1px;
-    border-radius: 3px;
-    /*border-style: outset;*/
-}
 
 path.county {
     stroke: white;
@@ -34,7 +19,9 @@ path.state {
 }
 
 rect.countyDataLabel, rect.countryDataLabel {
-    fill: #FFFFE0;
+    fill: rgba(0,0,0,0.7);
+	stroke: white;
+	stroke-width:2px;
     padding: 2px;
     border: 1px;
     border-radius: 3px;
@@ -44,7 +31,7 @@ rect.countyDataLabel, rect.countryDataLabel {
 text.countyDataLabel, text.countryDataLabel {
     text-align: center;
     font-size: 12px;
-    fill: #000000;
+    fill: white;
 }
 
 #countyDataLabelName, #countryDataLabelName {
@@ -75,6 +62,6 @@ text.countyDataLabel, text.countryDataLabel {
 }
 
 /* reset button for US map */
-image.resetImage {
-    stroke: white;
+image path.resetBtn {
+    fill: red;
 }

@@ -730,8 +730,8 @@ var scatterplot = function () {
         popupTickH.attr("x2", +(-r));
         popupTickV.attr("y1", +r);
         popupTickV.attr("y2", +(popupTickLen + r));
-        popupLblH.text(+yVal);
-        popupLblV.text(+xVal);
+        popupLblH.text(FREDChart.formatNumber(yVal));
+        popupLblV.text(FREDChart.formatNumber(xVal));
 
         // get text centered at end of ticks
         var lblHBox = popupLblH.node().getBBox();

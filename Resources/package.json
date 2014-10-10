@@ -11,12 +11,12 @@
     "title": "Interactive Projection",
     "toolbar": false,
     "frame": false,
-    "width": 1920,
+    "width": 1900,
     "height": 1080
   },
   "webkit": {
     "plugin": true,
-    "java": true
+    "java": true	
   },
   "devDependencies": {
     "grunt-node-webkit-builder": "^0.1.21",
