@@ -40,6 +40,8 @@ var FREDUSMap = (function (module) {
         // get the source footnote text, last entry is most recent
         var srcFootnote = dataUSMap.data[dataUSMap.data.length-1].title;
 
+        countyDataLabel = null;
+
         FREDChart.initChart(selector, FREDChart.usmapClass, getDateRange, initData, initializeChart,
             updateChart, false /*isUpdateOnSlide*/, false /* isMonthSlider */,
             dataDefs.chart_name, dataDefs.chart_text, srcFootnote);
@@ -197,7 +199,7 @@ var FREDUSMap = (function (module) {
             .attr("height", "100%");
 
         chartSvg.on("click", function () {
-            module.resetZoom
+            module.resetZoom();
             // clicks outside of map land here and hide the popup if there is one
             FREDChart.rpcSession.call(FREDChart.rpcURLPrefix + "usmap.resetZoom"); // call slave
         });
@@ -370,11 +372,12 @@ var FREDUSMap = (function (module) {
     /** reset button for unzooming maps **/
     var initializeResetButton = function() {
 
-        var resetGroup = chartSvg.append("g").attr("class", "resetImage");
+        var resetGroup = chartSvg.append("g").attr("class", FREDChart.resetBtnClass);
         resetGroup.append("image")
-            .attr("class", "resetImage")
-            .attr("xlink:href", "CSS/images/resetZoom.svg")
+            .attr("class", FREDChart.resetBtnClass)
+            .attr("xlink:href", "IMG/resetZoom.svg")
             .attr({width: "90px", height: "90px"})
+            .attr("visibility", "hidden") // initially hidden
             .on("click", function () {
                 module.resetZoom();
             });

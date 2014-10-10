@@ -1,21 +1,6 @@
 
 /* ------------ map styles -------------*/
 
-text.resetBtn {
-    font-size: 15px;
-    font-family: Arial, sans-serif;
-    font-style: normal;
-    fill: #808080;
-    pointer-events: none;
-}
-
-rect.resetBtn {
-    fill: #E0E0E0;
-    padding: 8px;
-    border: 1px;
-    border-radius: 3px;
-    /*border-style: outset;*/
-}
 
 path.county {
     stroke: white;
@@ -77,6 +62,6 @@ text.countyDataLabel, text.countryDataLabel {
 }
 
 /* reset button for US map */
-image.resetImage {
-    stroke: white;
+image path.resetBtn {
+    fill: red;
 }
