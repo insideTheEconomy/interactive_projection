@@ -270,7 +270,9 @@ var FREDChart = (function (module) {
     };
 
     module.getFullFormattedDate = function (date) {
-        return months[date.getUTCMonth()] + "<br/>" + date.getUTCDate() + ", " + date.getUTCFullYear();
+       // return months[date.getUTCMonth()] + "<br/>" + date.getUTCDate() + ", " + date.getUTCFullYear();
+        return months[date.getUTCMonth()] + " " + date.getUTCDate() + ", " + date.getUTCFullYear();
+
     };
 
     var getSliderLabels = function (tickInterval) {

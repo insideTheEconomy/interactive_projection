@@ -1,3 +1,11 @@
+
+@font-face {
+  font-family: 'sub-title';
+  src: url('../FONTS/gothamrnd-light-webfont.ttf') format('truetype');
+  font-weight: normal;
+  font-style: normal;
+	color: white;
+}
 .timeline .data-line {
     stroke: #A4DBE8;
     stroke-width: 1.5;
@@ -29,28 +37,45 @@
 }
 
 .timeline text.valueLabel {
-    font-family: Arial;
+    font-family: sub-title;
     font-size: 12pt;
-    fill: black;
+    fill: white;
     text-anchor: end;
 }
 
 .timeline rect.valueLabel {
-    fill: lightblue;
+    fill: rgba(0,0,0,0.7);
+	stroke: white;
+	stroke-width: 2px;
 }
 
-p.timelineAnnotationLabel {
-    font-family: Arial;
+span.timelineAnnotationLabel {
+    font-family: sub-title;
     font-size: 10pt !important;
-    color: black;
+    
     text-anchor: start;
-    padding: 10px;
+    
     opacity: 1;
 }
+
+div.timelineAnnotationLabel  p{
+	font-size: 10pt !important;
+	color: white;
+	opacity: 1;
+
+}
+
+div.timelineAnnotationLabel  h1{
+	font-family: label;
+		font-size: 1.2em;
+}
+
 
 div.timelineAnnotationLabel {
-    background-color: lightblue;
-    border: 1px;
-    color: grey;
-    opacity: 1;
+	padding: 10px;
+	margin:0;
+	color: white;
+    background-color: rgba(0,0,0,0.7);
+    border: 2px solid white;
+    border-radius:.25em;
 }
