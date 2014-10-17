@@ -12,7 +12,7 @@ formatAxis = function(d) {
         ndig = 0;
     }
     ndig = Math.abs(ndig);
-    return d3.format("." + ndig + "f");
+    return d3.format(",." + ndig + "f");
 };
 
 unique = function(x) {
